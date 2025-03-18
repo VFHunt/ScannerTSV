@@ -1,5 +1,5 @@
 import sys
-from atakan import FileHandler  # Ensure this matches your class file name
+from atakan.atakan import FileHandler  # Ensure this matches your class file name
 
 def search_keyword_in_file(file_path, keyword):
     """Extracts text from a file and searches for a keyword."""
