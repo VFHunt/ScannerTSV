@@ -2,6 +2,7 @@ import os
 from backend_filepro import FileHandler
 from pinecone import Pinecone, ServerlessSpec
 from io import BytesIO
+from search import generate_related_terms
 
 # Initialize Pinecone
 pc = Pinecone(api_key='pcsk_42coaV_3AHp5VkNqafH8yGeWY9AHXCwZij9FwfyPnjFLCrcZs7Z6Y5LErpcPb2vPWvs7R4')
@@ -43,26 +44,9 @@ for filename, data in processed_data.items():
 
 # Upload to Pinecone
 index.upsert(vectors)
-print("whole code is run")
+
+keyword = "bouwplaats"
+expanded_query_terms = [keyword] + generate_related_terms(keyword)
+print("Expanded query terms:", expanded_query_terms)
 
 
-"""
-def upload_embeddings(chunks, embeddings):
-    vectors=[]
-    for i, emb in enumerate(embeddings):
-        vector_id = f"doc_{i}"
-        metadata = chunks[i]["metadata"]
-        vectors.append((vector_id, emb.tolist, {"filename": metadata.get("filename", "unknown")}))
-    print(f"uploading {len(vectors)} embeddings...")
-    for v in vectors[:3]:
-        print(f"Vectors ID: {c[0]}, Metadata: {v[2]}")
-    print("pinecone status before upsert", index.describe_index_stats())
-    index.upsert(vectors)
-    print(f"pinecone stats after upsert", index.describe_index_stats())
-
-upload_embeddings(atakan.chunks, embeddings)
-query_vector = file_handler.embedder.encode("foundation")
-query_vector = query_vector.tolist()
-result = index.query(vector=query_vector, top_k=5, include_metadata=True)
-print(result)
-"""
