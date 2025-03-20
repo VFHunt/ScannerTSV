@@ -1,7 +1,7 @@
 import os
 import logging
 from typing import List, Dict, Any
-from transformers import AutoTokenizer
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, pipeline
 from sentence_transformers import SentenceTransformer
 import PyPDF2
 from docx import Document
@@ -13,11 +13,24 @@ from PIL import Image
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG, force=True)
 
-# Model loading
+TRANSLATION_MODEL_NAME = "Helsinki-NLP/opus-mt-nl-en"
+translator_pipeline = pipeline("translation", model=TRANSLATION_MODEL_NAME)
+
+def translate(text: str) -> str:
+    """Translate Dutch text to English using the preloaded model."""
+    try:
+        result = translator_pipeline(text, max_length=512)[0]["translation_text"]
+        return result
+    except Exception as e:
+        logger.error(f"Translation failed for text: {text} | Error: {e}")
+        return text  # Return original text if translation fails
+
+
 MODEL_PATH = "model_cache/all-MiniLM-L6-v2"
+
 if os.path.exists(MODEL_PATH):
-    logger.info(f"Loading model from {MODEL_PATH}")
-    MODEL = SentenceTransformer(MODEL_PATH)
+    logger.info(f"Loading embedding model from {MODEL_PATH}")
+    EMBEDDING_MODEL = SentenceTransformer(MODEL_PATH)
 else:
     raise FileNotFoundError(f"Model not found at {MODEL_PATH}, run download_model.py")
 
@@ -26,17 +39,17 @@ FILES_DIRECTORY = "files/"  # Directory where documents are stored
 class FileHandler:
     def __init__(self, files):
         """
-        Initialize FileHandler to process local files in the `files` directory.
+        Initialize FileHandler to process local files.
         """
         self.files = files
         self.tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
-        self.embedder = MODEL
+        self.embedder = EMBEDDING_MODEL
         self.files = [os.path.join(FILES_DIRECTORY, f) for f in os.listdir(FILES_DIRECTORY)]
         logger.info(f"Found {len(self.files)} files in '{FILES_DIRECTORY}'")
 
     def process_all_files(self) -> Dict[str, List[Dict[str, Any]]]:
         """
-        Process all files in the `files/` directory and return tokenized chunks.
+        Process all files and return tokenized, translated, and embedded chunks.
         """
         results = {}
 
@@ -44,10 +57,16 @@ class FileHandler:
             logger.info(f"Processing file: {file_path}")
             chunks = self.extract_text_chunks(file_path)  # Extract text chunks
 
-            embeddings = self.get_embeddings([chunk["content"] for chunk in chunks])
+            # Embed translated text
+            embeddings = self.get_embeddings([chunk["translated_content"] for chunk in chunks])
 
             results[os.path.basename(file_path)] = [
-                {"content": chunks[i]["content"], "embedding": embeddings[i], "metadata": chunks[i]["metadata"]}
+                {
+                    "content": chunks[i]["content"],
+                    "translated_content": chunks[i]["translated_content"],
+                    "embedding": embeddings[i],
+                    "metadata": chunks[i]["metadata"]
+                }
                 for i in range(len(chunks))
             ]
 
@@ -55,7 +74,7 @@ class FileHandler:
 
     def extract_text_chunks(self, file_path: str) -> List[Dict[str, Any]]:
         """
-        Extract text from a file and split into chunks with metadata.
+        Extract text from a file and split into chunks.
         """
         file_ext = os.path.splitext(file_path)[1].lower()
         chunks = []
@@ -71,14 +90,26 @@ class FileHandler:
                 raise ValueError(f"Unsupported file type: {file_ext}")
 
             for page_num, text in text_pages:
+                if not text.strip():
+                    continue  # Skip empty pages
+
                 paragraphs = text.split("\n\n")
                 for paragraph in paragraphs:
                     if len(paragraph) > 500:
                         sub_chunks = self._split_into_chunks(paragraph)
                         for sub_chunk in sub_chunks:
-                            chunks.append({"content": sub_chunk, "metadata": {"page": page_num}})
+                            print(f"Translating chunk: {sub_chunk[:50]}...")  # Show part of the text being processed
+                            translated_text = translate(sub_chunk)
+                            chunks.append({
+                                "content": sub_chunk,
+                                "translated_content": translated_text,
+                                "metadata": {"page": page_num}})
                     else:
-                        chunks.append({"content": paragraph, "metadata": {"page": page_num}})
+                        translated_text = translate(paragraph)
+                        chunks.append({
+                            "content": paragraph,
+                            "translated_content": translated_text,
+                            "metadata": {"page": page_num}})
 
         except Exception as e:
             logger.error(f"Error extracting text from {file_path}: {str(e)}")

@@ -1,33 +1,64 @@
+import logging
 import os
-import io
-from atakan import FileHandler  # Import your FileHandler class
+import pickle
+from search import generate_related_terms
+from vector_db import index
+from backend_filepro import FileHandler
 
-# Path to your test folder
-TEST_FOLDER = "files"  # Replace with your actual folder path
+# Configure logging
+logging.basicConfig(level=logging.INFO)
 
-# Get all file paths in the test folder
-file_paths = [os.path.join(TEST_FOLDER, f) for f in os.listdir(TEST_FOLDER)]
+def search_keyword(keyword):
+    """
+    Searches for a keyword and its related terms in the vector database.
+    """
+    logging.info(f"Searching for related terms of '{keyword}'...")
 
-# Convert files into file-like objects (mimicking uploaded files)
-uploaded_files = []
-for file_path in file_paths:
-    with open(file_path, "rb") as f:
-        file_bytes = io.BytesIO(f.read())  # Convert file content to BytesIO
-        file_bytes.name = os.path.basename(file_path)  # Add file name attribute
-        uploaded_files.append(file_bytes)
+    # Generate expanded search terms
+    related_terms = generate_related_terms(keyword)
+    logging.info(f"Related terms: {related_terms}")
 
-# Initialize FileHandler with multiple files
-file_handler = FileHandler(files=uploaded_files)
+    # Perform search in Pinecone
+    query_results = []
+    for term in [keyword] + related_terms:
+        result = index.query(vector=[0]*384, top_k=5, include_metadata=True)  # Dummy vector (replace with actual embedding)
+        query_results.append((term, result))
 
-# Process files
-for file in uploaded_files:
-    print(f"\nProcessing file: {file.name}")
-    chunks = file_handler.process_file(file)
+    # Display results
+    for term, result in query_results:
+        print(f"Results for '{term}': {result}")
 
-    # Tokenize and embed text chunks
-    for idx, chunk in enumerate(chunks[:3]):  # Show first 3 chunks
-        tokenized = file_handler.tokenize_text(chunk["content"])
-        embeddings = file_handler.get_embeddings(tokenized)
-        print(f"Chunk {idx + 1}: {chunk['content'][:200]}")  # Show first 200 characters
-        print(f"Tokenized: {tokenized}")
-        print(f"Embedding shape: {embeddings.shape}\n")
+def process_files():
+    """
+    Processes files and saves them if not already processed.
+    """
+    FILES_DIRECTORY = "files/"
+    file_handler = FileHandler([os.path.join(FILES_DIRECTORY, f) for f in os.listdir(FILES_DIRECTORY)])
+    processed_data = file_handler.process_all_files()
+
+    # Save processed data
+    with open("processed_data.pkl", "wb") as f:
+        pickle.dump(processed_data, f)
+
+    print("Files processed and data saved!")
+
+if __name__ == "__main__":
+    # Check if previous data exists
+    if not os.path.exists("processed_data.pkl"):
+        print("No processed data found. Automatically processing files...")
+        process_files()
+    else:
+        reprocess = input("Do you want to reprocess all files? (yes/no): ").strip().lower()
+        if reprocess == "yes":
+            print("Reprocessing all files... This may take a while.")
+            process_files()
+
+        else:
+            print("Loading existing processed data...")
+            with open("processed_data.pkl", "rb") as f:
+                processed_data = pickle.load(f)
+            print("Loaded saved processed data.")
+
+    # Ask for keyword after processing
+    keyword = input("Enter a Dutch keyword to search: ").strip()
+    search_keyword(keyword)

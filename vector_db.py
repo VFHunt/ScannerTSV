@@ -1,5 +1,5 @@
 import os
-from backend_filepro import FileHandler
+from backend_filepro import FileHandler, translate
 from pinecone import Pinecone, ServerlessSpec
 from io import BytesIO
 from search import generate_related_terms
@@ -32,21 +32,36 @@ for filename in os.listdir(folder_path):
 scanner = FileHandler(files)
 processed_data = scanner.process_all_files()
 
+for filename, chunks in processed_data.items():
+    for chunk in chunks:
+        translated_text=translate(chunk["content"])
+        chunk["translated_content"] = translated_text
+
+
 # Convert to Pinecone format
 vectors = []
 for filename, data in processed_data.items():
     for i, entry in enumerate(data):
         vector_id = f"{filename}_{i}"
         embedding = entry["embedding"].tolist()
-        metadata = entry["metadata"]
+        metadata = {
+            "filename": filename,
+            "original_text": entry["content"],
+            "translated_text": entry["translated_content"],
+            "page": entry["metadata"]["page"]
+        }
 
         vectors.append((vector_id, embedding, metadata))
 
 # Upload to Pinecone
 index.upsert(vectors)
 
+"""
 keyword = "bouwplaats"
-expanded_query_terms = [keyword] + generate_related_terms(keyword)
-print("Expanded query terms:", expanded_query_terms)
+# Translate keyword before expanding
+translated_keyword = translator(keyword, max_length=512)[0]["translation_text"]
+expanded_query_terms = [translated_keyword] + generate_related_terms(translated_keyword)
+print(f"Expanded query terms: {expanded_query_terms} (Translated from '{keyword}')")
+"""
 
 

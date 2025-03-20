@@ -25,14 +25,14 @@ for ctx in ds.contexts():
                 data.append([word, ", ".join(synonyms)])
 
 if not data:
-    print("❌ No data extracted. Check RDF structure.")
+    print("No data extracted. Check RDF structure.")
 else:
-    print(f"✅ Extracted {len(data)} words with synonyms!")
+    print(f"Extracted {len(data)} words with synonyms!")
 
 # Save extracted data as CSV
 df = pd.DataFrame(data, columns=["word", "synonyms"])
 df.to_csv("formatted_synonyms.csv", index=False)
-print("✅ Dataset saved as formatted_synonyms.csv")
+print("Dataset saved as formatted_synonyms.csv")
 
 """
  Read the first 50 lines of the file
@@ -48,14 +48,14 @@ g.parse(file_path, format="turtle")
 
 # Print a sample of RDF triples
 # Check total number of triples
-print(f"✅ Loaded {len(g)} triples from the RDF file.")
+print(f"Loaded {len(g)} triples from the RDF file.")
 
 # Print all unique predicates to understand the file's structure
 predicates = set()
 for _, pred, _ in g:
     predicates.add(pred)
 
-print("📌 Unique predicates found in the file:")
+print("Unique predicates found in the file:")
 for i, pred in enumerate(predicates, 1):
     print(f"{i}. {pred}")
 
@@ -93,7 +93,7 @@ print(df.head())
 
 # Check if the DataFrame is empty
 if df.empty:
-    print("❌ No data found in the CSV file. Check the extraction process.")
+    print("No data found in the CSV file. Check the extraction process.")
 else:
-    print(f"✅ Data loaded successfully! {len(df)} rows found.")
+    print(f"Data loaded successfully! {len(df)} rows found.")
 """

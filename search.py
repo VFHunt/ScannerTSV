@@ -1,24 +1,30 @@
 from transformers import pipeline
+import gensim.downloader as api
 
-generator = pipeline('text-generation', model='ml6team/mt5-small-nl', device_map="auto")
+# Initialize translation pipeline
+translator = pipeline("translation", model="Helsinki-NLP/opus-mt-nl-en")
 
-def generate_related_terms(keyword):
+# Load Word2Vec Pretrained Model (Google News Vectors)
+print("Loading Word2Vec model (this may take a while)...")
+word2vec_model = api.load("word2vec-google-news-300")
+print("Word2Vec model loaded successfully!")
+
+def generate_related_terms(keyword, top_n=10):
     """
-    Generate related words
+    Generate related words for a given keyword using Word2Vec embeddings.
     """
 
-    prompt = f"Geef alleen een lijst met synoniemen en gerelateerde termen voor '{keyword}', gescheiden door komma's."
-    output = generator(prompt, max_length=100, truncation=True, num_return_sequences=1)
+    #Step 1: Translate Dutch keyword to English
+    translated_keyword = translator(keyword, max_length=512)[0]["translation_text"]
+    print(f"Translating '{keyword}' → '{translated_keyword}'")
 
-    print("Raw output:", output)
+    # Step 2: Get related words using Word2Vec
+    try:
+        similar_words = word2vec_model.most_similar(translated_keyword, topn=top_n)
+        related_terms = [word for word, score in similar_words]
+    except KeyError:
+        related_terms = ["Word not found in vocabulary"]
 
-    generated_text = output[0]['generated_text']
-
-    # Extract list of related terms
-    if ":" in generated_text:
-        related_terms = generated_text.split(":")[1].strip().split(",")
-        related_terms = [term.strip() for term in related_terms]
-    else:
-        related_terms = [generated_text.strip()]
-
+    print(f"Generated related words: {related_terms}")
     return related_terms
+
