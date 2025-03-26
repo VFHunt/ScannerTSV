@@ -1,9 +1,11 @@
 # Open AI's generative model use
 
 from openai import OpenAI 
+from syn_evaluators import calculate_embedding_similarity
 import tiktoken
 
 client = OpenAI(api_key="")
+
 
 class GenModel():
     def __init__(self, model: str, role: str):
@@ -12,28 +14,9 @@ class GenModel():
         self.role = role
         self.answers = []
 
-    def generate(self, prompt: str) -> None: 
-        self.prompt = prompt
-        completion = client.chat.completions.create(
-        model=self.model,
-        messages=[
-            {
-                "role": "developer",
-                "content": self.role
-            },
-            {
-                "role": "user",
-                "content": self.prompt
-            },
-        ]
-        )
-        answer = completion.choices[0].message.content
-        answer_words = [word.strip() for word in answer.split(',')]
-        self.answers.extend(answer_words)
-        print(f"Generated answer: {self.answers}")
 
     def get_answer(self) -> str:
-        print(self.answers)
+        # print(self.answers)
         return self.answers
 
     def estimate_tokens(self)  -> int:
@@ -54,6 +37,67 @@ class GenModel():
         print("The total tokens are: ", len(tokens))
         return len(tokens)
     
-    def generate_synonyms(self, prompt: str) -> list:
-        self.generate(prompt)
-        return self.get_answer() # bad practice I believe but we will work with this
+    def generate_answer(self, prompt: str) -> list:
+        self.prompt = prompt
+        completion = client.chat.completions.create(
+        model=self.model,
+        messages=[
+            {
+                "role": "developer",
+                "content": self.role
+            },
+            {
+                "role": "user",
+                "content": self.prompt
+            },
+        ]
+        )
+        answer = completion.choices[0].message.content
+        self.answers = answer
+        return self.get_answer() 
+    
+    def generate_synonyms(self, prompt:str) -> list: 
+        self.answers = []
+        self.prompt = prompt
+        completion = client.chat.completions.create(
+        model=self.model,
+        messages=[
+            {
+                "role": "developer",
+                "content": self.role
+            },
+            {
+                "role": "user",
+                "content": self.prompt
+            },
+        ]
+        )
+        answer = completion.choices[0].message.content
+        answer_words = [word.strip() for word in answer.split(',')]
+        self.answers.extend(answer_words)
+        print(f"Generated answer: {self.answers}")
+        return self.get_answer()
+    
+judge = GenModel('gpt-4o', f'You are a judge on the quality of the synonyms generated for a given word.')
+engineer = GenModel('gpt-4o', 'You are a prompt engineer, you need to improve the prompt that has been given to generate five synonyms. Keep it short, effective, and a Dutch word related to construction work that you will be given.')
+
+def augment_prompt(keyword: str, initial_prompt: str, synonym_model):
+    prompt = initial_prompt
+    iteration = 0
+    while iteration < 2:
+        print(f"Iteration {iteration + 1} for word: {keyword}")
+
+        synonyms = synonym_model.generate_synonyms(prompt)
+
+        similarity = calculate_embedding_similarity(keyword, synonyms)
+
+        feedback_prompt = f'The synonyms are: {synonyms} and this is the min, max, and average values of the synonyms closeness to the keyword: {similarity}. Inform the prompt engineer on the quality of the prompt: {prompt}'
+        judgement = judge.generate_answer(feedback_prompt)
+
+        # Generate a refined prompt
+        prompt = engineer.generate_answer(judgement)
+        print(f"New Prompt: {prompt}\n")
+
+        iteration += 1
+
+    return prompt
