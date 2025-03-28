@@ -2,7 +2,7 @@ import json
 import os
 
 
-class DataHandler(): 
+class DataHandler:
     def __init__(self, filepath):
         print("...")
         self.filepath = filepath
