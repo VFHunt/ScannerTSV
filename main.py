@@ -50,6 +50,14 @@ def main():
         # Ask for keyword
         keyword = input("\nEnter a Dutch keyword to search (or 'quit' to exit): ").strip()
 
+        if keyword.lower() == 'quit':
+            print("Goodbye!")
+            break
+            
+        if not keyword:
+            print("Please enter a valid keyword.")
+            continue
+
         if db_handler.is_saved(keyword):
             synonyms = db_handler.get_synonyms(keyword)
         else: 
@@ -60,14 +68,6 @@ def main():
         synonyms.append(keyword)
         # Send terms to search in pinecone
         search_terms_in_pinecone(synonyms)
-
-        if keyword.lower() == 'quit':
-            print("Goodbye!")
-            break
-            
-        if not keyword:
-            print("Please enter a valid keyword.")
-            continue
             
 
 
