@@ -2,7 +2,7 @@ import logging
 import os
 import pickle
 from backend_filepro import FileHandler
-from Test.test_search import search_keyword_in_pinecone
+from Test.test_search import search_terms_in_pinecone
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -38,7 +38,12 @@ def main():
     while True:
         # Ask for keyword
         keyword = input("\nEnter a Dutch keyword to search (or 'quit' to exit): ").strip()
-        
+        # send keyword to gen sym
+        # retreive terms list from
+
+        # Send terms to search in pinecone
+        search_terms_in_pinecone(terms)
+
         if keyword.lower() == 'quit':
             print("Goodbye!")
             break
@@ -47,8 +52,7 @@ def main():
             print("Please enter a valid keyword.")
             continue
             
-        # Perform semantic search
-        search_keyword_in_pinecone(keyword)
+
 
 if __name__ == "__main__":
     main()
