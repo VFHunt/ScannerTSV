@@ -77,11 +77,14 @@ class GenModel():
         self.answers.extend(answer_words)
         print(f"Generated answer: {self.answers}")
         return self.get_answer()
-    
-judge = GenModel('gpt-4o', f'You are a judge on the quality of the synonyms generated for a given word.')
-engineer = GenModel('gpt-4o', 'You are a prompt engineer, you need to improve the prompt that has been given to generate five synonyms. Keep it short, effective, and a Dutch word related to construction work that you will be given.')
 
-def augment_prompt(keyword: str, initial_prompt: str, synonym_model):
+
+def generate_judge_eng(syn_number: int):
+    judge = GenModel('gpt-4o', f'You are a judge on the quality of the synonyms generated for a given word.')
+    engineer = GenModel('gpt-4o', f'You are a prompt engineer, you need to improve the prompt that has been given to generate {str(syn_number)} synonyms. Keep it short, effective, and a Dutch word related to construction work that you will be given.')
+    return judge, engineer
+
+def augment_prompt(keyword: str, initial_prompt: str, synonym_model: GenModel, judge: GenModel, engineer: GenModel):
     prompt = initial_prompt
     iteration = 0
     while iteration < 2:
