@@ -21,9 +21,9 @@ def calculate_embedding_similarity(keyword: str, answers: list) -> list:
     max_sim = max(similarities)
     avg_sim = sum(similarities) / len(similarities)
 
-    print(f"Smallest Similarity: {min_sim:.4f}")
-    print(f"Largest Similarity: {max_sim:.4f}")
-    print(f"Average Similarity: {avg_sim:.4f}")
+    # print(f"Smallest Similarity: {min_sim:.4f}")
+    # print(f"Largest Similarity: {max_sim:.4f}")
+    # print(f"Average Similarity: {avg_sim:.4f}")
 
     return [min_sim, max_sim, avg_sim]
 

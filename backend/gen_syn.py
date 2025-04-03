@@ -87,7 +87,7 @@ def augment_prompt(keyword: str, initial_prompt: str, synonym_model: GenModel, j
     prompt = initial_prompt
     iteration = 0
     while iteration < 2:
-        print(f"Iteration {iteration + 1} for word: {keyword}")
+        # print(f"Iteration {iteration + 1} for word: {keyword}")
 
         synonyms = synonym_model.generate_synonyms(prompt)
 
@@ -98,7 +98,7 @@ def augment_prompt(keyword: str, initial_prompt: str, synonym_model: GenModel, j
 
         # Generate a refined prompt
         prompt = engineer.generate_answer(judgement)
-        print(f"New Prompt: {prompt}\n")
+        # print(f"New Prompt: {prompt}\n")
 
         iteration += 1
 

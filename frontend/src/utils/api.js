@@ -17,3 +17,19 @@ export const uploadFile = async (file) => {
 
   return response.data;
 };
+
+export const getSynonyms = async (keywordsList) => {
+  const response = await fetch("http://127.0.0.1:5000/get_synonyms", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body:  JSON.stringify({ keywords: keywordsList }), // Send the keyword as an array
+  });
+
+  if (!response.ok) {
+    throw new Error(await response.json());
+  }
+
+  return response.json();
+};

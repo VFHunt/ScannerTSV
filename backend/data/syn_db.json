@@ -59,5 +59,63 @@
         "hakmes",
         "kapmes",
         "snijbijl"
+    ],
+    "h": [
+        "stijger",
+        "bouwsteiger"
+    ],
+    "e": [
+        "schaafstelling",
+        "bouwplatform"
+    ],
+    "l": [
+        "metselarbeider",
+        "baksteenwerker"
+    ],
+    "o": [
+        "bouwstelling",
+        "werkplatform"
+    ],
+    "s": [
+        "constructie",
+        "vervaardiging",
+        "structuur",
+        "opbouw",
+        "assemblage"
+    ],
+    "t": [
+        "steenhouwer",
+        "bouwvakker",
+        "vakman",
+        "baksteenlegger",
+        "muurwerker"
+    ],
+    "a": [
+        "stelling",
+        "platform",
+        "bouwsteiger",
+        "werkplatform",
+        "loopbrug"
+    ],
+    "cristal": [
+        "Baksteen",
+        "beton",
+        "voegwerk",
+        "kalkzandsteen",
+        "cement."
+    ],
+    "appartment": [
+        "bouwterrein",
+        "werkterrein",
+        "constructiezone",
+        "bouwlocatie",
+        "werklocatie"
+    ],
+    "building": [
+        "Constructie",
+        "Structuur",
+        "Gebouw",
+        "Oeuvre",
+        "Bouwwerk"
     ]
 }
