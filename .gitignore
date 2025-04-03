@@ -1,0 +1,6 @@
+env/
+node_modules/
+__pycache__/
+backend/model_cache/
+backend/__pycache__/
+backend/files/

@@ -1,0 +1,63 @@
+{
+    "geouw": [
+        "Constructie",
+        "bouwwerk"
+    ],
+    "instructies": [
+        "richtlijnen",
+        "voorschriften"
+    ],
+    "quit": [
+        "slopen",
+        "ontmantelen"
+    ],
+    "installing": [
+        "monteren",
+        "opzetten",
+        "plaatsen",
+        "bevestigen",
+        "aanbrengen",
+        "installing"
+    ],
+    "gebouw": [
+        "structuur",
+        "constructie",
+        "complex",
+        "pand",
+        "bouwwerk"
+    ],
+    "door": [
+        "poort",
+        "toegang",
+        "toegangspoort",
+        "ingang",
+        "opening"
+    ],
+    "staal": [
+        "metaal",
+        "ijzer",
+        "gegalvaniseerd",
+        "constructiestaal",
+        "roestvrij"
+    ],
+    "blockchain": [
+        "bouwstelling",
+        "stellage"
+    ],
+    "hello": [
+        "Systeembekisting",
+        "Traditionele-bekisting",
+        "schuimbekisting"
+    ],
+    "cecilia": [
+        "bouwarbeider",
+        "timmerman"
+    ],
+    "hoe": [
+        "bijl",
+        "kloofbijl",
+        "hakmes",
+        "kapmes",
+        "snijbijl"
+    ]
+}
