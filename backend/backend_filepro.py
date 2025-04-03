@@ -12,36 +12,51 @@ from pdf2image import convert_from_path
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG, force=True)
 
-
 MODEL_PATH = "model_cache/all-MiniLM-L6-v2"
+_model_instance = None  # Global variable to store the model
 
-if os.path.exists(MODEL_PATH):
-    logger.info(f"Loading embedding model from {MODEL_PATH}")
-    EMBEDDING_MODEL = SentenceTransformer(MODEL_PATH)
-else:
-    raise FileNotFoundError(f"Model not found at {MODEL_PATH}, run download_model.py")
-
-FILES_DIRECTORY = "files/"  # Directory where documents are stored only for backend
+def get_model():
+    """ Load the model only once (singleton pattern). """
+    global _model_instance
+    if _model_instance is None:
+        if os.path.exists(MODEL_PATH):
+            logger.info(f"Loading embedding model from {MODEL_PATH}")
+            _model_instance = SentenceTransformer(MODEL_PATH)
+        else:
+            raise FileNotFoundError(f"Model not found at {MODEL_PATH}, run download_model.py")
+    return _model_instance
 
 class FileHandler:
     def __init__(self, files=None):
         """
-        Initialize FileHandler to process local files. If None, loads files from files folder for backend
+        Initialize FileHandler to process files.
+        Args:
+            files: List of file paths to process. If None, no files are loaded.
         """
         self.tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
-        self.embedder = EMBEDDING_MODEL
-        
+        self.embedder = get_model()
+        self.files = []
+        self.files = files
+        """
         if files is None:
-            self.files = [os.path.join(FILES_DIRECTORY, f) for f in os.listdir(FILES_DIRECTORY)]
-            logger.info(f"Found {len(self.files)} files in '{FILES_DIRECTORY}'")
+            self.files = []
+            logger.info("No files provided for processing")
         else:
             self.files = files
             logger.info(f"Initialized with {len(self.files)} provided files")
+        """
+
+    def add_files(self, files: List[str]):
+        """Add files to process."""
+        self.files.extend(files)
+        logger.info(f"Added {len(files)} files. Total files: {len(self.files)}")
 
     def process_all_files(self) -> Dict[str, List[Dict[str, Any]]]:
-        """
-        Process all files and return tokenized and embedded chunks.
-        """
+        """Process all files and return tokenized and embedded chunks."""
+        if not self.files:
+            logger.warning("No files to process")
+            return {}
+
         results = {}
 
         for file_path in self.files:

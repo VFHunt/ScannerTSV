@@ -16,7 +16,11 @@ from PIL import Image
 # Configure logging
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG, force=True)
+<<<<<<< HEAD
 MODEL_PATH = "../model_cache/all-MiniLM-L6-v2"
+=======
+MODEL_PATH = "../backend/model_cache/all-MiniLM-L6-v2"
+>>>>>>> origin/backend&frontendV
 
 if os.path.exists(MODEL_PATH):
     logger.info(f"Loading model from {MODEL_PATH}")

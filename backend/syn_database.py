@@ -37,6 +37,5 @@ class DataHandler:
             print("This keyword is saved in the database from " + self.filepath)
             return 1
         else:
-            print("This keyword is not saved in the datbase from " + self.filepath)
-            print("The generative model will give us the synonyms needed")
+            print("This keyword is not saved in the database from " + self.filepath)
             return 0
