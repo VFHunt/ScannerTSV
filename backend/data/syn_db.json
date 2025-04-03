@@ -1,0 +1,21 @@
+{
+    "gebouw": [
+        "pand",
+        "structuur"
+    ],
+    "quit": [
+        "afbraak",
+        "ontmanteling"
+    ],
+    "test": [
+        "bouwsteiger",
+        "werkplatform"
+    ],
+    "tets": [
+        "Gording",
+        "ligger",
+        "draagbalk",
+        "spar",
+        "liggerbalk"
+    ]
+}
