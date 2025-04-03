@@ -15,7 +15,6 @@ def process_files():
     handler = FileHandler()
     processed_data = handler.process_all_files()
     
-
     # Save processed data
     with open("processed_data.pkl", "wb") as f:
         pickle.dump(processed_data, f)
@@ -24,7 +23,6 @@ def process_files():
 
 def main():
     """Main function to handle user interaction and file processing."""
-
     # Check if previous data exists
     if not os.path.exists("processed_data.pkl"):
         print("No processed data found. Automatically processing files...")
@@ -55,7 +53,6 @@ def main():
             print("Goodbye!")
             break
             
-
         if not keyword:
             print("Please enter a valid keyword.")
             continue

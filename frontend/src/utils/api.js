@@ -19,7 +19,7 @@ export const uploadFile = async (file) => {
 };
 
 export const getSynonyms = async (keywordsList) => {
-  const response = await fetch("http://127.0.0.1:5000/get_synonyms", {
+  const response = await fetch(`${API_BASE_URL}/get_synonyms`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

@@ -1,7 +1,7 @@
 import React from "react";
 import KeywordSearch from "./components/KeywordSearch";
 import FileUpload from "./components/FileUpload";
-import LogoViewer from "./components/logo"; // Import the LogoViewer component
+import LogoViewer from "./components/logoTSV"; // Import the LogoViewer component
 
 function App() {
   return (

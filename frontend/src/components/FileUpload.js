@@ -2,24 +2,36 @@ import React, { useState } from "react";
 import { uploadFile } from "../utils/api";
 
 function FileUpload() {
-  const [file, setFile] = useState(null);
+  const [files, setFiles] = useState([]); // multiple files store bc of array storage
   const [message, setMessage] = useState("");
 
   const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
+    setFiles([...e.target.files]);
   };
 
-  const handleUpload = async () => {
-    if (!file) {
-      setMessage("Please select a file.");
+  const handleUpload = async () => { // now loops through all files
+    if (files.length === 0) {
+      setMessage("Please select at least one file.");
       return;
     }
 
+    const  formData = new FormData();
+      files.forEach((file) => {
+        formData.append("files", file); // append each file
+      });
+
     try {
-      const data = await uploadFile(file);
-      setMessage(data.message);
+      const response = await fetch("http://127.0.0.1:5000/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const result = await response.json();
+      console.log("Server response:", result)
+      setMessage(result.message);
     } catch (error) {
-      setMessage(`Error from FileUpload: ${error.response?.data?.error || error.message}`);
+      console.error("Upload Error:", error);
+      setMessage(`Error: ${error.message}`);
     }
   };
 
@@ -28,7 +40,7 @@ function FileUpload() {
       <h2 style={styles.header}>Upload a File</h2>
       <div style={styles.dropZone}>
         <input
-          type="file"
+          type="file" multiple
           onChange={handleFileChange}
           style={styles.fileInput}
         />
