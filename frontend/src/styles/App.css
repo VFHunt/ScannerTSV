@@ -1,0 +1,36 @@
+.container {
+  display: flex;
+  flex-direction: row; /* Arrange leftBar and mainPage side by side */
+  align-items: stretch; /* Stretch both sections to fill the height */
+  justify-content: flex-start; /* Align leftBar to the left */
+  min-height: 100vh; /* Full viewport height */
+  width: 100vw; /* Full viewport width */
+  box-sizing: border-box;
+}
+.content {
+  display: flex;
+  flex-direction: row; /* Stack components vertically */
+  gap: 20px; /* Space between components */
+  width: 100%;
+  max-width: 800px; /* Limit the width of the content */
+}
+
+.leftBar {
+  flex: 3; /* Take up 30% of the space (3 parts out of 10) */
+  height: 100%; /* Full height of the viewport */
+  box-sizing: border-box;
+  padding: 20px;
+  background-color: #ffff99; /* Optional: Light gray background for visibility */
+  border-right: 1px solid #ccc; /* Optional: Border for separation */
+}
+
+.mainPage {
+  flex: 7; /* Take up 70% of the space (7 parts out of 10) */
+  display: flex;
+  flex-direction: column; /* Stack components vertically */
+  align-items: center; /* Center content horizontally */
+  justify-content: flex-start; /* Align content to the top */
+  padding: 20px;
+  box-sizing: border-box;
+  background-color: #ffffff; /* Optional: White background for visibility */
+}

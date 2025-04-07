@@ -2,6 +2,7 @@ import React from "react";
 import KeywordSearch from "./components/KeywordSearch";
 import FileUpload from "./components/FileUpload";
 import LogoViewer from "./components/logoTSV"; // Import the LogoViewer component
+import Main from "./pages/MainPage"; // Import the MainPage component
 
 function App() {
   return (
@@ -11,12 +12,9 @@ function App() {
       </div>
       <h1 style={styles.header}>Scanner TSV</h1>
       <div style={styles.content}>
-        <div style={styles.keywordSearch}>
-          <KeywordSearch />
-        </div>
-        <div style={styles.fileUpload}>
-          <FileUpload />
-        </div>
+      </div>
+      <div style={styles.main}>
+        <Main />
       </div>
     </div>
   );
@@ -29,10 +27,12 @@ const styles = {
     alignItems: "center",
     justifyContent: "center",
     minHeight: "100vh", // Full viewport height
+    maxWidth: "100vw", // Full viewport width
     textAlign: "center",
     padding: "20px",
     boxSizing: "border-box",
     position: "relative", // Allow absolute positioning for the logo
+    overflow: "hidden", // Prevent overflow of content
   },
   logo: {
     position: "absolute",
@@ -49,26 +49,38 @@ const styles = {
     flexDirection: "column", // Stack components vertically
     gap: "20px", // Space between components
     width: "100%",
-    maxWidth: "800px", // Limit the width of the content
+    maxWidth: "100", // Limit the width of the content
   },
-  keywordSearch: {
+
+  main: {
     display: "flex",
     justifyContent: "center",
     alignItems: "flex-start",
-    padding: "20px",
-    border: "1px solid #ccc",
-    borderRadius: "10px",
-    backgroundColor: "#f9f9f9",
-  },
-  fileUpload: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "flex-start",
-    padding: "20px",
-    border: "1px solid #ccc",
-    borderRadius: "10px",
+    maxWidth: "100%",
     backgroundColor: "#f9f9f9",
   },
 };
 
 export default App;
+
+// import React from "react";
+// import MainPage from "./pages/MainPage"; // Import the MainPage component
+// import LeftBarPage from "./pages/LeftbarPage"; // Import the LeftBarPage component
+// import "./styles/App.css"; // Import the CSS file
+
+// function App() {
+//   return (
+//     <div className="container">
+//       <div className="content">
+//         <div className="leftBar">
+//           <LeftBarPage />
+//         </div>
+//         <div className="mainPage">
+//           <MainPage />
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
+// export default App;a
