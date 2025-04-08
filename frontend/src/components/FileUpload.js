@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { uploadFile } from "../utils/api";
+import { useNavigate } from "react-router-dom";
 
 function FileUpload() {
   const [files, setFiles] = useState([]); // multiple files store bc of array storage
   const [message, setMessage] = useState("");
+  const navigate = useNavigate()
 
   const handleFileChange = (e) => {
     setFiles([...e.target.files]);
@@ -29,6 +31,11 @@ function FileUpload() {
       const result = await response.json();
       console.log("Server response:", result)
       setMessage(result.message);
+
+      if (result.message.includes("successfully")) {
+        navigate("/results");
+      }
+
     } catch (error) {
       console.error("Upload Error:", error);
       setMessage(`Error: ${error.message}`);
