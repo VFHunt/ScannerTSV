@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 import { uploadFile } from "../utils/api";
 import { useNavigate } from "react-router-dom";
 
-
 function FileUpload() {
   const [files, setFiles] = useState([]); // multiple files store bc of array storage
   const [message, setMessage] = useState("");
