@@ -117,5 +117,61 @@
         "Gebouw",
         "Oeuvre",
         "Bouwwerk"
+    ],
+    "computer": [
+        "Voeger",
+        "steenhouwer",
+        "bouwvakker",
+        "muurmetselaar",
+        "steenzetter"
+    ],
+    "phone": [
+        "opbouwsteiger",
+        "hangsteiger",
+        "rolsteiger",
+        "gevelsteiger",
+        "klimsteiger"
+    ],
+    "AI": [
+        "voltooiing",
+        "oplevering",
+        "afronding",
+        "afwerking",
+        "eindfase"
+    ],
+    "metaal": [
+        "IJzer",
+        "Staal",
+        "Aluminium",
+        "Koper",
+        "Zink"
+    ],
+    "pumba": [
+        "klinker",
+        "gevelsteen",
+        "bouwsteen",
+        "keramische",
+        "blokken"
+    ],
+    "adfasd": [
+        "Platform",
+        "werkvloer",
+        "bouwsteiger",
+        "werkplek",
+        "scaffolding."
+    ],
+    "adsf": [
+        "bakstenen",
+        "stapelen",
+        "voegen",
+        "leggen",
+        "metselen"
+    ],
+    "adsfadfsad": [
+        "bouwplatform",
+        "werkvloer",
+        "loopbrug",
+        "werksteiger",
+        "stelling"
     ]
 }

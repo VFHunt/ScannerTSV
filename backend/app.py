@@ -9,6 +9,7 @@ from test_search import search_terms_in_pinecone, create_zip
 from gen_syn import GenModel, generate_judge_eng, augment_prompt
 from syn_database import DataHandler
 from vector_db import upload_to_pinecone
+import time
 
 app = Flask(__name__)
 CORS(app)  # Allows React frontend to talk to Flask backend
@@ -82,9 +83,6 @@ def search():
         print("Failed to create ZIP file.")
 
     return jsonify({"message": "Search completed!"})
-
-
-    return jsonify({"message": "Search completed!"})
     
 @app.route("/get_synonyms", methods=["POST"])
 def getting_syn(): 
@@ -114,6 +112,22 @@ def getting_syn():
     
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route("/uploaded_files", methods=["GET"])
+def list_uploaded_files():
+    files = []
+    for filename in os.listdir(app.config["UPLOAD_FOLDER"]):
+        file_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+        if os.path.isfile(file_path):
+            files.append({
+                "filename": filename,
+                "uploaded_at": time.ctime(os.path.getmtime(file_path)),
+                "scanned": True,
+                "keywords": "N/A"
+            })
+    return jsonify({"files": files})
+
+
 
 if __name__ == "__main__":
     app.run()

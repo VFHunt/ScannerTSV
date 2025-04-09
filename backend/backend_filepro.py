@@ -2,6 +2,7 @@ import os
 import logging
 from typing import List, Dict, Any
 from transformers import AutoTokenizer
+from torch import Tensor
 from sentence_transformers import SentenceTransformer
 import PyPDF2
 from docx import Document

@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 load_dotenv()
 
 # Initialize Pinecone
-pc = Pinecone(api_key='') #INSERT API KEY
+pc = Pinecone(api_key='pcsk_42coaV_3AHp5VkNqafH8yGeWY9AHXCwZij9FwfyPnjFLCrcZs7Z6Y5LErpcPb2vPWvs7R4') #INSERT API KEY
 index_name = "smart-scanner-index"
 
 # Create index if it doesn't exist

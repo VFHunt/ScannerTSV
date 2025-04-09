@@ -56,7 +56,6 @@ function KeywordSearch() {
 
   return (
     <div className="keywordSearchContainer">
-      <h2 className="header">SmartScan</h2>
 
       {/* Input Row */}
       <div className="inputRow">
