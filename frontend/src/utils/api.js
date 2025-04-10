@@ -33,3 +33,13 @@ export const getSynonyms = async (keywordsList) => {
 
   return response.json();
 };
+
+export const get_projects = async () => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/projects`); // Adjust endpoint as needed
+    return response.data; // Return the list of projects
+  } catch (error) {
+    console.error("Error fetching projects:", error);
+    throw new Error("Failed to fetch projects.");
+  }
+};
