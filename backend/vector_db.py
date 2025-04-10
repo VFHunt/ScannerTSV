@@ -28,8 +28,8 @@ index = pc.Index(index_name)
 scanner = FileHandler()
 processed_data = scanner.process_all_files()
 
-def upload_to_pinecone(processed_data):
-    """Upload processed data to Pinecone."""
+def upload_to_pinecone(processed_data, batch_size=100):
+    """Upload processed data to Pinecone in smaller batches."""
     vectors = []
     for filename, data in processed_data.items():
         for i, entry in enumerate(data):
@@ -41,11 +41,18 @@ def upload_to_pinecone(processed_data):
                 "page": entry["metadata"]["page"]
             }
             vectors.append((vector_id, embedding, metadata))
-    print(f"Uploading {len(vectors)} vectors to Pinecone...")
-    print("Sample vector:", vectors[:2])
-    
-    # Upload to Pinecone
-    index.upsert(vectors)
+
+    print(f"Uploading {len(vectors)} vectors to Pinecone in batches of {batch_size}...")
+
+    # Batch upsert to avoid payload size limit
+    for i in range(0, len(vectors), batch_size):
+        batch = vectors[i:i + batch_size]
+        try:
+            index.upsert(batch)
+            print(f"Batch {i // batch_size + 1}: Uploaded {len(batch)} vectors.")
+        except Exception as e:
+            logger.error(f"Error uploading batch {i // batch_size + 1}: {e}")
+
     return len(vectors)
 
 def search_pinecone(search_term):
