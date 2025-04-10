@@ -43,8 +43,15 @@ function ProjectView() {
   };
 
   // Handle creating a new project
-  const handleNewProject = () => {
-    navigate("/newscan"); // Navigate to the NewScan page
+  const handleNewProject = async () => {
+    try {
+      // const newProject = await create_new_project(); // Call the API to create a new project
+      message.success("Creating new project!");
+      navigate("/newscan"); // Navigate to the NewScan page
+    } catch (error) {
+      console.error("Error creating new project:", error);
+      message.error("Failed to create a new project.");
+    }
   };
 
   // Define table columns
