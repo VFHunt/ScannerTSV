@@ -6,6 +6,7 @@ import ProjectView from "./pages/ProjectView";
 import Results from "./pages/Results";
 import DocResults from "./pages/DocResults";
 import MainLayout from "./pages/MainLayout";
+import 'antd/dist/reset.css';
 import "./styles/App.css";
 
 function App() {

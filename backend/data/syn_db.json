@@ -173,5 +173,26 @@
         "loopbrug",
         "werksteiger",
         "stelling"
+    ],
+    "blanca": [
+        "Projectplaats",
+        "Betredingsgebied",
+        "Werkgebied",
+        "Ontwikkelingslocatie",
+        "Constructieterrein"
+    ],
+    "gebouwen": [
+        "constructies",
+        "panden",
+        "bouwwerken",
+        "structuren",
+        "complexen"
+    ],
+    "kuntsmatige": [
+        "synthetisch",
+        "nep",
+        "artificieel",
+        "namaak",
+        "pseudoniem"
     ]
 }

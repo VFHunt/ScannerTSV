@@ -99,8 +99,9 @@ def getting_syn():
             if db_handler.is_saved(keyword):
                 synonyms = db_handler.get_synonyms(keyword)
             else: 
-                augmented_prompt = augment_prompt(keyword, f'find 5 synonyms of {keyword}', syn, judge, eng)
-                synonyms = syn.generate_synonyms(augmented_prompt)
+                # augmented_prompt = augment_prompt(keyword, f'find 5 synonyms of {keyword}', syn, judge, eng)
+                prompt = f'Find 5 dutch synonyms of {keyword}'
+                synonyms = syn.generate_synonyms(prompt)
                 db_handler.add_synonyms(keyword, synonyms)
 
             all_words.extend(synonyms)

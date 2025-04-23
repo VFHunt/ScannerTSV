@@ -7,3 +7,5 @@ backend/files/
 backend/.env
 backend/uploads/
 backend/zipped_results/
+backend/splits_output.csv
+backend/data/syn_db.json

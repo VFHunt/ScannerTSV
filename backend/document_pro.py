@@ -17,7 +17,7 @@ class Doc:
         self.__name = str(document)
         self.path_name = "uploads/" + self.__name
         self.__text = self.extract_text_from_pdf()
-        self.__all_keywords =self.__extract_keywords()
+        self.__all_words = self.__extract_words()  # Changed from __extract_keywords to __extract_words
         self.__match_keywords = None
         self.__status = None
         self.__last_scan = None
@@ -57,13 +57,13 @@ class Doc:
     def set_last_scan(self, last_scan):
         self.__last_scan = last_scan
 
-    # Getter for all_keywords
-    def get_all_keywords(self):
-        return self.__all_keywords
+    # Getter for all_words (formerly all_keywords)
+    def get_all_words(self):
+        return self.__all_words
 
-    # Setter for all_keywords
-    def set_all_keywords(self, all_keywords):
-        self.__all_keywords = all_keywords
+    # Setter for all_words (formerly all_keywords)
+    def set_all_words(self, all_words):
+        self.__all_words = all_words
 
     # Method to display document details
     def display_details(self):
@@ -73,7 +73,7 @@ class Doc:
             "Matched Keywords": self.__match_keywords if self.__match_keywords else "No matched keywords",
             "Status": self.__status if self.__status else "Status not set",
             "Last Scan": self.__last_scan if self.__last_scan else "Not scanned yet",
-            "All Extracted Keywords": self.__all_keywords if self.__all_keywords else "No keywords extracted",
+            "All Extracted Words": self.__all_words if self.__all_words else "No words extracted",
         }
 
     def extract_text_from_pdf(self):
@@ -109,8 +109,8 @@ class Doc:
             print(f"Error splitting text: {e}")
             return []
 
-    def __extract_keywords(self):
-        print("Extracting keywords...")
+    def __extract_words(self):  # Changed from __extract_keywords to __extract_words
+        print("Extracting words...")
         word_count = len(self.__text.split())  # Split the text into words and count them
         # Calculate the top_n value as 70% of the total word count
         top_n = round(0.7 * word_count)
@@ -122,13 +122,13 @@ class Doc:
         """
         Check if the keywords is present in the extracted text.
         """
-        all_words = [keyword[0] for keyword in self.get_all_keywords()]
+        all_words = [keyword[0] for keyword in self.get_all_words()]
         matched_keywords = [keyword for keyword in keywords if keyword in all_words]
         self.set_match_keywords(matched_keywords)  # Set the matched keywords
          
         return matched_keywords
 
-    def which_splits(self):
+    def which_splits(self): # todo: el problema must be here
         """
         Check which splits contain the keywords and return a DataFrame with:
         - The split (chunk of text)
@@ -141,11 +141,13 @@ class Doc:
 
         print("Checking which splits contain the keywords...")
         for chunk in self.text_splitter():
+            print(f" -------------- Checking chunk: {chunk}")
             chunk_match = []
             flag = False  # Flag to check if any keyword is found in the chunk
             # Find keywords that are in the current chunk
             for match in matched: 
-                if match[0] in chunk:
+                if match in chunk:
+                    print(f" ------------- Keyword '{match}' found in chunk: {chunk}")
                     chunk_match.append(match)
                     flag = True
 
@@ -153,12 +155,13 @@ class Doc:
                 # Add the chunk and matching keywords to the results
                 matched_splits.append({
                     "Split": chunk,
-                    "Matching Keywords": [kw[0] for kw in chunk_match],  # Extract keywords
-                    "Largest Cosine Similarity": max([kw[1] for kw in chunk_match]),  # Extract cosine values
+                    "Matching Keywords": [kw for kw in chunk_match],  # Extract keywords
                 })
 
         # Convert the results to a pandas DataFrame
+        # 
         df = pd.DataFrame(matched_splits)
+        print(df)
         return df
             
 class DocHandler:
@@ -218,7 +221,7 @@ documents = handler.get_documents()
 
 if documents:
     # Test the first document
-    doc = documents[0]
+    doc = documents[1]
     print(f"\n--- Document: {doc.get_name()} ---")
 
     # Extracted text
@@ -227,11 +230,11 @@ if documents:
 
     # Extracted keywords
     print("\nExtracted Keywords:")
-    print(doc.get_all_keywords())
+    print(doc.get_all_words())
 
     # Check which keywords are in the text
     print("\nMatched Keywords in Text:")
-    keywords = ["intelligence", "ai", "cow"]
+    keywords = ["intelligence", "ai", "cow", "chamber", "discrimination"]
     matched_keywords = doc.which_keywords_in_text(keywords)
     print(matched_keywords)
 

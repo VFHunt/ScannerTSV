@@ -43,3 +43,20 @@ export const get_projects = async () => {
     throw new Error("Failed to fetch projects.");
   }
 };
+
+export const create_new_project = async () => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/projects`, {
+      // Add any required payload here if needed
+    });
+
+    if (response.status !== 201) {
+      throw new Error("Failed to create a new project.");
+    }
+
+    return response.data; // Return the created project data
+  } catch (error) {
+    console.error("Error creating new project:", error);
+    throw error;
+  }
+};
