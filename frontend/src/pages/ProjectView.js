@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Table, Button, Input, Space, Layout, message } from "antd";
 import { PlusOutlined, ReloadOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import { get_projects } from "../utils/api"; // Import the function to fetch projects
+import "../styles/ProjectView.css";
+import { emptyPinecone, get_projects } from "../utils/api"; // Import both functions
 
 const { Content } = Layout;
 
@@ -26,7 +27,8 @@ function ProjectView() {
     };
 
     fetchProjects();
-  }, []);
+  }, []); // Runs on component mount
+
 
   // Handle search functionality
   const handleSearch = () => {
@@ -43,16 +45,17 @@ function ProjectView() {
   };
 
   // Handle creating a new project
-  const handleNewProject = async () => {
-    try {
-      // const newProject = await create_new_project(); // Call the API to create a new project
-      message.success("Creating new project!");
-      navigate("/newscan"); // Navigate to the NewScan page
-    } catch (error) {
-      console.error("Error creating new project:", error);
-      message.error("Failed to create a new project.");
-    }
-  };
+const handleNewProject = async () => {
+  try {
+    await emptyPinecone();
+    message.success("Creating new project!");
+    navigate("/newscan");
+  } catch (error) {
+    console.error("Error creating new project:", error);
+    message.error("Failed to create a new project.");
+  }
+};
+
 
   // Define table columns
   const columns = [

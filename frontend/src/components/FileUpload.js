@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Upload, message, Button } from "antd";
+import { uploadFile, processFiles } from "../utils/api"; // you handle upload and processing separately
+import { Upload, message as antdMessage, Button } from "antd";
 import { CloudUploadOutlined, DeleteOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 
@@ -7,48 +8,47 @@ const { Dragger } = Upload;
 
 function FileUpload() {
   const [files, setFiles] = useState([]);
+  const [statusMessage, setStatusMessage] = useState(""); // Renamed to avoid conflict with AntD's message
   const navigate = useNavigate();
 
-  const handleUpload = async () => {
-    if (files.length === 0) {
-      message.warning("Please select at least one file.");
-      return;
-    }
-  
-    message.loading("Uploading the files...", 2); // Display a loading message
-  
-    const formData = new FormData();
-    files.forEach((file) => {
-      formData.append("files", file.originFileObj); // Append each file
-    });
-  
-    try {
-      const response = await fetch("http://127.0.0.1:5000/upload", {
-        method: "POST",
-        body: formData,
-      });
-  
-      const result = await response.json();
-      message.success(result.message || "Files uploaded successfully!");
-  
-      if (result.message.includes("successfully")) {
-        setFiles([]); // Clear all files after successful upload
-        navigate("/results"); // Navigate to the results page
-      }
-    } catch (error) {
-      console.error("Upload Error:", error);
-      message.error(`Error: ${error.message}`);
-    }
-  };
-
   const handleChange = (info) => {
-    const { fileList } = info;
-    setFiles(fileList); // Update the file list
+    setFiles(info.fileList);
   };
 
   const handleRemove = (file) => {
-    setFiles((prevFiles) => prevFiles.filter((item) => item.uid !== file.uid)); // Remove the selected file
-    message.info(`${file.name} removed.`);
+    setFiles((prevFiles) => prevFiles.filter((item) => item.uid !== file.uid));
+    antdMessage.info(`${file.name} removed.`);
+  };
+
+  const handleUpload = async () => {
+    if (files.length === 0) {
+      setStatusMessage("Please select at least one file.");
+      return;
+    }
+
+    antdMessage.loading("Uploading files...", 2);
+
+    const formData = new FormData();
+    files.forEach((file) => {
+      formData.append("files", file.originFileObj); // Access raw file
+    });
+
+    try {
+      // Step 1: Upload
+      const uploadResponse = await uploadFile(formData);
+      setStatusMessage(uploadResponse.message || "Files uploaded!");
+
+      // Step 2: Process
+      const processResponse = await processFiles();
+      setStatusMessage(processResponse.message || "Files processed!");
+
+      // Step 3: Go to results
+      navigate("/results");
+
+    } catch (error) {
+      console.error("Upload or processing error:", error);
+      setStatusMessage("Something went wrong during upload or processing.");
+    }
   };
 
   return (
@@ -57,54 +57,40 @@ function FileUpload() {
         multiple
         fileList={files}
         onChange={handleChange}
-        onRemove={handleRemove} // Enable file removal
-        beforeUpload={() => false} // Prevent automatic upload
+        onRemove={handleRemove}
+        beforeUpload={() => false} // Prevent auto-upload
         style={{
           padding: "40px",
           border: "2px dashed #d9d9d9",
-          borderRadius: "50%", // Make it circular like a cloud
-          backgroundColor: "#eaf4ff", // Light blue background
+          borderRadius: "50%",
+          backgroundColor: "#eaf4ff",
           textAlign: "center",
-          width: "300px", // Fixed width
-          height: "300px", // Fixed height to make it square
-          margin: "0 auto", // Center the cloud
+          width: "300px",
+          height: "300px",
+          margin: "0 auto",
         }}
       >
         <p className="ant-upload-drag-icon">
           <CloudUploadOutlined style={{ fontSize: "64px", color: "#1890ff" }} />
         </p>
-        <p className="ant-upload-text">Click or drag file to this area to upload</p>
-        <p className="ant-upload-hint">Support for a single or bulk upload.</p>
+        <p className="ant-upload-text">Click or drag files here to upload</p>
+        <p className="ant-upload-hint">Supports single or multiple files</p>
       </Dragger>
+
       {files.length > 0 && (
         <div style={{ marginTop: "20px", textAlign: "center" }}>
-          <Button
-            type="primary"
-            onClick={handleUpload}
-            style={{
-              marginRight: "10px",
-              padding: "10px 20px",
-              backgroundColor: "#1890ff",
-              color: "white",
-              border: "none",
-              borderRadius: "5px",
-              cursor: "pointer",
-            }}
-          >
-            Upload
+          <Button type="primary" onClick={handleUpload} style={{ marginRight: "10px" }}>
+            Upload & Process
           </Button>
-          <Button
-            danger
-            icon={<DeleteOutlined />}
-            onClick={() => setFiles([])} // Clear all files
-            style={{
-              padding: "10px 20px",
-              borderRadius: "5px",
-              cursor: "pointer",
-            }}
-          >
+          <Button danger icon={<DeleteOutlined />} onClick={() => setFiles([])}>
             Clear All
           </Button>
+        </div>
+      )}
+
+      {statusMessage && (
+        <div style={{ marginTop: "20px", textAlign: "center", color: "#1890ff" }}>
+          {statusMessage}
         </div>
       )}
     </div>

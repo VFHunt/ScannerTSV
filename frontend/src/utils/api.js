@@ -7,9 +7,11 @@ export const searchKeywords = async (keyword) => {
   return response.data;
 };
 
-export const uploadFile = async (file) => {
+export const uploadFile = async (files) => {
   const formData = new FormData();
-  formData.append("file", file);
+  files.forEach((file) => {
+    formData.append("files", file); // Append each file
+  });
 
   const response = await axios.post(`${API_BASE_URL}/upload`, formData, {
     headers: { "Content-Type": "multipart/form-data" },
@@ -28,10 +30,31 @@ export const getSynonyms = async (keywordsList) => {
   });
 
   if (!response.ok) {
-    throw new Error(await response.json());
+    const errorData = await response.json();
+    throw new Error(errorData.error || "Failed to fetch synonyms");
   }
 
-  return response.json();
+  return await response.json();
+};
+
+export const deleteFile = async (filename) => {
+  const response = await axios.post(`${API_BASE_URL}/delete_file`, { filename });
+  return response.data;
+};
+
+export const emptyPinecone = async () => {
+  const response = await axios.post(`${API_BASE_URL}/empty_pinecone`);
+  return response.data;
+};
+
+export const processFiles = async () => {
+  const response = await axios.post(`${API_BASE_URL}/process-files`);
+  return response.data;
+};
+
+export const fetchFiles = async () => {
+  const response = await axios.get(`${API_BASE_URL}/uploaded_files`);
+  return response.data; // Return the response data
 };
 
 export const get_projects = async () => {
@@ -58,5 +81,34 @@ export const create_new_project = async () => {
   } catch (error) {
     console.error("Error creating new project:", error);
     throw error;
+  }
+}
+
+export const downloadZip = async () => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/download_zip`, {
+      method: "GET",
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Failed to download ZIP.");
+    }
+
+    // Convert response into a downloadable blob
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+
+    // Create a temporary link to trigger the download
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "search_results.zip");
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+
+  } catch (error) {
+    throw new Error(`Download failed: ${error.message}`);
   }
 };
