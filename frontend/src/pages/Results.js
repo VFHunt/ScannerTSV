@@ -7,60 +7,38 @@ import {
   ReloadOutlined,
   DownloadOutlined,
 } from "@ant-design/icons";
-import {
-  fetchFiles,
-  deleteFile,
-  downloadZip,
-} from "../utils/api"; // Adjust if needed
+import { fetchSearchResults, downloadZip } from "../utils/api"; // Import the API function
 import { useNavigate } from "react-router-dom";
 
 function Results() {
-  const [files, setFiles] = useState([]);
+  const [searchResults, setSearchResults] = useState([]); // State for search results
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const loadFiles = async () => {
+  const loadSearchResults = async () => {
     setLoading(true);
     try {
-      const data = await fetchFiles();
-      setFiles(data.files || []);
+      const data = await fetchSearchResults(); // Fetch search results from the backend
+      const processedResults = processResults(data.results || []); // Process the results
+      setSearchResults(processedResults);
     } catch (error) {
-      message.error("Error fetching files");
+      message.error("Error fetching search results");
     } finally {
       setLoading(false);
     }
   };
 
+  const processResults = (results) => {
+    // Map the pandas DataFrame-like structure to the required format
+    return results.map((row) => ({
+      filename: row["Document Name"], // Map "Document Name" to "filename"
+      keywords: row["Keywords"], // Map "Keywords" to "keywords"
+    }));
+  };
+
   useEffect(() => {
-    loadFiles();
+    loadSearchResults(); // Fetch search results when the component loads
   }, []);
-
-  const handleDelete = async (filename) => {
-    try {
-      const result = await deleteFile(filename);
-      message.success(result.message);
-      await loadFiles();
-    } catch (error) {
-      message.error("Error deleting file: " + error.message);
-    }
-  };
-
-  const handleZipDownload = async () => {
-    try {
-      await downloadZip();
-    } catch (error) {
-      alert(error.message);
-    }
-  };
-
-  const handleNewProject = async () => {
-    try {
-      await resetProject(); // clears Pinecone + local .json
-      navigate("/new-scan");
-    } catch (error) {
-      message.error("Failed to reset project: " + error.message);
-    }
-  };
 
   const columns = [
     {
@@ -73,48 +51,23 @@ function Results() {
       dataIndex: "keywords",
       key: "keywords",
       render: (keywords) =>
-        keywords?.split(",").map((word, index) => (
+        keywords?.map((word, index) => (
           <Tag color="geekblue" key={index}>
             {word.trim()}
           </Tag>
         )),
     },
     {
-      title: "Status",
-      dataIndex: "scanned",
-      key: "scanned",
-      render: (scanned) =>
-        scanned ? (
-          <Tag color="green">Scan gereed</Tag>
-        ) : (
-          <Tag color="orange">In wachtrij</Tag>
-        ),
-    },
-    {
-      title: "Laatste scan",
-      dataIndex: "uploaded_at",
-      key: "uploaded_at",
-    },
-    {
       title: "Actie",
-      key: "actions",
+      key: "view",
       render: (_, record) => (
-        <Space>
-          <Button
-            icon={<EyeOutlined />}
-            type="link"
-            onClick={() => window.open(`/view/${record.filename}`, "_blank")}
-          >
-            View
-          </Button>
-          <Button
-            icon={<DeleteOutlined />}
-            danger
-            onClick={() => handleDelete(record.filename)}
-          >
-            Delete
-          </Button>
-        </Space>
+        <Button
+          type="link"
+          icon={<EyeOutlined />}
+          onClick={() => navigate(`/docresults`)} // Navigate to DocResults page
+        >
+          View
+        </Button>
       ),
     },
   ];
@@ -127,13 +80,13 @@ function Results() {
         </Col>
         <Col>
           <Space>
-            <Button icon={<ReloadOutlined />} onClick={handleNewProject}>
-              Nieuwe Scan
+            <Button icon={<ReloadOutlined />} onClick={() => loadSearchResults()}>
+              Refresh
             </Button>
             <Button icon={<PlusOutlined />} type="primary" onClick={() => navigate("/upload")}>
               Upload nieuwe bestanden
             </Button>
-            <Button icon={<DownloadOutlined />} onClick={handleZipDownload}>
+            <Button icon={<DownloadOutlined />} onClick={() => message.info("Download not implemented")}>
               Bestanden Downloaden
             </Button>
           </Space>
@@ -142,7 +95,7 @@ function Results() {
 
       <Table
         columns={columns}
-        dataSource={files}
+        dataSource={searchResults} // Use search results as the data source
         loading={loading}
         rowKey="filename"
         pagination={{

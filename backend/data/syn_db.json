@@ -194,5 +194,53 @@
         "artificieel",
         "namaak",
         "pseudoniem"
+    ],
+    "intelligence": [
+        "slimheid",
+        "intelligentie",
+        "verstand",
+        "wijsheid",
+        "scherpzinnigheid"
+    ],
+    "utrecht": [
+        "Domstad",
+        "Utereg",
+        "Utreg",
+        "Uterech"
+    ],
+    "netherlands": [
+        "Holland",
+        "Lage",
+        "Landen",
+        "Vaderland",
+        "Nederland"
+    ],
+    "ai": [
+        "kunstmatige intelligentie",
+        "machinelearning",
+        "zelflerend",
+        "deep learning",
+        "neurale netwerken"
+    ],
+    "late": [
+        "Verlaat",
+        "Traag",
+        "Te laat",
+        "Langzaam",
+        "Vertraagd"
+    ],
+    "hey": [
+        "Hoi",
+        "Hallo",
+        "Hé",
+        "Hee",
+        "Haai"
+    ],
+    "irene": [
+        "Vrede",
+        "rust",
+        "harmonie",
+        "kalmte",
+        "sereniteit"
     ]
 }

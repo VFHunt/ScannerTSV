@@ -112,3 +112,9 @@ export const downloadZip = async () => {
     throw new Error(`Download failed: ${error.message}`);
   }
 };
+
+export const fetchSearchResults = async () => {
+  const response = await axios.get(`${API_BASE_URL}/fetch_results`);
+  return response.data;
+};
+

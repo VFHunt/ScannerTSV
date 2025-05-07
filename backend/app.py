@@ -12,6 +12,7 @@ from vector_db import upload_to_pinecone
 import time
 from pinecone import Pinecone
 import json
+from document_pro import DocHandler, Doc
 
 pc = Pinecone(api_key='pcsk_42coaV_3AHp5VkNqafH8yGeWY9AHXCwZij9FwfyPnjFLCrcZs7Z6Y5LErpcPb2vPWvs7R4') #INSERT API KEY
 index_name = "smart-scanner-index"
@@ -59,40 +60,23 @@ def upload_file():
 @app.route("/process-files", methods=["POST"])
 def process_files():
     """Process uploaded files."""
-    try:
-        upload_dir = app.config["UPLOAD_FOLDER"]
-        files = [os.path.join(upload_dir, f) for f in os.listdir(upload_dir) if f.lower().endswith(('.pdf', '.docx', '.txt'))]
 
-        if not files:
-            return jsonify({"error": "No files to process"}), 400
-
-        handler = FileHandler(files)
-        processed_data = handler.process_all_files()  # Process the files
-
-        if processed_data:
-            num_vectors = upload_to_pinecone(processed_data)  # Upload embeddings to Pinecone
-            print(f"Uploaded {num_vectors} vectors to Pinecone.")
-            return jsonify({"message": "Files processed successfully", "processed_files": list(processed_data.keys())}), 200
-        else:
-            return jsonify({"error": "No data to upload to Pinecone"}), 500
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    upload_folder = "uploads"
+    global handler
+    handler = DocHandler(upload_folder) # handles all the files uploaded
+    handler.process_files() # processes them
+    return jsonify({"message": "Files processed successfully"}), 200
 
 
 @app.route("/search", methods=["POST"])
 def search():
     data = request.json
-    keyword = data.get("keyword", "")
+    keywords = data.get("keyword", [])
 
-    if not keyword:
+    if not isinstance(keywords, list):
         return jsonify({"error": "No keyword provided"}), 400
 
-    # Send terms to search in Pinecone
-    results = search_terms_in_pinecone(keyword)
-
-    # Save results for later ZIP creation
-    with open("data/search_results.json", "w") as f:
-        json.dump(results, f)
+    handler.keywords_in_documents(keywords) # processes them
 
     return jsonify({"message": "Search completed!"})
 
@@ -176,6 +160,17 @@ def empty_pinecone():
         return jsonify({"success": True, "message": "Pinecone index cleared successfully."}), 200
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
+    
+@app.route("/fetch_results", methods=["GET"])
+def fetch_results():
+    try:
+        print("these are the keywords per doc: ", handler.get_keywords_per_doc(), type(handler.get_keywords_per_doc()))
+        results_df = handler.get_keywords_per_doc()  # This returns a pandas DataFrame
+        results = results_df.to_dict(orient="records")
+        return jsonify({"results": results}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 if __name__ == "__main__":
     app.run()

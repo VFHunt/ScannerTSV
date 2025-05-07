@@ -43,7 +43,7 @@ function FileUpload() {
       setStatusMessage(processResponse.message || "Files processed!");
 
       // Step 3: Go to results
-      navigate("/results");
+      // navigate("/results");
 
     } catch (error) {
       console.error("Upload or processing error:", error);

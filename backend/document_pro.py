@@ -21,6 +21,13 @@ class Doc:
         self.__match_keywords = None
         self.__status = None
         self.__last_scan = None
+        self.__df_matches = None
+
+    def get_df_matches(self):
+        return self.__df_matches
+    
+    def set_df_matches(self, df_matches):
+        self.__df_matches = df_matches
 
     def get_text(self):
         return self.__text
@@ -154,6 +161,7 @@ class Doc:
             if flag:
                 # Add the chunk and matching keywords to the results
                 matched_splits.append({
+                    "Document Name": self.get_name(),
                     "Split": chunk,
                     "Matching Keywords": [kw for kw in chunk_match],  # Extract keywords
                 })
@@ -161,14 +169,21 @@ class Doc:
         # Convert the results to a pandas DataFrame
         # 
         df = pd.DataFrame(matched_splits)
-        print(df)
-        return df
+        self.set_df_matches(df)  # Set the DataFrame as an instance variable
             
 class DocHandler:
     def __init__(self, upload_path):
         # Initialize private variables
         self.__upload_folder = upload_path  # Path to the upload folder
         self.__documents = []  # List to store all Doc objects
+        self.__keywords_per_doc = None
+
+        
+    def get_keywords_per_doc(self):
+        return self.__keywords_per_doc
+    
+    def set_keywords_per_doc(self, keywords_per_doc):
+        self.__keywords_per_doc = keywords_per_doc
 
     def process_files(self):
         """
@@ -192,6 +207,15 @@ class DocHandler:
         except Exception as e:
             print(f"Error processing files: {e}")
 
+    def get_doc(self, name):
+        """
+        Get a specific Doc object by its name.
+        """
+        for doc in self.__documents:
+            if doc.get_name() == name:
+                return doc
+        return None
+
     def get_documents(self):
         """
         Get the list of all processed Doc objects.
@@ -205,43 +229,72 @@ class DocHandler:
         for doc in self.__documents:
             print(doc.get_name())
 
-# Initialize the DocHandler with the path to the upload folder
-upload_folder = "uploads"  # Replace with your actual folder path
-handler = DocHandler(upload_folder)
+    def keywords_in_documents(self, keywords):
+        """
+        Save the keywords related to each document name in a pandas DataFrame.
+        Returns a DataFrame with two columns: 'Document Name' and 'Keywords'.
+        """
+        document_keywords = []  # List to store document names and their keywords
 
-print("=== Starting File Processing ===")
-handler.process_files()  # Process all files in the upload folder
+        for doc in self.__documents:
+            # Set the matched keywords for the document
+            doc.which_keywords_in_text(keywords)
 
-print("\n=== Displaying All Processed Documents ===")
-handler.display_all_documents()  # Display the names of all processed documents
+            # Append the document name and matched keywords to the list
+            document_keywords.append({
+                "Document Name": doc.get_name(),
+                "Keywords": doc.get_match_keywords()
+            })
 
-print("\n=== Testing Individual Document ===")
-# Get the list of processed documents
-documents = handler.get_documents()
+        # Convert the list to a pandas DataFrame
+        df = pd.DataFrame(document_keywords, columns=["Document Name", "Keywords"])
 
-if documents:
-    # Test the first document
-    doc = documents[1]
-    print(f"\n--- Document: {doc.get_name()} ---")
+        self.set_keywords_per_doc(df)  # Set the DataFrame as an instance variable
 
-    # Extracted text
-    print("\nExtracted Text:")
-    print(doc.get_text())
+        # Print the DataFrame for debugging
+        print("\nGenerated DataFrame:")
+        print(df)
 
-    # Extracted keywords
-    print("\nExtracted Keywords:")
-    print(doc.get_all_words())
+        return df
 
-    # Check which keywords are in the text
-    print("\nMatched Keywords in Text:")
-    keywords = ["intelligence", "ai", "cow", "chamber", "discrimination"]
-    matched_keywords = doc.which_keywords_in_text(keywords)
-    print(matched_keywords)
 
-    # Check which splits contain the keywords
-    print("\nSplits Containing Keywords:")
-    splits_df = doc.which_splits()
-    print(splits_df)
-    splits_df.to_csv("splits_output.csv", index=False)
-else:
-    print("No documents were processed. Please check the upload folder.")
+# # Initialize the DocHandler with the path to the upload folder
+# upload_folder = "uploads"  # Replace with your actual folder path
+# handler = DocHandler(upload_folder)
+
+# print("=== Starting File Processing ===")
+# handler.process_files()  # Process all files in the upload folder
+
+# print("\n=== Displaying All Processed Documents ===")
+# handler.display_all_documents()  # Display the names of all processed documents
+
+# print("\n=== Testing Individual Document ===")
+# # Get the list of processed documents
+# documents = handler.get_documents()
+
+# if documents:
+#     # Test the first document
+#     doc = documents[1]
+#     print(f"\n--- Document: {doc.get_name()} ---")
+
+#     # Extracted text
+#     print("\nExtracted Text:")
+#     print(doc.get_text())
+
+#     # Extracted keywords
+#     print("\nExtracted Keywords:")
+#     print(doc.get_all_words())
+
+#     # Check which keywords are in the text
+#     print("\nMatched Keywords in Text:")
+#     keywords = ["intelligence", "ai", "cow", "chamber", "discrimination"]
+#     matched_keywords = doc.which_keywords_in_text(keywords)
+#     print(matched_keywords)
+
+#     # Check which splits contain the keywords
+#     print("\nSplits Containing Keywords:")
+#     splits_df = doc.which_splits()
+#     print(splits_df)
+#     splits_df.to_csv("splits_output.csv", index=False)
+# else:
+#     print("No documents were processed. Please check the upload folder.")

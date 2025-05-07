@@ -1,12 +1,15 @@
 import React, { useState } from "react";
 import { getSynonyms, searchKeywords } from "../utils/api"; // Import the APIs
 import "../styles/KeywordSearch.css";
+import { useNavigate } from "react-router-dom";
+
 
 function KeywordSearch() {
   const [keyword, setKeyword] = useState("");
   const [keywordsList, setKeywordsList] = useState([]);
   const [synonymsList, setSynonymsList] = useState([]);
   const [message, setMessage] = useState("");
+  const navigate = useNavigate();
 
   const addKeyword = () => {
     if (keyword && !keywordsList.includes(keyword)) {
@@ -49,6 +52,7 @@ function KeywordSearch() {
       setMessage("Searching...");
       const data = await searchKeywords([...keywordsList, ...synonymsList]); // Combine keywords and synonyms
       setMessage(data.message || "Search completed!");
+      navigate("/results");
     } catch (error) {
       setMessage(`Error in Search: ${error.response?.data?.error || error.message}`);
     }
