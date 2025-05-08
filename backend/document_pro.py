@@ -83,7 +83,7 @@ class Doc:
             "All Extracted Words": self.__all_words if self.__all_words else "No words extracted",
         }
 
-    def extract_text_from_pdf(self):
+    def extract_text_from_pdf(self): # todo: look at 
         print("Extracting text from PDF...")
         all_text = ""  # Initialize the variable as an empty string
         try:
@@ -122,7 +122,7 @@ class Doc:
         # Calculate the top_n value as 70% of the total word count
         top_n = round(0.7 * word_count)
         keywords = kw_model.extract_keywords(self.__text, keyphrase_ngram_range=(1, 1), stop_words=None, top_n=top_n)
-        print(keywords)
+        print("document pro file: ", keywords)
         return keywords
     
     def which_keywords_in_text(self, keywords):
@@ -256,7 +256,43 @@ class DocHandler:
         print(df)
 
         return df
+    
+class MaxProjectsReachedError(Exception):
+    """Custom exception raised when too many projects are added."""
+    pass
 
+class ProjectHandler:
+    def __init__(self, name, max_projects=10):
+        # Initialize private variables
+        self.__name = name  # Project name
+        self.__projects = []  # List to store all Doc objects
+        self.__max_projects = max_projects  # Maximum number of projects allowed
+
+    def set_projects(self, projects):
+        self.__projects = projects
+
+    def get_projects(self):
+        return self.__projects
+    
+    def add_project(self, project: DocHandler):
+        if len(self.__projects) == self.__max_projects:
+            raise MaxProjectsReachedError("Maximum number of projects reached. Cannot add more.")
+        self.__projects.append(project)
+
+    def delete_project(self, project_name):
+        """
+        Delete a project by its name.
+        """
+        for project in self.__projects:
+            if project.get_name() == project_name:
+                self.__projects.remove(project)
+                break
+    
+    def new_max_projects(self, new_max):
+        """
+        Set a new maximum number of projects allowed.
+        """
+        self.__max_projects = new_max
 
 # # Initialize the DocHandler with the path to the upload folder
 # upload_folder = "uploads"  # Replace with your actual folder path

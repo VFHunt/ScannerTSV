@@ -64,7 +64,7 @@ function Results() {
         <Button
           type="link"
           icon={<EyeOutlined />}
-          onClick={() => navigate(`/docresults`)} // Navigate to DocResults page
+          onClick={() => navigate(`/docresults/${record.filename}`)} // Pass the filename as a route parameter
         >
           View
         </Button>

@@ -21,8 +21,8 @@ function App() {
           <Route path="/newscan" element={<NewScan />} />
           <Route path="/projectview" element={<ProjectView />} />
           <Route path="/results" element={<Results />} />
-          <Route path="/docresults" element={<DocResults />} />
-        </Route>
+          <Route path="/docresults/:filename" element={<DocResults />} /> {/* Dynamic route */}
+        </Route>       
       </Routes>
     </Router>
   );

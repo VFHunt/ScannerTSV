@@ -170,6 +170,15 @@ def fetch_results():
         return jsonify({"results": results}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+@app.route("/fetch_docresults/<filename>", methods=["GET"])
+def fetch_doc_results(filename):
+    try:
+        # Use the filename to fetch the document results
+        results = handler.get_doc_results(filename)  # Replace with your logic
+        return jsonify({"results": results}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 if __name__ == "__main__":
