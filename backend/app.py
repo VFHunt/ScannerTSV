@@ -174,13 +174,31 @@ def fetch_results():
 @app.route("/fetch_docresults/<filename>", methods=["GET"])
 def fetch_doc_results(filename):
     try:
-        # Use the filename to fetch the document results
-        results = handler.get_doc_results(filename)  # Replace with your logic
+        # Hardcoded results for testing
+        print(f"Fetching results for filename: {filename}")  
+        results = [
+            {
+                "text": "Lorem ipsum dolor sit amet, consectetur adipiscing elit...",
+                "keywords": ["Aluminium", "Gevel"],
+                "page": 3,
+            },
+            {
+                "text": "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris...",
+                "keywords": ["Aluminium"],
+                "page": 5,
+            },
+            {
+                "text": "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore...",
+                "keywords": ["Gevel"],
+                "page": 9,
+            },
+        ]
         return jsonify({"results": results}), 200
     except Exception as e:
+        print(f"Error in /fetch_docresults: {e}")  # Log the error
         return jsonify({"error": str(e)}), 500
 
 
 if __name__ == "__main__":
+    app.debug = True  # Enable debug mode for development
     app.run()
-

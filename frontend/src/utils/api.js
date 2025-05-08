@@ -118,3 +118,7 @@ export const fetchSearchResults = async () => {
   return response.data;
 };
 
+export const fetchDocumentResults = async (filename) => {
+  const response = await axios.get(`${API_BASE_URL}/fetch_docresults/${filename}`);
+  return response.data;
+};

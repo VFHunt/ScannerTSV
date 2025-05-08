@@ -7,12 +7,13 @@ function DocResults() {
   const { filename } = useParams(); // Get the filename from the URL
   const [content, setContent] = useState([]); // State to store text splits and keywords
   const [loading, setLoading] = useState(false); // State for loading indicator
+  const encodedFilename = encodeURIComponent(filename);
 
   // Function to fetch text splits and keywords from the backend
   const fetchDocumentResultsHandler = async () => {
     setLoading(true);
     try {
-      const data = await fetchDocumentResults(filename); // Call the imported function
+      const data = await fetchDocumentResults(encodedFilename); // Call the imported function
       setContent(data.results || []); // Set the content from the backend response
     } catch (error) {
       message.error("Failed to fetch document results");

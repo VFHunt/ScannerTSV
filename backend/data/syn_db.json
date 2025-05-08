@@ -242,5 +242,26 @@
         "harmonie",
         "kalmte",
         "sereniteit"
+    ],
+    "geen": [
+        "niets",
+        "nul",
+        "nulkommanul",
+        "noppes",
+        "nada"
+    ],
+    "ongevallen": [
+        "Mishaps",
+        "incidenten",
+        "calamiteiten",
+        "pechgevallen",
+        "ongelukken"
+    ],
+    "gezond": [
+        "fit",
+        "krachtig",
+        "vitaal",
+        "welvarend",
+        "stevig"
     ]
 }
