@@ -19,6 +19,7 @@ function Results() {
     setLoading(true);
     try {
       const data = await fetchSearchResults(); // Fetch search results from the backend
+      console.log("Fetched projects:", data);
       const processedResults = processResults(data.results || []); // Process the results
       setSearchResults(processedResults);
     } catch (error) {

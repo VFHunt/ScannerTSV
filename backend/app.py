@@ -12,7 +12,7 @@ from vector_db import upload_to_pinecone
 import time
 from pinecone import Pinecone
 import json
-from document_pro import DocHandler, Doc
+from document_pro import DocHandler, ProjectHandler
 
 pc = Pinecone(api_key='pcsk_42coaV_3AHp5VkNqafH8yGeWY9AHXCwZij9FwfyPnjFLCrcZs7Z6Y5LErpcPb2vPWvs7R4') #INSERT API KEY
 index_name = "smart-scanner-index"
@@ -31,6 +31,9 @@ judge, eng = generate_judge_eng(syn_number=5)  # Change the number to the user's
 # Initialize the synonym generator 
 syn = GenModel('gpt-4o', "You are a Dutch linguist and construction specialist with expertise in industry terminology. Output only five words separated by commas")
 db_handler = DataHandler(os.path.join(os.getcwd(), "data", "syn_db.json"))
+
+global p_handler
+p_handler = ProjectHandler(10)  # Initialize the project handler
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
@@ -61,9 +64,6 @@ def upload_file():
 def process_files():
     """Process uploaded files."""
 
-    upload_folder = "uploads"
-    global handler
-    handler = DocHandler(upload_folder) # handles all the files uploaded
     handler.process_files() # processes them
     return jsonify({"message": "Files processed successfully"}), 200
 
@@ -196,6 +196,39 @@ def fetch_doc_results(filename):
         return jsonify({"results": results}), 200
     except Exception as e:
         print(f"Error in /fetch_docresults: {e}")  # Log the error
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/set_project_name", methods=["POST"])
+def set_project_name():
+    try:
+        data = request.get_json()  # Get the JSON data from the request
+        project_name = data.get("projectName")  # Extract the project name
+
+        if not project_name:
+            return jsonify({"error": "Project name is required"}), 400
+
+        upload_folder = "uploads"
+        global handler
+        handler = DocHandler(project_name, upload_folder)  # Initialize the document handler with the project name
+        
+        p_handler.add_project(handler)  # Add the project to the project handler
+
+        return jsonify({"success": True, "message": f"Project '{project_name}' created successfully."}), 200
+    except Exception as e:
+        print(f"Error in /set_project_name: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/projects", methods=["GET"])
+def get_projects():
+    try:
+        # Retrieve the list of projects from the ProjectHandler
+        projects = p_handler.get_projects()  # Assuming p_handler is an instance of ProjectHandler
+        project_data = [{"projectName": project.get_name()} for project in projects]
+
+        print(f"Projects from app.py: {project_data}, {type(project_data)}")  # Log the project data for debugging
+        return jsonify({"projects": project_data}), 200
+    except Exception as e:
+        print(f"Error in /projects: {e}")
         return jsonify({"error": str(e)}), 500
 
 

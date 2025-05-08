@@ -60,7 +60,7 @@ export const fetchFiles = async () => {
 export const get_projects = async () => {
   try {
     const response = await axios.get(`${API_BASE_URL}/projects`); // Adjust endpoint as needed
-    return response.data; // Return the list of projects
+    return response.data.projects; // Return the list of projects
   } catch (error) {
     console.error("Error fetching projects:", error);
     throw new Error("Failed to fetch projects.");
@@ -122,3 +122,21 @@ export const fetchDocumentResults = async (filename) => {
   const response = await axios.get(`${API_BASE_URL}/fetch_docresults/${filename}`);
   return response.data;
 };
+
+export const setProjectName = async (projectName) => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/set_project_name`, {
+      projectName, // Send the project name in the request body
+    });
+
+    if (response.status !== 200) {
+      throw new Error("Failed to set the project name.");
+    }
+
+    return response.data; // Return the response data
+  } catch (error) {
+    console.error("Error setting project name:", error);
+    throw error;
+  }
+};
+

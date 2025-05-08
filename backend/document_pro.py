@@ -172,13 +172,19 @@ class Doc:
         self.set_df_matches(df)  # Set the DataFrame as an instance variable
             
 class DocHandler:
-    def __init__(self, upload_path):
+    def __init__(self, name, upload_path):
         # Initialize private variables
         self.__upload_folder = upload_path  # Path to the upload folder
         self.__documents = []  # List to store all Doc objects
         self.__keywords_per_doc = None
+        self.__name = name  # Name of the document handler
 
-        
+    def get_name(self):
+        return self.__name
+    
+    def set_name(self, name):
+        self.__name = name
+
     def get_keywords_per_doc(self):
         return self.__keywords_per_doc
     
@@ -262,9 +268,8 @@ class MaxProjectsReachedError(Exception):
     pass
 
 class ProjectHandler:
-    def __init__(self, name, max_projects=10):
+    def __init__(self, max_projects=10):
         # Initialize private variables
-        self.__name = name  # Project name
         self.__projects = []  # List to store all Doc objects
         self.__max_projects = max_projects  # Maximum number of projects allowed
 

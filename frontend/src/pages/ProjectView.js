@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Table, Button, Input, Space, Layout, message } from "antd";
+import { Table, Button, Input, Space, Layout, message, Modal, Form } from "antd";
 import { PlusOutlined, ReloadOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import "../styles/ProjectView.css";
-import { emptyPinecone, get_projects } from "../utils/api"; // Import both functions
+import { emptyPinecone, get_projects, setProjectName } from "../utils/api"; // Import setProjectName
 
 const { Content } = Layout;
 
@@ -11,24 +11,26 @@ function ProjectView() {
   const [projects, setProjects] = useState([]); // State for project data
   const [filteredProjects, setFilteredProjects] = useState([]); // State for filtered projects
   const [searchTerm, setSearchTerm] = useState(""); // State for search input
+  const [isModalVisible, setIsModalVisible] = useState(false); // State for modal visibility
+  const [newProjectName, setNewProjectName] = useState(""); // State for new project name
   const navigate = useNavigate();
 
-  // Fetch projects from the backend
+
   useEffect(() => {
     const fetchProjects = async () => {
       try {
         const data = await get_projects(); // Call the backend function
-        setProjects(data);
-        setFilteredProjects(data); // Initialize filtered projects
+        console.log("Fetched projects:", data); // Debugging output
+        setProjects(data || []); // Ensure data is an array
+        setFilteredProjects(data || []); // Initialize filtered projects
       } catch (error) {
         console.error("Error fetching projects:", error);
         message.error("Failed to fetch projects.");
       }
     };
-
+  
     fetchProjects();
-  }, []); // Runs on component mount
-
+  }, []);
 
   // Handle search functionality
   const handleSearch = () => {
@@ -45,17 +47,40 @@ function ProjectView() {
   };
 
   // Handle creating a new project
-const handleNewProject = async () => {
-  try {
-    await emptyPinecone();
-    message.success("Creating new project!");
-    navigate("/newscan");
-  } catch (error) {
-    console.error("Error creating new project:", error);
-    message.error("Failed to create a new project.");
-  }
-};
+  const handleNewProject = async () => {
+    try {
+      await emptyPinecone();
+      setIsModalVisible(true); // Show the modal
+    } catch (error) {
+      console.error("Error preparing for new project:", error);
+      message.error("Failed to prepare for a new project.");
+    }
+  };
 
+  // Handle modal submission
+  const handleModalOk = async () => {
+    if (!newProjectName.trim()) {
+      message.error("Project name cannot be empty.");
+      return;
+    }
+
+    try {
+      await setProjectName(newProjectName); // Call the API to set the project name
+      message.success("Project created successfully!");
+      setIsModalVisible(false); // Close the modal
+      setNewProjectName(""); // Reset the input field
+      navigate("/newscan"); // Navigate to the new scan page
+    } catch (error) {
+      console.error("Error creating project:", error);
+      message.error("Failed to create the project.");
+    }
+  };
+
+  // Handle modal cancellation
+  const handleModalCancel = () => {
+    setIsModalVisible(false); // Close the modal
+    setNewProjectName(""); // Reset the input field
+  };
 
   // Define table columns
   const columns = [
@@ -63,16 +88,6 @@ const handleNewProject = async () => {
       title: "Projectnaam",
       dataIndex: "projectName",
       key: "projectName",
-    },
-    {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-    },
-    {
-      title: "Datum aangemaakt",
-      dataIndex: "createdDate",
-      key: "createdDate",
     },
     {
       title: "Actie",
@@ -110,7 +125,7 @@ const handleNewProject = async () => {
           <Button
             type="primary"
             icon={<PlusOutlined />}
-            onClick={handleNewProject} // Navigate to NewScan
+            onClick={handleNewProject} // Show modal for new project
             style={{ marginLeft: "auto" }}
           >
             Nieuw Project
@@ -121,7 +136,7 @@ const handleNewProject = async () => {
         {/* Projects Table */}
         <Table
           columns={columns}
-          dataSource={filteredProjects}
+          dataSource={filteredProjects || []} // Fallback to an empty array
           rowKey="id"
           pagination={{
             pageSize: 10,
@@ -129,6 +144,26 @@ const handleNewProject = async () => {
             showQuickJumper: true,
           }}
         />
+
+        {/* Modal for New Project */}
+        <Modal
+          title="Nieuw Project"
+          visible={isModalVisible}
+          onOk={handleModalOk}
+          onCancel={handleModalCancel}
+          okText="Create"
+          cancelText="Cancel"
+        >
+          <Form>
+            <Form.Item label="Projectnaam" required>
+              <Input
+                value={newProjectName}
+                onChange={(e) => setNewProjectName(e.target.value)}
+                placeholder="Enter project name"
+              />
+            </Form.Item>
+          </Form>
+        </Modal>
       </Content>
     </Layout>
   );
