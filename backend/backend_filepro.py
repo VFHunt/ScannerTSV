@@ -13,22 +13,15 @@ from pdf2image import convert_from_path
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG, force=True)
 
-MODEL_PATH = "model_cache/all-MiniLM-L6-v2"
-_model_instance = None  # Global variable to store the model
+global model
+model = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
 
 def get_model():
-    """ Load the model only once (singleton pattern). """
-    global _model_instance
-    if _model_instance is None:
-        if os.path.exists(MODEL_PATH):
-            logger.info(f"Loading embedding model from {MODEL_PATH}")
-            _model_instance = SentenceTransformer(MODEL_PATH)
-        else:
-            raise FileNotFoundError(f"Model not found at {MODEL_PATH}, run download_model.py")
-    return _model_instance
+    """Load the model only once (singleton pattern)."""
+    return model
 
 class FileHandler:
-    def __init__(self, files=None):
+    def __init__(self, files: List[str] = None):
         """
         Initialize FileHandler to process files.
         Args:
@@ -36,16 +29,43 @@ class FileHandler:
         """
         self.tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
         self.embedder = get_model()
+        self.reset_project(files)
+
+    def reset_project(self, files):
+        """Reset the project name and results."""
         self.files = []
         self.files = files
-        """
-        if files is None:
-            self.files = []
-            logger.info("No files provided for processing")
-        else:
-            self.files = files
-            logger.info(f"Initialized with {len(self.files)} provided files")
-        """
+        self.results = {}
+        self.project_name = None
+        logger.info("Project reset: project name and results cleared.")
+
+    def set_project_name(self, project_name: str):
+        """Set the project name for the file handler."""
+        if not project_name:
+            logger.warning("Project name is empty. Please provide a valid name.")
+            return
+        self.project_name = project_name
+        logger.info(f"Project name set to: {self.project_name}")
+
+    def get_project_name(self) -> str:
+        """Get the project name."""
+        if not self.project_name:
+            logger.warning("Project name is not set.")
+            return ""
+        return self.project_name
+
+    def get_results(self) -> Dict[str, List[Dict[str, Any]]]:
+        if not self.results:
+            logger.warning("No results available. Please process files first.")
+            return {}
+        return self.results
+    
+    def set_results(self, results):
+        if not results:
+            logger.warning("No results to set.")
+            return
+        self.results = results
+        logger.info(f"Results set with {len(self.results)} entries.")
 
     def add_files(self, files: List[str]):
         """Add files to process."""
@@ -76,6 +96,7 @@ class FileHandler:
                 for i in range(len(chunks))
             ]
 
+        self.set_results(results)  # Set results for each file
         return results
 
     def extract_text_chunks(self, file_path: str) -> List[Dict[str, Any]]:
