@@ -26,15 +26,17 @@ class ChunkDatabase:
         conn.commit()
         conn.close()
 
-    def insert_chunks(self, project_name, file_name, chunks, embeddings):
+    def insert_chunks(self, project_name, results):
+        """Insert chunks and embeddings into the database."""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
-        for i, chunk in enumerate(chunks):
+        for result in results:
             chunk_id = str(uuid.uuid4())
-            chunk_text = chunk["content"]
-            page_number = chunk["metadata"].get("page", None)
+            file_name = result["file_name"]
+            chunk_text = result["content"]
+            page_number = result["metadata"].get("page", None)
             upload_date = datetime.now().isoformat()
-            embedding_bytes = embeddings[i].tobytes()
+            embedding_bytes = result["embedding"].tobytes()
 
             cursor.execute('''
                 INSERT INTO file_chunks (chunk_id, project_name, file_name, chunk_text, embedding, page_number, upload_date)

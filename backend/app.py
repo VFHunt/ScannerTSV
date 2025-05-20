@@ -13,6 +13,7 @@ import time
 from pinecone import Pinecone
 import json
 from document_pro import DocHandler, ProjectHandler
+from db import ChunkDatabase
 
 pc = Pinecone(api_key='pcsk_42coaV_3AHp5VkNqafH8yGeWY9AHXCwZij9FwfyPnjFLCrcZs7Z6Y5LErpcPb2vPWvs7R4') #INSERT API KEY
 index_name = "smart-scanner-index"
@@ -35,6 +36,12 @@ db_handler = DataHandler(os.path.join(os.getcwd(), "data", "syn_db.json"))
 global p_handler
 p_handler = ProjectHandler(10)  # Initialize the project handler
 
+global handler
+handler = FileHandler([])  # Initialize the file handler
+
+global db 
+db = ChunkDatabase()  # Initialize the database handler
+
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 @app.route("/upload", methods=["POST"])
@@ -45,15 +52,19 @@ def upload_file():
 
     files = request.files.getlist("files")  # Get multiple files
     uploaded_files = []
+    file_names = []
 
     for file in files:
         filename = secure_filename(file.filename)
         file_path = os.path.join(UPLOAD_FOLDER, filename)
         file.save(file_path)  # Save file locally
+        file_names.append(filename)
         uploaded_files.append(file_path)
 
     if not uploaded_files:
         return jsonify({"error": "No valid files uploaded"}), 400
+    
+    handler.reset_project(file_names)  # Reset the project with the new files
 
     return jsonify({
         "message": "Files uploaded successfully!",
@@ -64,8 +75,11 @@ def upload_file():
 def process_files():
     """Process uploaded files."""
 
-    handler.process_files() # processes them
+    handler.process_all_files() # processes them
+    db.insert_chunks(handler.get_project_name(), handler.get_results())  # Save chunks to the database
+    
     return jsonify({"message": "Files processed successfully"}), 200
+
 
 
 @app.route("/search", methods=["POST"])
@@ -76,8 +90,7 @@ def search():
     if not isinstance(keywords, list):
         return jsonify({"error": "No keyword provided"}), 400
 
-    handler.keywords_in_documents(keywords) # processes them
-
+    # todo: change this to the new way of doing it with faiss
     return jsonify({"message": "Search completed!"})
 
 @app.route("/download_zip", methods=["GET"])
@@ -207,11 +220,7 @@ def set_project_name():
         if not project_name:
             return jsonify({"error": "Project name is required"}), 400
 
-        upload_folder = "uploads"
-        global handler
-        handler = DocHandler(project_name, upload_folder)  # Initialize the document handler with the project name
-        
-        p_handler.add_project(handler)  # Add the project to the project handler
+        handler.set_project_name(project_name)  # Set the project name in the handler
 
         return jsonify({"success": True, "message": f"Project '{project_name}' created successfully."}), 200
     except Exception as e:

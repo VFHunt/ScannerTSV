@@ -72,24 +72,24 @@ class FaissIndex:
             results.append(query_results)
         return results
 
-if __name__ == "__main__":
-    """Test the FaissIndex class with sample data."""
-    chunks = [
-        "The Eiffel Tower is located in Paris.",
-        "Python is a popular programming language.",
-        "FAISS is a library for efficient similarity search.",
-        "FastAPI is a modern web framework for Python.",
-        "The capital of Japan is Tokyo.",
-        "Cats are known for their agility.",
-        "The mitochondrion is the powerhouse of the cell.",
-        "Blockchain enables decentralized applications.",
-        "Mount Everest is the highest mountain on Earth.",
-        "The Great Wall of China is visible from space."
-    ]
+# if __name__ == "__main__":
+#     """Test the FaissIndex class with sample data."""
+#     chunks = [
+#         "The Eiffel Tower is located in Paris.",
+#         "Python is a popular programming language.",
+#         "FAISS is a library for efficient similarity search.",
+#         "FastAPI is a modern web framework for Python.",
+#         "The capital of Japan is Tokyo.",
+#         "Cats are known for their agility.",
+#         "The mitochondrion is the powerhouse of the cell.",
+#         "Blockchain enables decentralized applications.",
+#         "Mount Everest is the highest mountain on Earth.",
+#         "The Great Wall of China is visible from space."
+#     ]
 
-    queries = ["Tokyo"]
+#     queries = ["Tokyo"]
 
-    searcher = FaissIndex(chunks, temperature=1.0)
-    results = searcher.f_search(queries, k=5)
+#     searcher = FaissIndex(chunks, temperature=1.0)
+#     results = searcher.f_search(queries, k=5)
 
-    print("Results:", results)
+#     print("Results:", results)
