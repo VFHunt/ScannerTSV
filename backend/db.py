@@ -28,6 +28,9 @@ class ChunkDatabase:
 
     def insert_chunks(self, project_name, results):
         """Insert chunks and embeddings into the database."""
+        if not isinstance(results, list) or not all(isinstance(result, dict) for result in results):
+            raise TypeError("Expected 'results' to be a list of dictionaries.")
+
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
         for result in results:

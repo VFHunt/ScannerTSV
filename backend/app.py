@@ -52,19 +52,18 @@ def upload_file():
 
     files = request.files.getlist("files")  # Get multiple files
     uploaded_files = []
-    file_names = []
 
     for file in files:
         filename = secure_filename(file.filename)
         file_path = os.path.join(UPLOAD_FOLDER, filename)
         file.save(file_path)  # Save file locally
-        file_names.append(filename)
         uploaded_files.append(file_path)
 
     if not uploaded_files:
         return jsonify({"error": "No valid files uploaded"}), 400
     
-    handler.reset_project(file_names)  # Reset the project with the new files
+    print(f"Uploaded files: {uploaded_files}")  # Log the uploaded files
+    handler.initialize(uploaded_files)  # Reset the project with the new files
 
     return jsonify({
         "message": "Files uploaded successfully!",
@@ -77,7 +76,7 @@ def process_files():
 
     handler.process_all_files() # processes them
     db.insert_chunks(handler.get_project_name(), handler.get_results())  # Save chunks to the database
-    
+    handler.reset_project()  # Reset the project name and results
     return jsonify({"message": "Files processed successfully"}), 200
 
 
@@ -139,6 +138,7 @@ def list_uploaded_files():
     files = []
     for filename in os.listdir(app.config["UPLOAD_FOLDER"]):
         file_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+        filename_ = "uploads/" + filename
         if os.path.isfile(file_path):
             files.append({
                 "filename": filename,

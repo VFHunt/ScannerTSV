@@ -43,13 +43,17 @@ class FileHandler:
         """
         self.tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
         self.embedder = get_model1()
-        self.reset_project(files)
+        self.initialize(files)
 
-    def reset_project(self, files):
-        """Reset the project name and results."""
+    def initialize(self, files):
         self.files = []
         self.files = files
         self.results = {}
+
+    def reset_project(self):
+        """Reset the project name and results."""
+        self.files = []
+        self.results = {}        
         self.project_name = None
         logger.info("Project reset: project name and results cleared.")
 
@@ -68,11 +72,19 @@ class FileHandler:
             return ""
         return self.project_name
 
-    def get_results(self) -> Dict[str, List[Dict[str, Any]]]:
+    def get_results(self) -> List[Dict[str, Any]]:
         if not self.results:
             logger.warning("No results available. Please process files first.")
-            return {}
-        return self.results
+            return []
+
+        # Flatten the results dictionary into a list of dictionaries
+        flattened_results = []
+        for file_name, chunks in self.results.items():
+            for chunk in chunks:
+                chunk["file_name"] = file_name
+                flattened_results.append(chunk)
+
+        return flattened_results
     
     def set_results(self, results):
         if not results:
@@ -110,6 +122,7 @@ class FileHandler:
                 for i in range(len(chunks))
             ]
 
+        logger.debug(f"Results structure: {results}")
         self.set_results(results)  # Set results for each file
         return results
 
