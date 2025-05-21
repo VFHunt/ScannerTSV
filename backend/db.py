@@ -4,6 +4,11 @@ from datetime import datetime
 import numpy as np
 from typing import List, Tuple
 import pickle
+import logging
+
+# Configure logger
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 class ChunkDatabase:
     def __init__(self, db_path="file_chunks.sqlite"):
@@ -11,6 +16,7 @@ class ChunkDatabase:
         self.init_db()
 
     def init_db(self):
+        logger.info("Initializing the database.")
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
         cursor.execute('''
@@ -52,6 +58,7 @@ class ChunkDatabase:
 
 
     def insert_chunks(self, project_name, results):
+        logger.info(f"Inserting chunks for project: {project_name}")
         """Insert chunks and embeddings into the database."""
         if not isinstance(results, list) or not all(isinstance(result, dict) for result in results):
             raise TypeError("Expected 'results' to be a list of dictionaries.")
@@ -70,11 +77,12 @@ class ChunkDatabase:
                 INSERT INTO file_chunks (chunk_id, project_name, file_name, chunk_text, embedding, page_number, upload_date)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
             ''', (chunk_id, project_name, file_name, chunk_text, embedding_bytes, page_number, upload_date))
-        print(f"Inserted chunk {chunk_id} from file '{file_name}' (page {page_number})")
+            logger.info(f"Inserted chunk {chunk_id} from file '{file_name}' (page {page_number})")
         conn.commit()
         conn.close()
 
     def get_chunks_by_project(self, project_name):
+        logger.info(f"Fetching chunks for project: {project_name}")
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
         cursor.execute('''
@@ -86,6 +94,7 @@ class ChunkDatabase:
         return rows
     
     def get_embeddings_by_project(self, project_name: str) -> List[Tuple[int, np.ndarray]]:
+        logger.info(f"Fetching embeddings for project: {project_name}")
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
         cursor.execute('''
@@ -96,7 +105,7 @@ class ChunkDatabase:
         conn.close()
         embeddings = [(chunk_id, pickle.loads(embedding_blob)) for chunk_id, embedding_blob in rows]
         return embeddings
-
+    
     def add_keyword_and_distance(self, chunk_id: str, query: str, distance: float): 
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
@@ -107,7 +116,7 @@ class ChunkDatabase:
             SET keyword = ?, distance = ?
             WHERE chunk_id = ?
         ''', (query, distance, chunk_id))
-
+        logger.info(f"Updated chunk {chunk_id} with keyword '{query}' and distance {distance}")
         conn.commit()
         conn.close()
         

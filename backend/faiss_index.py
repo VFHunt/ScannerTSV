@@ -2,6 +2,7 @@ import faiss
 import numpy as np
 from sentence_transformers import SentenceTransformer
 from typing import List, Tuple, Dict, Any
+from db import ChunkDatabase
 
 global encoder
 encoder = model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
@@ -53,7 +54,7 @@ class FaissIndex:
         return [self.ids[i] for i in indices]
          
 
-    def f_search(self, queries: List[str]) -> List[Dict[str, Any]]:
+    def f_search(self, queries: List[str], db: ChunkDatabase) -> List[Dict[str, Any]]:
         """Search for the k nearest neighbors of a query vector.
 
         Args:
@@ -64,12 +65,9 @@ class FaissIndex:
         """
 
         if not queries:
-                raise ValueError("Queries must be a non-empty list of strings.")
-
-        results = []
+             raise ValueError("Queries must be a non-empty list of strings.")
 
         k = len(self.vectors)  # Number of vectors in the index
-        print("k is: ", k)
         query_vector = self._vectorize_queries(queries)
 
         # Validate dimensionality
@@ -77,25 +75,38 @@ class FaissIndex:
             raise ValueError(f"Query vector dimensionality ({query_vector.shape[1]}) does not match FAISS index dimensionality ({self.dimension}).")
 
         distances, indices = self.index.search(query_vector, k)
-        print(f"Distances: {distances}")
-        print(f"Indices: {indices}")
 
-        results = []
+        # Dictionary to store chunk IDs and their corresponding queries
+        chunk_query_dict = {}
+
         # Iterate over each query and its corresponding distances and indices
         for query_str, dist_list, idx_list in zip(queries, distances, indices):
-            print(f"Query: {query_str}")
-            query_results = []
-            
             for dist, idx in zip(dist_list, idx_list):
                 if dist < self.temperature and idx != -1 and idx < len(self.ids):
-                    query_results.append({
-                        "query": query_str,
-                        "distance": round(dist, 2),  # Assuming this maps an index to an ID
-                        "id": self._index_to_ids([idx])[0]
-                    })
-            
-            results.append(query_results)
-        return results # 
+                    # Ensure that self._index_to_ids([idx]) returns an iterable
+                    chunk_id_result = self._index_to_ids([idx])
+
+                    if chunk_id_result is None:
+                        continue  # Skip this iteration if chunk_id_result is None
+
+                    chunk_id = chunk_id_result[0]  # Assuming this maps an index to an ID
+
+                    # If the chunk_id is not in the dictionary, add it with empty lists for queries and distances
+                    if chunk_id not in chunk_query_dict:
+                        chunk_query_dict[chunk_id] = {"queries": [], "distances": []}
+
+                    # Append the query and distance to the lists for this chunk_id
+                    chunk_query_dict[chunk_id]["queries"].append(query_str)
+                    chunk_query_dict[chunk_id]["distances"].append(float(round(dist, 2)))
+
+        # Print the resulting dictionary
+        for chunk_id, data in chunk_query_dict.items():
+            # print(f"Chunk ID: {chunk_id}")
+            # print("Queries:", data["queries"])
+            # print("Distances:", data["distances"])
+            db.add_keyword_and_distance(str(chunk_id), str(data["queries"]), str(data["distances"]))
+
+
     
 
 #  for query in queries:

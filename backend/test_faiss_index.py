@@ -1,9 +1,12 @@
 import numpy as np
 from faiss_index import FaissIndex
 from sentence_transformers import SentenceTransformer
+from db import ChunkDatabase
 
 # Initialize the SentenceTransformer model
 model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
+
+db = ChunkDatabase()
 
 # Define chunks of text
 chunks = [
@@ -36,7 +39,5 @@ test_queries = [
 ]
 
 # Perform search and print results
-results = faiss_index.f_search(test_queries)
-print("Search Results:")
-for result in results:
-    print(result)
+results = faiss_index.f_search(test_queries, db)
+
