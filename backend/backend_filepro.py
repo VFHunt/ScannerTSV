@@ -75,7 +75,7 @@ class FileHandler:
     def get_results(self) -> List[Dict[str, Any]]:
         if not self.results:
             logger.warning("No results available. Please process files first.")
-            return []
+            return [] 
 
         # Flatten the results dictionary into a list of dictionaries
         flattened_results = []
@@ -122,7 +122,7 @@ class FileHandler:
                 for i in range(len(chunks))
             ]
 
-        logger.debug(f"Results structure: {results}")
+        # logger.debug(f"Results structure: {results}")
         self.set_results(results)  # Set results for each file
         return results
 

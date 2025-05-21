@@ -2,6 +2,8 @@ import sqlite3
 import uuid
 from datetime import datetime
 import numpy as np
+from typing import List, Tuple
+import pickle
 
 class ChunkDatabase:
     def __init__(self, db_path="file_chunks.sqlite"):
@@ -19,12 +21,35 @@ class ChunkDatabase:
                 chunk_text TEXT,
                 embedding BLOB,
                 page_number INTEGER,
-                upload_date TEXT
+                upload_date TEXT,
+                keyword TEXT,
+                distance REAL
             )
         ''')
+
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_project ON file_chunks(project_name)')
         conn.commit()
         conn.close()
+
+    def print_all_rows(self):
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM file_chunks')
+        rows = cursor.fetchall()
+        for row in rows:
+            print(row)
+        conn.close()
+
+    def print_table_schema(self):
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute("PRAGMA table_info(file_chunks)")
+        columns = cursor.fetchall()
+        print("Table schema:")
+        for column in columns:
+            print(column)
+        conn.close()
+
 
     def insert_chunks(self, project_name, results):
         """Insert chunks and embeddings into the database."""
@@ -45,6 +70,7 @@ class ChunkDatabase:
                 INSERT INTO file_chunks (chunk_id, project_name, file_name, chunk_text, embedding, page_number, upload_date)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
             ''', (chunk_id, project_name, file_name, chunk_text, embedding_bytes, page_number, upload_date))
+        print(f"Inserted chunk {chunk_id} from file '{file_name}' (page {page_number})")
         conn.commit()
         conn.close()
 
@@ -58,6 +84,36 @@ class ChunkDatabase:
         rows = cursor.fetchall()
         conn.close()
         return rows
+    
+    def get_embeddings_by_project(self, project_name: str) -> List[Tuple[int, np.ndarray]]:
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT chunk_id, embedding
+            FROM file_chunks WHERE project_name = ?
+        ''', (project_name,))
+        rows = cursor.fetchall()
+        conn.close()
+        embeddings = [(chunk_id, pickle.loads(embedding_blob)) for chunk_id, embedding_blob in rows]
+        return embeddings
+
+    def add_keyword_and_distance(self, chunk_id: str, query: str, distance: float): 
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+
+        # Update the row with matching chunk_id
+        cursor.execute('''
+            UPDATE file_chunks
+            SET keyword = ?, distance = ?
+            WHERE chunk_id = ?
+        ''', (query, distance, chunk_id))
+
+        conn.commit()
+        conn.close()
+        
+    #retireve 
+
 
 if __name__ == "__main__":
     db = ChunkDatabase()  # This triggers init_db()
+    db.print_table_schema()

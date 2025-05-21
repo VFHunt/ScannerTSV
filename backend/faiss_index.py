@@ -1,41 +1,33 @@
 import faiss
 import numpy as np
 from sentence_transformers import SentenceTransformer
-from typing import List
+from typing import List, Tuple, Dict, Any
 
 global encoder
 encoder = model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
 
-def adapt_numpy_array(arr: np.ndarray) -> bytes:
-    """
-    Serialize numpy array to bytes to store in SQLite BLOB.
-    """
-    return arr.tobytes()
-
-def convert_blob_to_numpy(blob: bytes, dtype=np.float32, shape=(384,)) -> np.ndarray:
-    """
-    Convert bytes back to numpy array.
-    You must know dtype and shape of the original array.
-    """
-    return np.frombuffer(blob, dtype=dtype).reshape(shape)
 
 class FaissIndex:
-    def __init__(self, blobs: List[bytes], temperature: float):
-        """Initialize the FaissIndex with blobs from an SQL column.
+    def __init__(self, embeddings: List[Tuple[int, np.ndarray]], temperature: float):
+        """Initialize the FaissIndex with embeddings mapped to integers.
 
         Args:
-            blobs: A list of serialized numpy arrays (blobs) retrieved from an SQL column.
+            embeddings: A list of tuples where each tuple contains an integer and a numpy array (embedding).
             temperature: A threshold for filtering results based on distance.
         """
-        self.chunks = [convert_blob_to_numpy(blob).tolist() for blob in blobs]
         self.temperature = temperature
-        self.vectors = np.array(self.chunks)
+        self.embeddings = embeddings
+
+        self.vectors = np.array([embedding for _, embedding in embeddings])
+        self.ids = [id_ for id_, _ in embeddings]  # Extract IDs from the embeddings
         self.dimension = self.vectors.shape[1]
         self.index = faiss.IndexFlatL2(self.dimension)  # Using L2 distance for simplicity
+        self._add()
 
     def _add(self):
         """Add vectors to the index."""
         self.index.add(self.vectors)
+        assert self.index.ntotal == len(self.ids), f"Index size mismatch: {self.index.ntotal} vs {len(self.ids)}"
 
 
     def _vectorize_queries(self, queries: List[str]):
@@ -48,48 +40,84 @@ class FaissIndex:
             numpy.ndarray: A 2D array of vectorized queries.
         """
         return encoder.encode(queries, convert_to_numpy=True)
+    
+    def _index_to_ids(self, indices):
+        """Convert FAISS indices to actual IDs.
 
-    def f_search(self, query: List[str], k: int):
+        Args:
+            indices: A list of indices from the FAISS index.
+
+        Returns:
+            list: A list of corresponding IDs.
+        """
+        return [self.ids[i] for i in indices]
+         
+
+    def f_search(self, queries: List[str]) -> List[Dict[str, Any]]:
         """Search for the k nearest neighbors of a query vector.
 
         Args:
             query: A list of query strings (keywords).
-            k: The number of nearest neighbors to return.
 
         Returns:
             tuple: Distances and indices of the nearest neighbors.
         """
-        self._add()
-        query_vector = self._vectorize_queries(query)
+
+        if not queries:
+                raise ValueError("Queries must be a non-empty list of strings.")
+
+        results = []
+
+        k = len(self.vectors)  # Number of vectors in the index
+        print("k is: ", k)
+        query_vector = self._vectorize_queries(queries)
+
+        # Validate dimensionality
+        if query_vector.shape[1] != self.dimension:
+            raise ValueError(f"Query vector dimensionality ({query_vector.shape[1]}) does not match FAISS index dimensionality ({self.dimension}).")
+
         distances, indices = self.index.search(query_vector, k)
         print(f"Distances: {distances}")
         print(f"Indices: {indices}")
-        
+
         results = []
-        for query_idx, query_indices in enumerate(indices):
-            print(f"Query {query[query_idx]}: {query_indices}")
-            query_results = [self.chunks[i] for i in query_indices if distances[query_idx][i] < self.temperature]
+        # Iterate over each query and its corresponding distances and indices
+        for query_str, dist_list, idx_list in zip(queries, distances, indices):
+            print(f"Query: {query_str}")
+            query_results = []
+            
+            for dist, idx in zip(dist_list, idx_list):
+                if dist < self.temperature and idx != -1 and idx < len(self.ids):
+                    query_results.append({
+                        "query": query_str,
+                        "distance": round(dist, 2),  # Assuming this maps an index to an ID
+                        "id": self._index_to_ids([idx])[0]
+                    })
+            
             results.append(query_results)
-        return results
+        return results # 
+    
 
-# if __name__ == "__main__":
-#     """Test the FaissIndex class with sample data."""
-#     chunks = [
-#         "The Eiffel Tower is located in Paris.",
-#         "Python is a popular programming language.",
-#         "FAISS is a library for efficient similarity search.",
-#         "FastAPI is a modern web framework for Python.",
-#         "The capital of Japan is Tokyo.",
-#         "Cats are known for their agility.",
-#         "The mitochondrion is the powerhouse of the cell.",
-#         "Blockchain enables decentralized applications.",
-#         "Mount Everest is the highest mountain on Earth.",
-#         "The Great Wall of China is visible from space."
-#     ]
+#  for query in queries:
+#             if not isinstance(query, str):
+#                 raise ValueError("Query must be a string.")
 
-#     queries = ["Tokyo"]
+#             query_vector = self._vectorize_queries(query)
 
-#     searcher = FaissIndex(chunks, temperature=1.0)
-#     results = searcher.f_search(queries, k=5)
+#             # Ensure query_vector is 2D
+#             if query_vector.ndim == 1:
+#                 query_vector = query_vector.reshape(1, -1)
 
-#     print("Results:", results)
+#             distances, indices = self.index.search(query_vector, len(self.vectors))  # Search for all vectors
+
+#             # Separate filtered distances and indices
+#             filtered_distances = [distances[0][i] for i in range(len(distances[0])) if distances[0][i] < self.temperature]
+#             filtered_indices = [self.ids[indices[0][i]] for i in range(len(indices[0])) if distances[0][i] < self.temperature]
+
+#             # Save filtered results for the query
+#             query_result = {
+#                 "query": query,
+#                 "distances": filtered_distances,
+#                 "ids": self.index_to_ids(filtered_indices)
+#             }
+#             results.append(query_result)
