@@ -90,6 +90,7 @@ class ChunkDatabase:
             FROM file_chunks WHERE project_name = ?
         ''', (project_name,))
         rows = cursor.fetchall()
+        logger.info(f"Fetched {len(rows)} chunks for project: {project_name}")
         conn.close()
         return rows
     
@@ -103,7 +104,8 @@ class ChunkDatabase:
         ''', (project_name,))
         rows = cursor.fetchall()
         conn.close()
-        embeddings = [(chunk_id, pickle.loads(embedding_blob)) for chunk_id, embedding_blob in rows]
+        embeddings = [(chunk_id, np.frombuffer(embedding_blob, dtype=np.float32)) for chunk_id, embedding_blob in rows]
+        logger.info(f"Fetched {type(embeddings)} embeddings for project '{project_name}'")
         return embeddings
     
     def add_keyword_and_distance(self, chunk_id: str, query: str, distance: float): 

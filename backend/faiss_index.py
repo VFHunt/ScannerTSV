@@ -105,30 +105,3 @@ class FaissIndex:
             # print("Queries:", data["queries"])
             # print("Distances:", data["distances"])
             db.add_keyword_and_distance(str(chunk_id), str(data["queries"]), str(data["distances"]))
-
-
-    
-
-#  for query in queries:
-#             if not isinstance(query, str):
-#                 raise ValueError("Query must be a string.")
-
-#             query_vector = self._vectorize_queries(query)
-
-#             # Ensure query_vector is 2D
-#             if query_vector.ndim == 1:
-#                 query_vector = query_vector.reshape(1, -1)
-
-#             distances, indices = self.index.search(query_vector, len(self.vectors))  # Search for all vectors
-
-#             # Separate filtered distances and indices
-#             filtered_distances = [distances[0][i] for i in range(len(distances[0])) if distances[0][i] < self.temperature]
-#             filtered_indices = [self.ids[indices[0][i]] for i in range(len(indices[0])) if distances[0][i] < self.temperature]
-
-#             # Save filtered results for the query
-#             query_result = {
-#                 "query": query,
-#                 "distances": filtered_distances,
-#                 "ids": self.index_to_ids(filtered_indices)
-#             }
-#             results.append(query_result)

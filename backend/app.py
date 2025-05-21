@@ -14,6 +14,7 @@ from pinecone import Pinecone
 import json
 from document_pro import DocHandler, ProjectHandler
 from db import ChunkDatabase
+from faiss_index import FaissIndex
 
 pc = Pinecone(api_key='pcsk_42coaV_3AHp5VkNqafH8yGeWY9AHXCwZij9FwfyPnjFLCrcZs7Z6Y5LErpcPb2vPWvs7R4') #INSERT API KEY
 index_name = "smart-scanner-index"
@@ -73,10 +74,8 @@ def upload_file():
 @app.route("/process-files", methods=["POST"])
 def process_files():
     """Process uploaded files."""
-
     handler.process_all_files() # processes them
     db.insert_chunks(handler.get_project_name(), handler.get_results())  # Save chunks to the database
-    handler.reset_project()  # Reset the project name and results
     return jsonify({"message": "Files processed successfully"}), 200
 
 
@@ -88,8 +87,15 @@ def search():
 
     if not isinstance(keywords, list):
         return jsonify({"error": "No keyword provided"}), 400
+    
+    emb = db.get_embeddings_by_project(handler.get_project_name())  # Get chunks from the database
 
-    # todo: change this to the new way of doing it with faiss
+    print(f"Embeddings: {emb}")  # Log the embeddings
+
+    f = FaissIndex(emb, temperature=0.9)  # Initialize the FAISS index
+    f.f_search(keywords, db)  # Search for keywords in the FAISS index and save them in the database
+
+
     return jsonify({"message": "Search completed!"})
 
 @app.route("/download_zip", methods=["GET"])
@@ -219,7 +225,7 @@ def set_project_name():
 
         if not project_name:
             return jsonify({"error": "Project name is required"}), 400
-
+        handler.reset_project()  # Reset the project name and results
         handler.set_project_name(project_name)  # Set the project name in the handler
 
         return jsonify({"success": True, "message": f"Project '{project_name}' created successfully."}), 200
