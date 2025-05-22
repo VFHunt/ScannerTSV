@@ -90,11 +90,13 @@ def search():
     
     emb = db.get_embeddings_by_project(handler.get_project_name())  # Get chunks from the database
 
-    print(f"Embeddings: {emb}")  # Log the embeddings
+    #print(f"Embeddings: {emb}")  # Log the embeddings
 
-    f = FaissIndex(emb, temperature=0.9)  # Initialize the FAISS index
+    f = FaissIndex(emb, temperature=15)  # Initialize the FAISS index
     f.f_search(keywords, db)  # Search for keywords in the FAISS index and save them in the database
 
+    #print("[DEBUG] Manually calling add_keyword_and_distance()...")
+    #db.add_keyword_and_distance("2b5813b4-0079-40b3-aea3-3c886eb2469e", "machine", 0.123)
 
     return jsonify({"message": "Search completed!"})
 
