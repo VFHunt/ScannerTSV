@@ -1,60 +1,29 @@
 # Open AI's generative model use
-
-from openai import OpenAI 
 from syn_evaluators import calculate_embedding_similarity
-import tiktoken
-import os
-from dotenv import load_dotenv
 import logging
-
-# Load environment variables from .env file
-load_dotenv()
+from constants import get_openai_client
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Initialize OpenAI client with API key
-api_key = os.getenv('OPENAI_API_KEY')
-if not api_key:
-    logger.error("OPENAI_API_KEY environment variable not set.")
-    raise ValueError("API key must be set in the environment variable 'OPENAI_API_KEY'.")
-
-client = OpenAI(api_key=api_key)  # Pass the API key to the OpenAI client
+_client = get_openai_client()
 
 class GenModel():
     def __init__(self, model: str, role: str):
-        logger.info("Initializing GenModel")
         self.model = model
         self.role = role
         self.answers = []
+        logger.info("Initializing GenModel with role: %s", role)
 
 
     def get_answer(self) -> str:
         # print(self.answers)
         return self.answers
 
-    # def estimate_tokens(self)  -> int:
-    #     text_ = [self.role, self.prompt, self.answers]
-    #     type_ = ["role", "prompt", "answer"]
-    #     text = ""
-    #     for i in range(len(text_)):
-    #         text += text_[i]
-    #         print(f"For {type_[i]} the text is: {text_[i]}")
-    #     try:
-    #         encoding = tiktoken.encoding_for_model(self.model)
-    #     except KeyError:
-    #         print("Model not found. Using default encoding.")
-    #         encoding = tiktoken.get_encoding("cl100k_base")
-        
-    #     tokens = encoding.encode(text)
-    #     print(text)
-    #     print("The total tokens are: ", len(tokens))
-    #     return len(tokens)
-    
     def generate_answer(self, prompt: str) -> list:
         self.prompt = prompt
-        completion = client.chat.completions.create(
+        completion = _client.chat.completions.create(
         model=self.model,
         messages=[
             {
@@ -74,7 +43,7 @@ class GenModel():
     def generate_synonyms(self, prompt:str) -> list: 
         self.answers = []
         self.prompt = prompt
-        completion = client.chat.completions.create(
+        completion = _client.chat.completions.create(
         model=self.model,
         messages=[
             {

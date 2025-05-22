@@ -1,17 +1,14 @@
+
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import logging
 import os
-import pickle
 from backend_filepro import FileHandler
 from werkzeug.utils import secure_filename, send_file
-from test_search import search_terms_in_pinecone, create_zip
-from gen_syn import GenModel, generate_judge_eng, augment_prompt
+from gen_syn import GenModel, generate_judge_eng
 from syn_database import DataHandler
-from vector_db import upload_to_pinecone
 import time
 from pinecone import Pinecone
-import json
 from document_pro import DocHandler, ProjectHandler
 from db import ChunkDatabase
 from faiss_index import FaissIndex
@@ -24,6 +21,7 @@ CORS(app)  # Allows React frontend to talk to Flask backend
 
 logging.basicConfig(level=logging.INFO)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # Get backend folder path
+
 UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")  # Dynamically set uploads path
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)  # Ensure folder exists
 
@@ -34,7 +32,7 @@ judge, eng = generate_judge_eng(syn_number=5)  # Change the number to the user's
 syn = GenModel('gpt-4o', "You are a Dutch linguist and construction specialist with expertise in industry terminology. Output only five words separated by commas")
 db_handler = DataHandler(os.path.join(os.getcwd(), "data", "syn_db.json"))
 
-global p_handler
+global p_handler # to delete
 p_handler = ProjectHandler(10)  # Initialize the project handler
 
 global handler
@@ -124,7 +122,6 @@ def getting_syn():
             if db_handler.is_saved(keyword):
                 synonyms = db_handler.get_synonyms(keyword)
             else: 
-                # augmented_prompt = augment_prompt(keyword, f'find 5 synonyms of {keyword}', syn, judge, eng)
                 prompt = f'Find 5 dutch synonyms of {keyword}'
                 synonyms = syn.generate_synonyms(prompt)
                 db_handler.add_synonyms(keyword, synonyms)

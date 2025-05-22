@@ -1,14 +1,9 @@
-import matplotlib.pyplot as plt
-import numpy as np
+from constants import get_model
+from sentence_transformers import util
 
-from itertools import combinations
-from sentence_transformers import SentenceTransformer, util
-from tqdm.autonotebook import trange, tqdm
-
-
-model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
 
 def semantic_similarity(word1, word2):
+    model = get_model()
     emb1 = model.encode(word1)
     emb2 = model.encode(word2)
     return util.cos_sim(emb1, emb2).item()

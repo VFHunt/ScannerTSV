@@ -1,10 +1,10 @@
 import numpy as np
 from faiss_index import FaissIndex
-from sentence_transformers import SentenceTransformer
 from db import ChunkDatabase
+from constants import get_model
 
 # Initialize the SentenceTransformer model
-model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
+model = get_model()
 
 db = ChunkDatabase()
 

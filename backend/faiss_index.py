@@ -3,9 +3,7 @@ import numpy as np
 from sentence_transformers import SentenceTransformer
 from typing import List, Tuple, Dict, Any
 from db import ChunkDatabase
-
-global encoder
-encoder = model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
+from constants import get_model
 
 
 class FaissIndex:
@@ -18,6 +16,7 @@ class FaissIndex:
         """
         self.temperature = temperature
         self.embeddings = embeddings
+        self.encoder = get_model()  # Initialize the encoder model
 
         self.vectors = np.array([embedding for _, embedding in embeddings])
         self.ids = [id_ for id_, _ in embeddings]  # Extract IDs from the embeddings
@@ -40,7 +39,7 @@ class FaissIndex:
         Returns:
             numpy.ndarray: A 2D array of vectorized queries.
         """
-        return encoder.encode(queries, convert_to_numpy=True)
+        return self.encoder.encode(queries, convert_to_numpy=True)
     
     def _index_to_ids(self, indices):
         """Convert FAISS indices to actual IDs.

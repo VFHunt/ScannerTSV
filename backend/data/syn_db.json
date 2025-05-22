@@ -263,5 +263,26 @@
         "vitaal",
         "welvarend",
         "stevig"
+    ],
+    "machine": [
+        "apparaat",
+        "werktuig",
+        "automaat",
+        "toestel",
+        "constructie"
+    ],
+    "mammamia": [
+        "Moeder",
+        "Mama",
+        "Moeke",
+        "Moederlief",
+        "Mams"
+    ],
+    "statistics": [
+        "gegevens",
+        "statistieken",
+        "data",
+        "cijfers",
+        "informatie"
     ]
 }

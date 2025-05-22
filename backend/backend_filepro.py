@@ -8,31 +8,11 @@ import PyPDF2
 from docx import Document
 import pytesseract
 from pdf2image import convert_from_path
+from constants import get_model
 
 # Configure logging
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG, force=True)
-
-MODEL_PATH = "model_cache/all-MiniLM-L6-v2"
-_model_instance = None  # Global variable to store the model
-
-def get_model():
-    """ Load the model only once (singleton pattern). """
-    global _model_instance
-    if _model_instance is None:
-        if os.path.exists(MODEL_PATH):
-            logger.info(f"Loading embedding model from {MODEL_PATH}")
-            _model_instance = SentenceTransformer(MODEL_PATH)
-        else:
-            raise FileNotFoundError(f"Model not found at {MODEL_PATH}, run download_model.py")
-    return _model_instance
-
-global model
-model = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
-
-def get_model1():
-    """Load the model only once (singleton pattern)."""
-    return model
 
 class FileHandler:
     def __init__(self, files: List[str] = None):
@@ -42,7 +22,7 @@ class FileHandler:
             files: List of file paths to process. If None, no files are loaded.
         """
         self.tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
-        self.embedder = get_model1()
+        self.embedder = get_model()
         self.initialize(files)
 
     def initialize(self, files):
