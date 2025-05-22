@@ -32,7 +32,12 @@ class ChunkDatabase:
                 distance REAL
             )
         ''')
+        existing_columns = [row[1] for row in cursor.execute("PRAGMA table_info(file_chunks)").fetchall()]
 
+        if "keyword" not in existing_columns:
+            cursor.execute("ALTER TABLE file_chunks ADD COLUMN keyword TEXT")
+        if "distance" not in existing_columns:
+            cursor.execute("ALTER TABLE file_chunks ADD COLUMN distance REAL")
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_project ON file_chunks(project_name)')
         conn.commit()
         conn.close()
@@ -94,7 +99,7 @@ class ChunkDatabase:
         conn.close()
         return rows
     
-    def get_embeddings_by_project(self, project_name: str) -> List[Tuple[int, np.ndarray]]:
+    def get_embeddings_by_project(self, project_name: str) -> List[Tuple[str, np.ndarray]]:
         logger.info(f"Fetching embeddings for project: {project_name}")
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
@@ -108,16 +113,24 @@ class ChunkDatabase:
         logger.info(f"Fetched {type(embeddings)} embeddings for project '{project_name}'")
         return embeddings
     
-    def add_keyword_and_distance(self, chunk_id: str, query: str, distance: float): 
+    def add_keyword_and_distance(self, chunk_id: str, query: str, distance: float):
+        print(f"[DEBUG] Entering add_keyword_and_distance for chunk {chunk_id}")
+
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
+        cursor.execute("SELECT chunk_id FROM file_chunks WHERE chunk_id = ?", (chunk_id,))
+        result = cursor.fetchone()
+        print(f"DEBUG: Checking if chunk_id exists — {chunk_id} => {result}")
 
-        # Update the row with matching chunk_id
-        cursor.execute('''
+        if result is None:
+            print(f"[WARNING] Chunk ID '{chunk_id}' not found in the database.")
+        else:
+            # Update the row with matching chunk_id
+            cursor.execute('''
             UPDATE file_chunks
             SET keyword = ?, distance = ?
             WHERE chunk_id = ?
-        ''', (query, distance, chunk_id))
+            ''', (query, distance, chunk_id))
         logger.info(f"Updated chunk {chunk_id} with keyword '{query}' and distance {distance}")
         conn.commit()
         conn.close()
