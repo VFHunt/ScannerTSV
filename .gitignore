@@ -10,5 +10,6 @@ backend/zipped_results/
 backend/splits_output.csv
 backend/data/syn_db.json
 file_chunks.sqlite
+backend/file_chunks.sqlite
 .idea/
 backend/data/syn_db.json
