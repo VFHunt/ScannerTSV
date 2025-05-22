@@ -284,5 +284,12 @@
         "data",
         "cijfers",
         "informatie"
+    ],
+    "my friend": [
+        "maat",
+        "vriend",
+        "kameraad",
+        "makker",
+        "boezemvriend"
     ]
 }

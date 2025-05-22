@@ -3,7 +3,7 @@ import { Table, Button, Input, Space, Layout, message, Modal, Form } from "antd"
 import { PlusOutlined, ReloadOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import "../styles/ProjectView.css";
-import { emptyPinecone, get_projects, setProjectName } from "../utils/api"; // Import setProjectName
+import { get_projects, setProjectName } from "../utils/api"; // Import setProjectName
 
 const { Content } = Layout;
 
@@ -49,7 +49,6 @@ function ProjectView() {
   // Handle creating a new project
   const handleNewProject = async () => {
     try {
-      await emptyPinecone();
       setIsModalVisible(true); // Show the modal
     } catch (error) {
       console.error("Error preparing for new project:", error);

@@ -16,12 +16,6 @@ class Doc:
         print("Initializing document named: ", str(document))
         self.__name = str(document)
         self.path_name = "uploads/" + self.__name
-        # self.__text = self.extract_text_from_pdf()
-        # self.__all_words = self.__extract_words()  # Changed from __extract_keywords to __extract_words
-        # self.__match_keywords = None
-        # self.__status = None
-        # self.__last_scan = None
-        # self.__df_matches = None
 
     def get_path_name(self):
         return self.path_name

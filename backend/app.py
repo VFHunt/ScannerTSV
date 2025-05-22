@@ -8,13 +8,9 @@ from werkzeug.utils import secure_filename, send_file
 from gen_syn import GenModel, generate_judge_eng
 from syn_database import DataHandler
 import time
-from pinecone import Pinecone
 from document_pro import DocHandler, ProjectHandler
 from db import ChunkDatabase
 from faiss_index import FaissIndex
-
-pc = Pinecone(api_key='pcsk_42coaV_3AHp5VkNqafH8yGeWY9AHXCwZij9FwfyPnjFLCrcZs7Z6Y5LErpcPb2vPWvs7R4') #INSERT API KEY
-index_name = "smart-scanner-index"
 
 app = Flask(__name__)
 CORS(app)  # Allows React frontend to talk to Flask backend
@@ -167,15 +163,6 @@ def delete_file():
     else:
         return jsonify({"error": "File not found"}), 404
 
-@app.route("/empty_pinecone", methods=["POST"])
-def empty_pinecone():
-    try:
-        if index_name in pc.list_indexes():
-            index = pc.Index(index_name)
-            index.delete(filter={})  # Delete everything
-        return jsonify({"success": True, "message": "Pinecone index cleared successfully."}), 200
-    except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
     
 @app.route("/fetch_results", methods=["GET"])
 def fetch_results():

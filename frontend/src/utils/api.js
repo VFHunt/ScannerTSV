@@ -42,11 +42,6 @@ export const deleteFile = async (filename) => {
   return response.data;
 };
 
-export const emptyPinecone = async () => {
-  const response = await axios.post(`${API_BASE_URL}/empty_pinecone`);
-  return response.data;
-};
-
 export const processFiles = async () => {
   const response = await axios.post(`${API_BASE_URL}/process-files`);
   return response.data;
