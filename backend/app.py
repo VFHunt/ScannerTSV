@@ -90,8 +90,6 @@ def search():
     
     emb = db.get_embeddings_by_project(handler.get_project_name())  # Get chunks from the database
 
-    print(f"Embeddings: {emb}")  # Log the embeddings
-
     f = FaissIndex(emb, temperature=0.9)  # Initialize the FAISS index
     f.f_search(keywords, db)  # Search for keywords in the FAISS index and save them in the database
 
