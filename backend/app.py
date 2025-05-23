@@ -83,7 +83,7 @@ def search():
     
     emb = db.get_embeddings_by_project(handler.get_project_name())  # Get chunks from the database
 
-    f = FaissIndex(emb, temperature=100)  # Initialize the FAISS index
+    f = FaissIndex(emb, temperature=0.1)  # Initialize the FAISS index
     f.f_search(keywords, db)  # Search for keywords in the FAISS index and save them in the database
 
     #print("[DEBUG] Manually calling add_keyword_and_distance()...")
@@ -177,6 +177,7 @@ def fetch_results():
 @app.route("/fetch_docresults/<filename>", methods=["GET"])
 def fetch_doc_results(filename):
     try:
+
         print(f"Fetching results for filename: {filename}")
         project_name = handler.get_project_name()
         if not project_name:

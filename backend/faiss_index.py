@@ -19,10 +19,15 @@ class FaissIndex:
         self.encoder = get_model()  # Initialize the encoder model
 
         self.vectors = np.array([embedding for _, embedding in embeddings])
+        self.vectors = self._normalize(self.vectors)
+
         self.ids = [id_ for id_, _ in embeddings]  # Extract IDs from the embeddings
         self.dimension = self.vectors.shape[1]
-        self.index = faiss.IndexFlatL2(self.dimension)  # Using L2 distance for simplicity
+        self.index = faiss.IndexFlatIP(self.dimension)  # Using L2 distance for simplicity
         self._add()
+
+    def _normalize(self, vectors: np.ndarray) -> np.ndarray:
+        return vectors / np.linalg.norm(vectors, axis=1, keepdims=True)
 
     def _add(self):
         """Add vectors to the index."""
@@ -30,17 +35,10 @@ class FaissIndex:
         assert self.index.ntotal == len(self.ids), f"Index size mismatch: {self.index.ntotal} vs {len(self.ids)}"
 
 
-    def _vectorize_queries(self, queries: List[str]):
-        """Vectorize a list of query strings (keywords).
-
-        Args:
-            queries: A list of query strings to vectorize.
-
-        Returns:
-            numpy.ndarray: A 2D array of vectorized queries.
-        """
-        return self.encoder.encode(queries, convert_to_numpy=True)
-    
+    def _vectorize_queries(self, queries: List[str]) -> np.ndarray:
+        vecs = self.encoder.encode(queries, convert_to_numpy=True)
+        return self._normalize(vecs)
+        
     def _index_to_ids(self, indices):
         """Convert FAISS indices to actual IDs.
 
@@ -69,6 +67,10 @@ class FaissIndex:
         k = len(self.vectors)  # Number of vectors in the index
         query_vector = self._vectorize_queries(queries)
 
+        print("[DEBUG] Norms of query vectors:", np.linalg.norm(query_vector, axis=1))
+        print("[DEBUG] Norms of indexed vectors:", np.linalg.norm(self.vectors, axis=1)[:5])  # Show first 5
+
+
         # Validate dimensionality
         if query_vector.shape[1] != self.dimension:
             raise ValueError(f"Query vector dimensionality ({query_vector.shape[1]}) does not match FAISS index dimensionality ({self.dimension}).")
@@ -82,7 +84,7 @@ class FaissIndex:
         for query_str, dist_list, idx_list in zip(queries, distances, indices):
             for dist, idx in zip(dist_list, idx_list):
                 print(f"[DEBUG] raw dist = {dist}, idx = {idx}, threshold = {self.temperature}, total_ids = {len(self.ids)}")
-                if dist < self.temperature and idx != -1 and idx < len(self.ids):
+                if dist >= self.temperature and idx != -1 and idx < len(self.ids):
                     # Ensure that self._index_to_ids([idx]) returns an iterable
                     chunk_id_result = self._index_to_ids([idx])
                     #print(f"[DEBUG] FAISS index {idx} → chunk_id {chunk_id_result[0]}, distance = {dist}")
@@ -106,5 +108,7 @@ class FaissIndex:
             # print(f"Chunk ID: {chunk_id}")
             # print("Queries:", data["queries"])
             # print("Distances:", data["distances"])
-            print(f"[DEBUG] About to call add_keyword_and_distance for chunk {chunk_id}")
+            # print(f"[DEBUG] About to call add_keyword_and_distance for chunk {chunk_id}")
             db.add_keyword_and_distance(str(chunk_id), str(data["queries"]), str(data["distances"]))
+
+        return distances, indices
