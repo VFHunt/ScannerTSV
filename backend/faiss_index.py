@@ -84,7 +84,7 @@ class FaissIndex:
         for query_str, dist_list, idx_list in zip(queries, distances, indices):
             for dist, idx in zip(dist_list, idx_list):
                 print(f"[DEBUG] raw dist = {dist}, idx = {idx}, threshold = {self.temperature}, total_ids = {len(self.ids)}")
-                if dist < self.temperature and idx != -1 and idx < len(self.ids):
+                if dist >= self.temperature and idx != -1 and idx < len(self.ids):
                     # Ensure that self._index_to_ids([idx]) returns an iterable
                     chunk_id_result = self._index_to_ids([idx])
                     print(f"[DEBUG] FAISS index {idx} → chunk_id {chunk_id_result[0]}, distance = {dist}")
