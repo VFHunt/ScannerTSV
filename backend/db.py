@@ -150,7 +150,7 @@ class ChunkDatabase:
             SET keyword = ?, distance = ?
             WHERE chunk_id = ?
             ''', (query, distance, chunk_id))
-        logger.info(f"Updated chunk {chunk_id} with keyword '{query}' and distance {distance}")
+        #logger.info(f"Updated chunk {chunk_id} with keyword '{query}' and distance {distance}")
         conn.commit()
         conn.close()
 
