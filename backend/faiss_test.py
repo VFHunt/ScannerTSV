@@ -1,132 +1,108 @@
 import numpy as np
-from faiss_index import FaissIndex
-from typing import List, Dict
+import pandas as pd
+from PyPDF2 import PdfReader
+from sentence_transformers import SentenceTransformer
+from faiss_index import FaissIndex  # Replace with your FAISS class path
 import matplotlib.pyplot as plt
+import seaborn as sns
 from constants import get_model
-from typing import Any
-from db import ChunkDatabase
 
+# === Load model ===
 encoder = get_model()
-db = ChunkDatabase()
 
-keywords = [
-    "artificial intelligence",
-    "machine learning",
-    "deep learning",
-    "natural language processing",
-    "computer vision",
-    "reinforcement learning",
-    "AI ethics",
-    "robotics",
-    "big data",
-    "edge computing"
-]
+# === Extract text from PDF ===
+def extract_text_from_pdf(path):
+    reader = PdfReader(path)
+    return "\n".join(page.extract_text() for page in reader.pages if page.extract_text())
 
-chunks = [
-    {"id": "chunk_1", "text": "Artificial intelligence is transforming industries."},
-    {"id": "chunk_2", "text": "Machine learning is a subset of AI focused on data-driven predictions."},
-    {"id": "chunk_3", "text": "Deep learning uses neural networks to analyze complex patterns."},
-    {"id": "chunk_4", "text": "Natural language processing enables machines to understand human language."},
-    {"id": "chunk_5", "text": "Computer vision allows machines to interpret visual data."},
-    {"id": "chunk_6", "text": "Reinforcement learning trains models through rewards and penalties."},
-    {"id": "chunk_7", "text": "AI ethics is a critical area of research to ensure responsible use of technology."},
-    {"id": "chunk_8", "text": "Robotics integrates AI to create intelligent machines."},
-    {"id": "chunk_9", "text": "Big data analytics is essential for training AI models."},
-    {"id": "chunk_10", "text": "Edge computing brings AI capabilities closer to devices."}
-]
+# === Split text into chunks by character length ===
+def split_into_chunks(text, max_chars=200):
+    words = text.split()
+    chunks = []
+    current = ""
 
-def l2_normalize(vecs: np.ndarray) -> np.ndarray:
-    norms = np.linalg.norm(vecs, axis=1, keepdims=True)
-    return vecs / norms
-
-def vectorize(text: List[str]) -> np.ndarray:
-    return encoder.encode(text, convert_to_numpy=True)
-
-def add_embeddings_to_chunks(chunks: List[Dict[str, str]]) -> List[Dict[str, Any]]:
-    texts = [chunk["text"] for chunk in chunks]
-    embeddings = vectorize(texts)
-    embeddings = l2_normalize(embeddings)  # Normalize here ✅
-
-    for chunk, embedding in zip(chunks, embeddings):
-        chunk["embedding"] = embedding
+    for word in words:
+        if len(current) + len(word) + 1 <= max_chars:
+            current += word + " "
+        else:
+            chunks.append(current.strip())
+            current = word + " "
+    if current:
+        chunks.append(current.strip())
     return chunks
 
-def visualize_distances(distances: np.ndarray, indices: np.ndarray):
-    for i, (dist_list, idx_list) in enumerate(zip(distances, indices)):
-        # Calculate the average distance for the current query
-        avg_distance = np.mean(dist_list)
-        print(f"Query {i} - Average Distance: {avg_distance:.4f}")
+# === Prepare embeddings for FAISS ===
+def prepare_embeddings(chunks, encoder):
+    vectors = encoder.encode(chunks, convert_to_numpy=True, normalize_embeddings=True)
+    return [(str(i), vec) for i, vec in enumerate(vectors)]
 
-        # Plot the distances
-        plt.figure(figsize=(10, 5))
-        plt.bar(range(len(dist_list)), dist_list, tick_label=idx_list)
-        plt.title(f"Query {i} - Distances per Index (Avg: {avg_distance:.4f})")
-        plt.xlabel("Index")
-        plt.ylabel("Distance")
-        plt.show()
+# === Summarize similarities ===
+def summarize_similarities(queries, query_vectors, index):
+    summary = []
+    for i, query_vec in enumerate(query_vectors):
+        sims, _ = index.index.search(query_vec.reshape(1, -1), len(index.ids))
+        scores = sims[0]
+        summary.append(scores.min(), scores.max(), scores.mean())
+    return summary
 
-# Debugging function to print distances and indices
-def debug_distances(distances: np.ndarray, indices: np.ndarray):
-    for i, (dist_list, idx_list) in enumerate(zip(distances, indices)):
-        print(f"Query {i}:")
-        for dist, idx in zip(dist_list, idx_list):
-            print(f"  Index: {idx}, Distance: {dist:.4f}")
+# === Dummy DB ===
+class DummyChunkDatabase:
+    def add_keyword_and_distance(self, chunk_id, queries, distances):
+        pass  # Optional logging
 
-def analyze_similarities(queries, chunk_texts, encoder, top_k=10):
-    # Vectorize & normalize all texts
-    chunk_embeddings = encoder.encode(chunk_texts, convert_to_numpy=True, normalize_embeddings=True)
-    query_embeddings = encoder.encode(queries, convert_to_numpy=True, normalize_embeddings=True)
+# === Main Analysis ===
+pdf_path = "files/test.pdf"
+text = extract_text_from_pdf(pdf_path)
+queries = ["aansprakelijkheid", "betalingstermijn", "opzegging", "herroepingsrecht", "diensten"]
+query_vectors = encoder.encode(queries, convert_to_numpy=True, normalize_embeddings=True)
 
-    # Compute cosine similarities (dot product since all are normalized)
-    similarity_matrix = np.dot(query_embeddings, chunk_embeddings.T)
+results = []
 
-    # Stats and histogram per query
+for chunk_size in [50, 100, 200, 300, 400]:
+    print(f"🔍 Processing chunk size: {chunk_size}")
+    chunks = split_into_chunks(text, max_chars=chunk_size)
+    embeddings = prepare_embeddings(chunks, encoder)
+    index = FaissIndex(embeddings, temperature = 100)
+    db = DummyChunkDatabase()
+    distances, _ = index.f_search(queries, db)
+
     for i, query in enumerate(queries):
-        sims = similarity_matrix[i]
-        sorted_sims = np.sort(sims)[::-1]  # descending
+        scores = distances[i]
+        results.append({
+            "Chunk Size": chunk_size,
+            "Query": query,
+            "Min Similarity": round(float(np.min(scores)), 3),
+            "Max Similarity": round(float(np.max(scores)), 3),
+            "Avg Similarity": round(float(np.mean(scores)), 3)
+        })
 
-        print(f"\n=== Query: '{query}' ===")
-        print(f"Top-{top_k} similarities: {sorted_sims[:top_k]}")
-        print(f"Mean similarity: {np.mean(sims):.4f}")
-        print(f"Median similarity: {np.median(sims):.4f}")
-        print(f"Max similarity: {np.max(sims):.4f}")
-        print(f"Min similarity: {np.min(sims):.4f}")
+# Convert to DataFrame and display
+df = pd.DataFrame(results)
+print("\n📊 Similarity Stats Across Chunk Sizes:")
+print(df)
 
-        plt.figure(figsize=(8, 4))
-        plt.hist(sims, bins=20, color='skyblue', edgecolor='black')
-        plt.title(f"Similarity Distribution for Query: '{query}'")
-        plt.xlabel("Cosine Similarity")
-        plt.ylabel("Frequency")
-        plt.grid(True)
-        plt.show()
 
-# Main test function
-def test_faiss_search():
 
-    # chunks_with_embeddings = add_embeddings_to_chunks(chunks)
-    # embeddings = [(chunk["id"], chunk["embedding"]) for chunk in chunks_with_embeddings]
+# Set up the plot style
+sns.set(style="whitegrid")
 
-    # print("Sample normalized vector:", chunks_with_embeddings[0]['embedding'][:5])
-    # print("L2 norm:", np.linalg.norm(chunks_with_embeddings[0]['embedding']))
+# Convert 'Chunk Size' to categorical (just in case)
+df["Chunk Size"] = df["Chunk Size"].astype(int)
 
-    # f = FaissIndex(embeddings, temperature=500)  # Initialize the FAISS index
-
-    # distances, indices = f.f_search(keywords, db)  # Perform the search
-
-    # # visualize_distances(distances, indices)  # Visualize distances
-    encoder = get_model()  # SentenceTransformer
-    queries = [
-        "artificial intelligence",
-        "robotics",
-        "natural language processing"
-    ]
-    chunk_texts = [chunk["text"] for chunk in chunks]
-
-    analyze_similarities(queries, chunk_texts, encoder)
-
+# Create a separate plot for each query
+for query in df["Query"].unique():
+    sub_df = df[df["Query"] == query]
     
+    plt.figure(figsize=(10, 5))
+    plt.plot(sub_df["Chunk Size"], sub_df["Min Similarity"], marker='o', label="Min Similarity", linestyle='--')
+    plt.plot(sub_df["Chunk Size"], sub_df["Max Similarity"], marker='o', label="Max Similarity", linestyle='-.')
+    plt.plot(sub_df["Chunk Size"], sub_df["Avg Similarity"], marker='o', label="Avg Similarity", linestyle='-')
     
-
-# Run the test
-if __name__ == "__main__":
-    test_faiss_search()
+    plt.title(f"Similarity Scores vs Chunk Size — Query: '{query}'")
+    plt.xlabel("Chunk Size (characters)")
+    plt.ylabel("Similarity Score")
+    plt.ylim(0, 1.05)
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()

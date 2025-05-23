@@ -177,6 +177,13 @@ def fetch_results():
 @app.route("/fetch_docresults/<filename>", methods=["GET"])
 def fetch_doc_results(filename):
     try:
+        project_name = handler.get_project_name() 
+        file_name = filename
+
+        # for V: retrieve the document results based on the project name and the filename 
+
+        # for V: try to keep the type the same as the hardocded results below: 
+
         # Hardcoded results for testing
         print(f"Fetching results for filename: {filename}")  
         results = [
