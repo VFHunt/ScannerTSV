@@ -8,7 +8,7 @@ from werkzeug.utils import secure_filename, send_file
 from gen_syn import GenModel, generate_judge_eng
 from syn_database import DataHandler
 import time
-from document_pro import DocHandler, ProjectHandler
+from document_pro import ProjectHandler
 from db import ChunkDatabase
 from faiss_index import FaissIndex
 
@@ -73,7 +73,6 @@ def process_files():
     return jsonify({"message": "Files processed successfully"}), 200
 
 
-
 @app.route("/search", methods=["POST"])
 def search():
     data = request.json
@@ -84,7 +83,7 @@ def search():
     
     emb = db.get_embeddings_by_project(handler.get_project_name())  # Get chunks from the database
 
-    f = FaissIndex(emb, temperature=0.9)  # Initialize the FAISS index
+    f = FaissIndex(emb, temperature=100)  # Initialize the FAISS index
     f.f_search(keywords, db)  # Search for keywords in the FAISS index and save them in the database
 
     #print("[DEBUG] Manually calling add_keyword_and_distance()...")
@@ -167,9 +166,10 @@ def delete_file():
 @app.route("/fetch_results", methods=["GET"])
 def fetch_results():
     try:
-        print("these are the keywords per doc: ", handler.get_keywords_per_doc(), type(handler.get_keywords_per_doc()))
-        results_df = handler.get_keywords_per_doc()  # This returns a pandas DataFrame
-        results = results_df.to_dict(orient="records")
+        project_name = handler.get_project_name()  # Get the current project name
+        results = db.get_filename(project_name)  # Fetch filenames and keywords from the database
+        print(f"Fetched results: {results}")  # Log the fetched results
+        
         return jsonify({"results": results}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500

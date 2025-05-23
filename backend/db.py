@@ -134,8 +134,39 @@ class ChunkDatabase:
         logger.info(f"Updated chunk {chunk_id} with keyword '{query}' and distance {distance}")
         conn.commit()
         conn.close()
-        
-    #retireve 
+
+    def get_filename(self, project_name):
+        logger.info(f"Fetching filenames for project: {project_name} with non-empty keywords")
+
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT file_name, keyword
+            FROM file_chunks
+            WHERE project_name = ? AND keyword IS NOT NULL AND keyword != ''
+        ''', (project_name,))
+
+        rows = cursor.fetchall()
+        conn.close()
+
+        # Group keywords by filename
+        grouped = {}
+        for file_name, keyword in rows:
+            if file_name not in grouped:
+                grouped[file_name] = set()
+            grouped[file_name].add(keyword)
+
+        # Format for frontend
+        results = [
+            {
+                "Document Name": file,
+                "Keywords": list(keywords)
+            }
+            for file, keywords in grouped.items()
+        ]
+
+        logger.info(f"Fetched {len(results)} results for project: {project_name}")
+        return results
 
 
 if __name__ == "__main__":
