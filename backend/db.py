@@ -156,7 +156,6 @@ class ChunkDatabase:
 
     def get_filename(self, project_name):
         logger.info(f"Fetching filenames for project: {project_name} with non-empty keywords")
-
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
         cursor.execute('''
@@ -167,14 +166,12 @@ class ChunkDatabase:
 
         rows = cursor.fetchall()
         conn.close()
-
         # Group keywords by filename
         grouped = {}
         for file_name, keyword in rows:
             if file_name not in grouped:
                 grouped[file_name] = set()
             grouped[file_name].add(keyword)
-
         # Format for frontend
         results = [
             {
@@ -183,9 +180,24 @@ class ChunkDatabase:
             }
             for file, keywords in grouped.items()
         ]
-
         logger.info(f"Fetched {len(results)} results for project: {project_name}")
         return results
+
+    def get_projects(self):
+        logger.info(f"Searching for existing projects")
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT DISTINCT project_name
+            FROM  file_chunks
+            WHERE project_name IS NOT NULL AND project_name != ''
+        ''')
+        rows = cursor.fetchall()
+        conn.close()
+        projects = [row[0] for row in rows]  # unpack tuple to string
+        logger.info(f"Fetched {len(projects)} unique projects")
+        return projects
+
 
 
 if __name__ == "__main__":
@@ -193,6 +205,7 @@ if __name__ == "__main__":
     db.print_table_schema()
     db.get_filename(project_name='test')
     #db.add_keyword_and_distance(chunk_id='c262a5af-9e51-4aba-abfd-76e9e0391b62', query='requirements', distance=0.123)
-    results = db.get_chunks_by_project_and_file(project_name='test', file_name='ES10ST_1.pdf')
-    for result in results:
-        print(result)
+    #results = db.get_chunks_by_project_and_file(project_name='test', file_name='ES10ST_1.pdf')
+    #for result in results:
+    #    print(result)
+    db.get_projects()

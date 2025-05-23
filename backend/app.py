@@ -211,10 +211,8 @@ def set_project_name():
 def get_projects():
     try:
         # Retrieve the list of projects from the ProjectHandler
-        projects = p_handler.get_projects()  # Assuming p_handler is an instance of ProjectHandler
-        project_data = [{"projectName": project.get_name()} for project in projects]
-
-        print(f"Projects from app.py: {project_data}, {type(project_data)}")  # Log the project data for debugging
+        projects = db.get_projects()  # Returns list of project names as strings
+        project_data = [{"projectName": name} for name in projects]
         return jsonify({"projects": project_data}), 200
     except Exception as e:
         print(f"Error in /projects: {e}")
