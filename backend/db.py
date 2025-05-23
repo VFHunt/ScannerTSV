@@ -86,19 +86,38 @@ class ChunkDatabase:
         conn.commit()
         conn.close()
 
-    def get_chunks_by_project(self, project_name):
-        logger.info(f"Fetching chunks for project: {project_name}")
+    def get_chunks_by_project_and_file(self, project_name, file_name):
+        logger.info(f"Fetching chunks for project: {project_name}, file: {file_name}")
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
+
         cursor.execute('''
-            SELECT chunk_id, file_name, chunk_text, page_number, embedding, upload_date
-            FROM file_chunks WHERE project_name = ?
-        ''', (project_name,))
+            SELECT chunk_text, page_number, keyword
+            FROM file_chunks
+            WHERE project_name = ? AND file_name = ?
+        ''', (project_name, file_name))
+
         rows = cursor.fetchall()
-        logger.info(f"Fetched {len(rows)} chunks for project: {project_name}")
         conn.close()
-        return rows
-    
+        # Group keywords by (chunk_text, page_number)
+        grouped = {}
+        for chunk_text, page_number, keyword in rows:
+            key = (chunk_text, page_number)
+            if key not in grouped:
+                grouped[key] = set()
+            if keyword:
+                grouped[key].add(keyword)
+        results = [
+            {
+                "text": text,
+                "page": page,
+                "keywords": list(keywords)
+            }
+            for (text, page), keywords in grouped.items()
+        ]
+        logger.info(f"Fetched {len(results)} formatted chunks for file: {file_name} in project: {project_name}")
+        return results
+
     def get_embeddings_by_project(self, project_name: str) -> List[Tuple[str, np.ndarray]]:
         logger.info(f"Fetching embeddings for project: {project_name}")
         conn = sqlite3.connect(self.db_path)
@@ -110,17 +129,17 @@ class ChunkDatabase:
         rows = cursor.fetchall()
         conn.close()
         embeddings = [(chunk_id, np.frombuffer(embedding_blob, dtype=np.float32)) for chunk_id, embedding_blob in rows]
-        logger.info(f"Fetched {type(embeddings)} embeddings for project '{project_name}'")
+        #logger.info(f"Fetched {type(embeddings)} embeddings for project '{project_name}'")
         return embeddings
     
     def add_keyword_and_distance(self, chunk_id: str, query: str, distance: float):
-        print(f"[DEBUG] Entering add_keyword_and_distance for chunk {chunk_id}")
+        #print(f"[DEBUG] Entering add_keyword_and_distance for chunk {chunk_id}")
 
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
         cursor.execute("SELECT chunk_id FROM file_chunks WHERE chunk_id = ?", (chunk_id,))
         result = cursor.fetchone()
-        print(f"DEBUG: Checking if chunk_id exists — {chunk_id} => {result}")
+        #print(f"DEBUG: Checking if chunk_id exists — {chunk_id} => {result}")
 
         if result is None:
             print(f"[WARNING] Chunk ID '{chunk_id}' not found in the database.")
@@ -172,3 +191,8 @@ class ChunkDatabase:
 if __name__ == "__main__":
     db = ChunkDatabase()  # This triggers init_db()
     db.print_table_schema()
+    db.get_filename(project_name='test')
+    #db.add_keyword_and_distance(chunk_id='c262a5af-9e51-4aba-abfd-76e9e0391b62', query='requirements', distance=0.123)
+    results = db.get_chunks_by_project_and_file(project_name='test', file_name='ES10ST_1.pdf')
+    for result in results:
+        print(result)

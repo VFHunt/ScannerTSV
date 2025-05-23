@@ -291,5 +291,12 @@
         "kameraad",
         "makker",
         "boezemvriend"
+    ],
+    "ladder": [
+        "trap",
+        "opstapje",
+        "klimrek",
+        "leuning",
+        "stijger"
     ]
 }

@@ -177,29 +177,18 @@ def fetch_results():
 @app.route("/fetch_docresults/<filename>", methods=["GET"])
 def fetch_doc_results(filename):
     try:
-        # Hardcoded results for testing
-        print(f"Fetching results for filename: {filename}")  
-        results = [
-            {
-                "text": "Lorem ipsum dolor sit amet, consectetur adipiscing elit...",
-                "keywords": ["Aluminium", "Gevel"],
-                "page": 3,
-            },
-            {
-                "text": "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris...",
-                "keywords": ["Aluminium"],
-                "page": 5,
-            },
-            {
-                "text": "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore...",
-                "keywords": ["Gevel"],
-                "page": 9,
-            },
-        ]
+        print(f"Fetching results for filename: {filename}")
+        project_name = handler.get_project_name()
+        if not project_name:
+            return jsonify({"error": "Missing project name"}), 400
+
+        results = db.get_chunks_by_project_and_file(project_name, filename)
         return jsonify({"results": results}), 200
+
     except Exception as e:
-        print(f"Error in /fetch_docresults: {e}")  # Log the error
+        print(f"Error in /fetch_docresults: {e}")
         return jsonify({"error": str(e)}), 500
+
 
 @app.route("/set_project_name", methods=["POST"])
 def set_project_name():

@@ -85,11 +85,11 @@ class FaissIndex:
                 if dist < self.temperature and idx != -1 and idx < len(self.ids):
                     # Ensure that self._index_to_ids([idx]) returns an iterable
                     chunk_id_result = self._index_to_ids([idx])
-                    print(f"[DEBUG] FAISS index {idx} → chunk_id {chunk_id_result[0]}, distance = {dist}")
+                    #print(f"[DEBUG] FAISS index {idx} → chunk_id {chunk_id_result[0]}, distance = {dist}")
 
                     if chunk_id_result is None:
                         continue  # Skip this iteration if chunk_id_result is None
-                    print(f"[DEBUG] chunk_id_result = {chunk_id_result}")
+                    #print(f"[DEBUG] chunk_id_result = {chunk_id_result}")
 
                     chunk_id = chunk_id_result[0]  # Assuming this maps an index to an ID
 
