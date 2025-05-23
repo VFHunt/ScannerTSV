@@ -105,10 +105,10 @@ class FaissIndex:
 
         # Print the resulting dictionary
         for chunk_id, data in chunk_query_dict.items():
-            print(f"Chunk ID: {chunk_id}")
-            print("Queries:", data["queries"])
-            print("Distances:", data["distances"])
-            print(f"[DEBUG] About to call add_keyword_and_distance for chunk {chunk_id}")
-            # db.add_keyword_and_distance(str(chunk_id), str(data["queries"]), str(data["distances"]))
+            # print(f"Chunk ID: {chunk_id}")
+            # print("Queries:", data["queries"])
+            # print("Distances:", data["distances"])
+            # print(f"[DEBUG] About to call add_keyword_and_distance for chunk {chunk_id}")
+            db.add_keyword_and_distance(str(chunk_id), str(data["queries"]), str(data["distances"]))
 
         return distances, indices
