@@ -298,5 +298,33 @@
         "klimrek",
         "leuning",
         "stijger"
+    ],
+    "aansprakelijkheid": [
+        "Verantwoordelijkheid",
+        "plicht",
+        "verplichting",
+        "schuld",
+        "borgtocht"
+    ],
+    "contractduur": [
+        "looptijd",
+        "duur",
+        "periode",
+        "looptijdtermijn",
+        "geldigheidsduur"
+    ],
+    "leveringsvoorwaarden": [
+        "Verkoopvoorwaarden",
+        "condities",
+        "bepalingen",
+        "clausules",
+        "afspraken"
+    ],
+    "facturatie": [
+        "Rekening",
+        "nota",
+        "declaratie",
+        "verrekening",
+        "afrekening"
     ]
 }

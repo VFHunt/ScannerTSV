@@ -108,8 +108,8 @@ export const downloadZip = async () => {
   }
 };
 
-export const fetchSearchResults = async () => {
-  const response = await axios.get(`${API_BASE_URL}/fetch_results`);
+export const fetchSearchResults = async (projectName) => {
+  const response = await axios.get(`${API_BASE_URL}/fetch_results/${projectName}`);
   return response.data;
 };
 
@@ -135,3 +135,12 @@ export const setProjectName = async (projectName) => {
   }
 };
 
+export const getProjectName = async () => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/get_project_name`);
+    return response.data.projectName; // Return the project name
+  } catch (error) {
+    console.error("Error fetching project name:", error);
+    throw new Error("Failed to fetch project name.");
+  }
+};

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { getSynonyms, searchKeywords } from "../utils/api"; // Import the APIs
+import { getSynonyms, searchKeywords, getProjectName } from "../utils/api"; // Import getProjectName
 import "../styles/KeywordSearch.css";
 import { useNavigate } from "react-router-dom";
 
@@ -38,7 +38,7 @@ function KeywordSearch() {
       setSynonymsList(data.synonyms || []); // Assuming the API returns an array of synonyms
       setMessage("Synonyms generated successfully!");
     } catch (error) {
-      setMessage(`Error in Synonym Generation: ${error.response?.data?.error || error.message}`);
+      setMessage(`Error in Synonym Generation: ${error.response?.data?.error || error.message}, please make sure you uploaded one or more files.`);
     }
   };
 
@@ -52,7 +52,14 @@ function KeywordSearch() {
       setMessage("Searching...");
       const data = await searchKeywords([...keywordsList, ...synonymsList]); // Combine keywords and synonyms
       setMessage(data.message || "Search completed!");
-      navigate("/results");
+
+      // Fetch the project name before navigating
+      const projectName = await getProjectName();
+      if (projectName) {
+        navigate(`/results/${projectName}`); // Navigate to results with the project name
+      } else {
+        setMessage("Error: Project name not found.");
+      }
     } catch (error) {
       setMessage(`Error in Search: ${error.response?.data?.error || error.message}`);
     }

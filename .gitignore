@@ -9,7 +9,8 @@ backend/uploads/
 backend/zipped_results/
 backend/splits_output.csv
 backend/data/syn_db.json
-file_chunks.sqlite
 backend/file_chunks.sqlite
 .idea/
 backend/data/syn_db.json
+backend/semantic_similarity_.csv
+backend/semantic_similarity_with_gpt_answers.csv

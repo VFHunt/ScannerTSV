@@ -25,7 +25,7 @@ function ProjectView() {
         setFilteredProjects(data || []); // Initialize filtered projects
       } catch (error) {
         console.error("Error fetching projects:", error);
-        message.error("Failed to fetch projects.");
+        message.error("No projects have beeen created yet");
       }
     };
   
@@ -63,6 +63,16 @@ function ProjectView() {
       return;
     }
 
+    // Check if the project name already exists
+    const isDuplicate = projects.some(
+      (project) => project.projectName.toLowerCase() === newProjectName.toLowerCase()
+    );
+
+    if (isDuplicate) {
+      message.error("A project with this name already exists. Please choose a different name.");
+      return;
+    }
+
     try {
       await setProjectName(newProjectName); // Call the API to set the project name
       message.success("Project created successfully!");
@@ -93,7 +103,7 @@ function ProjectView() {
       key: "action",
       render: (_, record) => (
         <Space size="middle">
-          <Button type="link" onClick={() => console.log("View", record)}>
+          <Button type="link" onClick={() => navigate(`/results/${record.projectName}`)}> {/* Pass the project name */}
             View
           </Button>
           <Button type="link" danger onClick={() => console.log("Delete", record)}>
@@ -114,7 +124,14 @@ function ProjectView() {
           <Input
             placeholder="Projectnaam"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value;
+              setSearchTerm(value);
+              const filtered = projects.filter((project) =>
+                project.projectName.toLowerCase().includes(value.toLowerCase())
+              );
+              setFilteredProjects(filtered);
+            }}
             style={{ width: "300px" }}
           />
           <Button onClick={handleReset}>Reset</Button>
@@ -158,7 +175,13 @@ function ProjectView() {
               <Input
                 value={newProjectName}
                 onChange={(e) => setNewProjectName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleModalOk(); // Trigger modal submission on Enter key press
+                  }
+                }}
                 placeholder="Enter project name"
+                autoFocus // Automatically focus the input field when the modal opens
               />
             </Form.Item>
           </Form>
