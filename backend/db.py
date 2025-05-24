@@ -198,6 +198,12 @@ class ChunkDatabase:
         logger.info(f"Fetched {len(projects)} unique projects")
         return projects
 
+    def reset_db(self):
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM file_chunks")
+        conn.commit()
+        conn.close()
 
 
 if __name__ == "__main__":

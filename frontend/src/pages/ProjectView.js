@@ -3,7 +3,7 @@ import { Table, Button, Input, Space, Layout, message, Modal, Form } from "antd"
 import { PlusOutlined, ReloadOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import "../styles/ProjectView.css";
-import { get_projects, setProjectName } from "../utils/api"; // Import setProjectName
+import { get_projects, setProjectName, reset_db } from "../utils/api"; // Import setProjectName
 
 const { Content } = Layout;
 
@@ -41,9 +41,21 @@ function ProjectView() {
   };
 
   // Handle reset functionality
-  const handleReset = () => {
-    setSearchTerm("");
-    setFilteredProjects(projects); // Reset to the original project list
+  const handleReset = async () => {
+    try {
+      await reset_db();  // Call backend to reset
+      setSearchTerm("");
+
+      // Re-fetch projects after reset
+      const data = await get_projects();
+      setProjects(data || []);
+      setFilteredProjects(data || []);
+
+      message.success("Projects reset successfully.");
+    } catch (error) {
+      console.error("Failed to reset projects:", error);
+      message.error("Failed to reset projects.");
+    }
   };
 
   // Handle creating a new project
@@ -55,6 +67,8 @@ function ProjectView() {
       message.error("Failed to prepare for a new project.");
     }
   };
+
+
 
   // Handle modal submission
   const handleModalOk = async () => {

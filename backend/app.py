@@ -218,6 +218,16 @@ def get_projects():
         print(f"Error in /projects: {e}")
         return jsonify({"error": str(e)}), 500
 
+@app.route('/reset_db', methods=['POST'])
+def reset_db():
+    try:
+        db.reset_db()
+        return jsonify({"status": "success", "message": "Database reset completed."}), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+
 
 if __name__ == "__main__":
     app.debug = True  # Enable debug mode for development

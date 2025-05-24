@@ -135,3 +135,15 @@ export const setProjectName = async (projectName) => {
   }
 };
 
+export const reset_db = async () => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/reset_db`);
+    if (response.status !== 200) {
+      throw new Error("Failed to reset projects.");
+    }
+    return response.data;
+  } catch (error) {
+    console.error("Error resetting projects:", error);
+    throw error;
+  }
+};
