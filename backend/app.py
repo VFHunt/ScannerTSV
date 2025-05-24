@@ -1,4 +1,3 @@
-
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import logging
@@ -63,7 +62,7 @@ def upload_file():
     return jsonify({
         "message": "Files uploaded successfully!",
         "files": uploaded_files
-    }), 200
+    }, 200)
 
 @app.route("/process-files", methods=["POST"])
 def process_files():
@@ -83,7 +82,7 @@ def search():
     
     emb = db.get_embeddings_by_project(handler.get_project_name())  # Get chunks from the database
 
-    f = FaissIndex(emb, temperature=0.1)  # Initialize the FAISS index
+    f = FaissIndex(emb, temperature=0.5)  # Initialize the FAISS index
     f.f_search(keywords, db)  # Search for keywords in the FAISS index and save them in the database
 
     #print("[DEBUG] Manually calling add_keyword_and_distance()...")
@@ -163,10 +162,9 @@ def delete_file():
         return jsonify({"error": "File not found"}), 404
 
     
-@app.route("/fetch_results", methods=["GET"])
-def fetch_results():
+@app.route("/fetch_results/<project_name>", methods=["GET"])
+def fetch_results(project_name):
     try:
-        project_name = handler.get_project_name()  # Get the current project name
         results = db.get_filename(project_name)  # Fetch filenames and keywords from the database
         print(f"Fetched results: {results}")  # Log the fetched results
         
@@ -177,7 +175,6 @@ def fetch_results():
 @app.route("/fetch_docresults/<filename>", methods=["GET"])
 def fetch_doc_results(filename):
     try:
-
         print(f"Fetching results for filename: {filename}")
         project_name = handler.get_project_name()
         if not project_name:
@@ -218,6 +215,7 @@ def get_projects():
         print(f"Error in /projects: {e}")
         return jsonify({"error": str(e)}), 500
 
+
 @app.route('/reset_db', methods=['POST'])
 def reset_db():
     try:
@@ -226,6 +224,15 @@ def reset_db():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
+
+
+@app.route("/get_project_name", methods=["GET"])
+def get_project_name():
+    """Return the current project name."""
+    project_name = handler.get_project_name()  # Assuming `handler` has a method to get the project name
+    if not project_name:
+        return jsonify({"error": "No project name set"}), 404
+    return jsonify({"projectName": project_name}), 200
 
 
 

@@ -6,6 +6,9 @@ from faiss_index import FaissIndex  # Replace with your FAISS class path
 import matplotlib.pyplot as plt
 import seaborn as sns
 from constants import get_model
+from gen_syn import GenModel
+
+gpt = GenModel(model="gpt-4o", role="You are a Dutch judge on the quality of the similarity scores of a given word based on the chunks of a text. Keep your answers under 20 words")
 
 # === Load model ===
 encoder = get_model()
@@ -53,28 +56,81 @@ class DummyChunkDatabase:
 # === Main Analysis ===
 pdf_path = "files/test.pdf"
 text = extract_text_from_pdf(pdf_path)
-queries = ["aansprakelijkheid", "betalingstermijn", "opzegging", "herroepingsrecht", "diensten"]
+queries = [
+    "aansprakelijkheid",
+    "betalingstermijn",
+    "opzegging",
+    "herroepingsrecht",
+    "diensten",
+    "verplichtingen",
+    "contractduur",
+    "schadevergoeding",
+    "overmacht",
+    "geheimhouding",
+    "toepasselijk recht",
+    "beëindiging",
+    "geschillen",
+    "leveringsvoorwaarden",
+    "intellectuele eigendom",
+    "facturatie",
+    "boetebeding",
+    "annulering",
+    "garantie",
+    "verzekeringen"
+]
+
 query_vectors = encoder.encode(queries, convert_to_numpy=True, normalize_embeddings=True)
 
 results = []
 
-for chunk_size in [50, 100, 200, 300, 400]:
+
+
+for chunk_size in [500]:
     print(f"🔍 Processing chunk size: {chunk_size}")
     chunks = split_into_chunks(text, max_chars=chunk_size)
     embeddings = prepare_embeddings(chunks, encoder)
     index = FaissIndex(embeddings, temperature = 100)
     db = DummyChunkDatabase()
-    distances, _ = index.f_search(queries, db)
+    distances, indices = index.f_search(queries, db)
+
+    answers = []
 
     for i, query in enumerate(queries):
         scores = distances[i]
+        max_sim = float(np.max(scores))
+        max_idx = int(np.argmax(scores))
+        chunk_idx = indices[i][max_idx]
+        top_chunk = chunks[chunk_idx] if chunk_idx != -1 else "[No matching chunk]"
+
+        answer = gpt.generate_answer( "What do you think should be the cosine similarity score given that we retrieve these"
+            f"Query: {query}\n"
+            f"Top Chunk: {top_chunk}\n"
+            f"Max Similarity: {max_sim:.3f}\n"
+        )
+
+        answers.append(answer)
+
         results.append({
             "Chunk Size": chunk_size,
             "Query": query,
             "Min Similarity": round(float(np.min(scores)), 3),
-            "Max Similarity": round(float(np.max(scores)), 3),
-            "Avg Similarity": round(float(np.mean(scores)), 3)
+            "Max Similarity": round(max_sim, 3),
+            "Avg Similarity": round(float(np.mean(scores)), 3),
+            "Top Chunk": top_chunk[:300] + ("..." if len(top_chunk) > 300 else ""),
+            "GPT Answer": answer
         })
+
+import pandas as pd
+
+df_results = pd.DataFrame(results)
+pd.set_option('display.max_colwidth', None)  # Optional: show full text
+
+# Save table
+df_results.to_csv("semantic_similarity_.csv", index=False)
+
+
+crazy = gpt.generate_answer("I asked you for your answers on the quality of the top chunks retrieved and their cosine similarity, what do you think is the best value to use as a threshold to retrieve the proper chunks, here you get my answers" + str(answers))
+print("GPT SAYS:", crazy)
 
 # Convert to DataFrame and display
 df = pd.DataFrame(results)
@@ -89,20 +145,20 @@ sns.set(style="whitegrid")
 # Convert 'Chunk Size' to categorical (just in case)
 df["Chunk Size"] = df["Chunk Size"].astype(int)
 
-# Create a separate plot for each query
-for query in df["Query"].unique():
-    sub_df = df[df["Query"] == query]
+# # Create a separate plot for each query
+# for query in df["Query"].unique():
+#     sub_df = df[df["Query"] == query]
     
-    plt.figure(figsize=(10, 5))
-    plt.plot(sub_df["Chunk Size"], sub_df["Min Similarity"], marker='o', label="Min Similarity", linestyle='--')
-    plt.plot(sub_df["Chunk Size"], sub_df["Max Similarity"], marker='o', label="Max Similarity", linestyle='-.')
-    plt.plot(sub_df["Chunk Size"], sub_df["Avg Similarity"], marker='o', label="Avg Similarity", linestyle='-')
+#     plt.figure(figsize=(10, 5))
+#     plt.plot(sub_df["Chunk Size"], sub_df["Min Similarity"], marker='o', label="Min Similarity", linestyle='--')
+#     plt.plot(sub_df["Chunk Size"], sub_df["Max Similarity"], marker='o', label="Max Similarity", linestyle='-.')
+#     plt.plot(sub_df["Chunk Size"], sub_df["Avg Similarity"], marker='o', label="Avg Similarity", linestyle='-')
     
-    plt.title(f"Similarity Scores vs Chunk Size — Query: '{query}'")
-    plt.xlabel("Chunk Size (characters)")
-    plt.ylabel("Similarity Score")
-    plt.ylim(0, 1.05)
-    plt.legend()
-    plt.grid(True)
-    plt.tight_layout()
-    plt.show()
+#     plt.title(f"Similarity Scores vs Chunk Size — Query: '{query}'")
+#     plt.xlabel("Chunk Size (characters)")
+#     plt.ylabel("Similarity Score")
+#     plt.ylim(0, 1.05)
+#     plt.legend()
+#     plt.grid(True)
+#     plt.tight_layout()
+#     plt.show()

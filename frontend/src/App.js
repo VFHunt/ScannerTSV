@@ -20,7 +20,7 @@ function App() {
         <Route element={<MainLayout />}>
           <Route path="/newscan" element={<NewScan />} />
           <Route path="/projectview" element={<ProjectView />} />
-          <Route path="/results" element={<Results />} />
+          <Route path="/results/:projectName" element={<Results />} />
           <Route path="/docresults/:filename" element={<DocResults />} /> {/* Dynamic route */}
         </Route>       
       </Routes>

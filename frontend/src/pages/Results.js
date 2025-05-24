@@ -7,18 +7,19 @@ import {
   ReloadOutlined,
   DownloadOutlined,
 } from "@ant-design/icons";
-import { fetchSearchResults, downloadZip } from "../utils/api"; // Import the API function
-import { useNavigate } from "react-router-dom";
+import { fetchSearchResults, downloadZip, setProjectName } from "../utils/api"; // Import setProjectName
+import { useNavigate, useParams } from "react-router-dom"; // Import useParams
 
 function Results() {
   const [searchResults, setSearchResults] = useState([]); // State for search results
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { projectName } = useParams(); // Extract projectName from the URL
 
   const loadSearchResults = async () => {
     setLoading(true);
     try {
-      const data = await fetchSearchResults(); // Fetch search results from the backend
+      const data = await fetchSearchResults(projectName); // Pass projectName to the API
       console.log("Fetched projects:", data);
       const processedResults = processResults(data.results || []); // Process the results
       setSearchResults(processedResults);
@@ -38,8 +39,19 @@ function Results() {
   };
 
   useEffect(() => {
+    const updateProjectName = async () => {
+      try {
+        await setProjectName(projectName); // Call setProjectName to update the backend
+        console.log(`Project name "${projectName}" set successfully.`);
+      } catch (error) {
+        console.error("Error setting project name:", error);
+        message.error("Failed to set the project name.");
+      }
+    };
+
+    updateProjectName(); // Update the project name when the component loads
     loadSearchResults(); // Fetch search results when the component loads
-  }, []);
+  }, [projectName]); // Re-run when projectName changes
 
   const columns = [
     {
@@ -77,7 +89,7 @@ function Results() {
     <div style={{ padding: "2rem" }}>
       <Row justify="space-between" align="middle" style={{ marginBottom: "2rem" }}>
         <Col>
-          <h2 style={{ margin: 0 }}>AI SmartScanner</h2>
+          <h2 style={{ margin: 0 }}>AI SmartScanner - {projectName}</h2> {/* Display project name */}
         </Col>
         <Col>
           <Space>
