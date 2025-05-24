@@ -167,8 +167,11 @@ def fetch_results(project_name):
     try:
         results = db.get_filename(project_name)  # Fetch filenames and keywords from the database
         print(f"Fetched results: {results}")  # Log the fetched results
+
+        cleaned = db.clean_results(results)
+        print(f"Cleaned results: {cleaned}")
         
-        return jsonify({"results": results}), 200
+        return jsonify({"results": cleaned}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     

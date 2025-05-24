@@ -5,6 +5,7 @@ import numpy as np
 from typing import List, Tuple
 import pickle
 import logging
+from ast import literal_eval
 
 # Configure logger
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -90,11 +91,10 @@ class ChunkDatabase:
         logger.info(f"Fetching chunks for project: {project_name}, file: {file_name}")
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
-
         cursor.execute('''
             SELECT chunk_text, page_number, keyword
             FROM file_chunks
-            WHERE project_name = ? AND file_name = ?
+            WHERE project_name = ? AND file_name = ? AND keyword IS NOT NULL AND keyword != ''
         ''', (project_name, file_name))
 
         rows = cursor.fetchall()
@@ -182,6 +182,32 @@ class ChunkDatabase:
         ]
         logger.info(f"Fetched {len(results)} results for project: {project_name}")
         return results
+
+    def clean_results(self, results):
+        cleaned_results = []
+
+        for result in results:
+            raw_keywords = result.get('Keywords', [])
+
+            # Flatten all keywords into one list
+            combined_keywords = []
+            for kw_list in raw_keywords:
+                # Convert string representation of list to actual list
+                try:
+                    kws = literal_eval(kw_list)  # Use literal_eval for safety
+                    combined_keywords.extend(kws)
+                except:
+                    continue
+
+            # Deduplicate and sort
+            unique_keywords = sorted(set(combined_keywords))
+
+            cleaned_results.append({
+                'Document Name': result['Document Name'],
+                'Keywords': unique_keywords  # now a clean list
+            })
+
+        return cleaned_results
 
     def get_projects(self):
         logger.info(f"Searching for existing projects")
