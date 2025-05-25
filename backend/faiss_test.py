@@ -126,7 +126,7 @@ df_results = pd.DataFrame(results)
 pd.set_option('display.max_colwidth', None)  # Optional: show full text
 
 # Save table
-df_results.to_csv("semantic_similarity_.csv", index=False)
+df_results.to_csv("semantic_similarity_ROBBERT.csv", index=False)
 
 
 crazy = gpt.generate_answer("I asked you for your answers on the quality of the top chunks retrieved and their cosine similarity, what do you think is the best value to use as a threshold to retrieve the proper chunks, here you get my answers" + str(answers))

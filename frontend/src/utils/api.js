@@ -7,6 +7,11 @@ export const searchKeywords = async (keyword) => {
   return response.data;
 };
 
+export const searchKeywordsUnscanned = async (keyword) => {
+  const response = await axios.post(`${API_BASE_URL}/search_unscanned`, { keyword });
+  return response.data;
+};
+
 export const uploadFile = async (files) => {
   const formData = new FormData();
   files.forEach((file) => {
@@ -156,6 +161,31 @@ export const getProjectName = async () => {
   } catch (error) {
     console.error("Error fetching project name:", error);
     throw new Error("Failed to fetch project name.");
+  }
+};
+
+export const getProjectDate = async (projectName) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/get_project_date`, {
+      params: {
+        projectName: projectName
+      }
+    });
+    return response.data.creationDate; // Axios automatically parses JSON
+  } catch (error) {
+    console.error(`Error fetching creation date for project "${projectName}":`, error);
+    throw error;
+  }
+};
+
+// Add this new function to api.js: remember to get the name of the project with the handler
+export const get_keywords = async () => { 
+  try {
+    const response = await axios.get(`${API_BASE_URL}/get_keywords`);
+    return response.data.keywords;
+  } catch (error) {
+    console.error("Error fetching keywords:", error);
+    throw error;
   }
 };
 

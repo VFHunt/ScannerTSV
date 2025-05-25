@@ -3,7 +3,7 @@ import { Table, Button, Input, Space, Layout, message, Modal, Form } from "antd"
 import { PlusOutlined, ReloadOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import "../styles/ProjectView.css";
-import { get_projects, setProjectName, reset_db } from "../utils/api"; // Import setProjectName
+import { get_projects, setProjectName, reset_db, getProjectDate } from "../utils/api"; // Import setProjectName
 
 const { Content } = Layout;
 
@@ -105,12 +105,31 @@ function ProjectView() {
     setNewProjectName(""); // Reset the input field
   };
 
-  // Define table columns
+  // Add this function before the columns definition
+const getCreationDate = async (projectName) => {
+  try {
+    const date = await getProjectDate(projectName);
+    return date || "N/A";
+  } catch (error) {
+    console.error(`Error fetching creation date for project "${projectName}":`, error);
+    return "N/A";
+  }
+};
+
+  // Update the columns definition
   const columns = [
     {
       title: "Projectnaam",
       dataIndex: "projectName",
       key: "projectName",
+    },
+    {
+      title: "Datuum angemakt",
+      key: "creationDate",
+      render: async (_, record) => {
+        const date = await getCreationDate(record.projectName);
+        return date;
+      }
     },
     {
       title: "Actie",

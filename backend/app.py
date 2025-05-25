@@ -90,6 +90,25 @@ def search():
 
     return jsonify({"message": "Search completed!"})
 
+@app.route("/search_unscanned", methods=["POST"])
+def search_unscanned():
+    data = request.json
+    keywords = data.get("keyword", [])
+
+    if not isinstance(keywords, list):
+        return jsonify({"error": "No keyword provided"}), 400
+    
+    # todo: the embeddings have to be the ones for the unscanned files
+    emb = None
+
+    f = FaissIndex(emb, temperature=0.5)  # Initialize the FAISS index
+    f.f_search(keywords, db)  # Search for keywords in the FAISS index and save them in the database
+
+    #print("[DEBUG] Manually calling add_keyword_and_distance()...")
+    #db.add_keyword_and_distance("2b5813b4-0079-40b3-aea3-3c886eb2469e", "machine", 0.123)
+
+    return jsonify({"message": "Search completed!"})
+
 @app.route("/download_zip", methods=["GET"])
 def download_zip():
     zip_file_path = "backend/zipped_results"
@@ -238,6 +257,37 @@ def get_project_name():
     return jsonify({"projectName": project_name}), 200
 
 
+@app.route("/get_project_date", methods=["GET"])
+def get_project_date():
+    """Return the creation date for a project."""
+    project_name = request.args.get("projectName")
+    print(f"Getting project date for: {project_name}")
+    if not project_name:
+        return jsonify({"error": "Project name is required"}), 400
+    
+    try:
+        creation_time = db.get_upload_time_project(project_name)
+        print(f"Project creation date: {creation_time}")  # Add debug logging
+        return jsonify({"creationDate": creation_time}), 200
+    except Exception as e:
+        print(f"Error getting project date: {e}")  # Add debug logging
+        return jsonify({"error": str(e)}), 500
+    
+@app.route("/get_keywords", methods=["GET"])
+def get_keywords():
+    """Return the keywords for a project."""
+    project_name = handler.get_project_name()
+    print(f"Getting keywords for project: {project_name}")
+    if not project_name:
+        return jsonify({"error": "Project name is required"}), 400
+    
+    try:
+        keywords = ["this is a test"]
+        # db.get_keywords_by_project(project_name), this would be ideally
+        print(f"Keywords for project {project_name}: {keywords}")  # Add debug logging
+        return jsonify({"keywords": keywords}), 200
+    except Exception as e:
+        print(f"Error getting keywords: {e}")   
 
 if __name__ == "__main__":
     app.debug = True  # Enable debug mode for development

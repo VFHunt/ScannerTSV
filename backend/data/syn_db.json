@@ -326,5 +326,74 @@
         "declaratie",
         "verrekening",
         "afrekening"
+    ],
+    "geschillen": [
+        "conflicten",
+        "onenigheden",
+        "disputen",
+        "twistpunten",
+        "meningsverschillen"
+    ],
+    "overmacht": [
+        "superioriteit",
+        "dominantie",
+        "overwicht",
+        "meerderheid",
+        "machtsoverwicht"
+    ],
+    "garantie": [
+        "waarborg",
+        "zekerheid",
+        "borgtocht",
+        "toezegging",
+        "dekking"
+    ],
+    "toepasselijk recht": [
+        "Geldend recht",
+        "jurisdictie",
+        "wetgeving",
+        "regulering",
+        "rechtsorde"
+    ],
+    "anfspraaken": [
+        "overeenkomsten",
+        "afspraken",
+        "regelingen",
+        "contracten",
+        "convenanten"
+    ],
+    "outgebe": [
+        "Opgebruikt",
+        "verbruikt",
+        "bestemd",
+        "besteed",
+        "uitgeput"
+    ],
+    "search": [
+        "zoeken",
+        "speuren",
+        "doorzoeken",
+        "naspeuren",
+        "opsporen"
+    ],
+    "afspraaken": [
+        "overeenkomsten",
+        "regelingen",
+        "afspraken",
+        "akkoorden",
+        "convenanten"
+    ],
+    "sick": [
+        "Ziek",
+        "onwel",
+        "beroerd",
+        "malaise",
+        "belabberd"
+    ],
+    "afspraacken": [
+        "overeenkomsten",
+        "regelingen",
+        "afspraken",
+        "akkoorden"
     ]
 }

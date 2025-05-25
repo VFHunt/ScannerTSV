@@ -1,27 +1,33 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Tag, Space, message, Row, Col } from "antd";
+import { Table, Button, Tag, Space, message, Row, Col, Input, Modal } from "antd";
 import {
   DeleteOutlined,
   EyeOutlined,
   PlusOutlined,
   ReloadOutlined,
   DownloadOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
-import { fetchSearchResults, downloadZip, setProjectName } from "../utils/api"; // Import setProjectName
-import { useNavigate, useParams } from "react-router-dom"; // Import useParams
+import { fetchSearchResults, downloadZip, setProjectName } from "../utils/api";
+import { useNavigate, useParams } from "react-router-dom";
+import FileUpload from "../components/FileUpload";
+import ScanPopup from "./ScanPopup"; // Import ScanPopup
 
 function Results() {
-  const [searchResults, setSearchResults] = useState([]); // State for search results
+  const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isUploadModalVisible, setIsUploadModalVisible] = useState(false);
+  const [isScanPopupVisible, setIsScanPopupVisible] = useState(false); // State for ScanPopup visibility
   const navigate = useNavigate();
-  const { projectName } = useParams(); // Extract projectName from the URL
+  const { projectName } = useParams();
 
   const loadSearchResults = async () => {
     setLoading(true);
     try {
-      const data = await fetchSearchResults(projectName); // Pass projectName to the API
+      const data = await fetchSearchResults(projectName);
       console.log("Fetched projects:", data);
-      const processedResults = processResults(data.results || []); // Process the results
+      const processedResults = processResults(data.results || []);
       setSearchResults(processedResults);
     } catch (error) {
       message.error("Error fetching search results");
@@ -31,17 +37,16 @@ function Results() {
   };
 
   const processResults = (results) => {
-    // Map the pandas DataFrame-like structure to the required format
     return results.map((row) => ({
-      filename: row["Document Name"], // Map "Document Name" to "filename"
-      keywords: row["Keywords"], // Map "Keywords" to "keywords"
+      filename: row["Document Name"],
+      keywords: row["Keywords"],
     }));
   };
 
   useEffect(() => {
     const updateProjectName = async () => {
       try {
-        await setProjectName(projectName); // Call setProjectName to update the backend
+        await setProjectName(projectName);
         console.log(`Project name "${projectName}" set successfully.`);
       } catch (error) {
         console.error("Error setting project name:", error);
@@ -49,9 +54,9 @@ function Results() {
       }
     };
 
-    updateProjectName(); // Update the project name when the component loads
-    loadSearchResults(); // Fetch search results when the component loads
-  }, [projectName]); // Re-run when projectName changes
+    updateProjectName();
+    loadSearchResults();
+  }, [projectName]);
 
   const columns = [
     {
@@ -77,7 +82,7 @@ function Results() {
         <Button
           type="link"
           icon={<EyeOutlined />}
-          onClick={() => navigate(`/docresults/${record.filename}`)} // Pass the filename as a route parameter
+          onClick={() => navigate(`/docresults/${record.filename}`)}
         >
           View
         </Button>
@@ -85,36 +90,83 @@ function Results() {
     },
   ];
 
+  const handleStartScan = (woordenlijst, documentSelectie, terms) => {
+    console.log("Starting scan with:");
+    console.log("Woordenlijst:", woordenlijst);
+    console.log("Document Selectie:", documentSelectie);
+    console.log("Terms:", terms);
+    setIsScanPopupVisible(false); // Close the ScanPopup after starting the scan
+  };
+
   return (
     <div style={{ padding: "2rem" }}>
-      <Row justify="space-between" align="middle" style={{ marginBottom: "2rem" }}>
-        <Col>
-          <h2 style={{ margin: 0 }}>AI SmartScanner - {projectName}</h2> {/* Display project name */}
+      <Row gutter={[16, 16]} align="middle">
+        <Col flex="auto">
+          <Input
+            placeholder="Zoekterm"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{ width: 200 }}
+            suffix={<SearchOutlined />}
+          />
         </Col>
         <Col>
           <Space>
-            <Button icon={<ReloadOutlined />} onClick={() => loadSearchResults()}>
-              Refresh
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => setIsScanPopupVisible(true)} // Open ScanPopup
+            >
+              Nieuwe Scan
             </Button>
-            <Button icon={<PlusOutlined />} type="primary" onClick={() => navigate("/upload")}>
-              Upload nieuwe bestanden
-            </Button>
-            <Button icon={<DownloadOutlined />} onClick={() => message.info("Download not implemented")}>
+            <Button
+              icon={<DownloadOutlined />}
+              onClick={() => message.info("Download not implemented")}
+            >
               Bestanden Downloaden
+            </Button>
+            <Button
+              icon={<PlusOutlined />}
+              onClick={() => setIsUploadModalVisible(true)}
+            >
+              Bestand toevoegen
             </Button>
           </Space>
         </Col>
       </Row>
 
       <Table
+        style={{ marginTop: "1rem" }}
         columns={columns}
-        dataSource={searchResults} // Use search results as the data source
+        dataSource={searchResults}
         loading={loading}
         rowKey="filename"
         pagination={{
           pageSize: 10,
           showSizeChanger: false,
         }}
+      />
+
+      <Modal
+        title="Bestand toevoegen"
+        open={isUploadModalVisible}
+        onCancel={() => setIsUploadModalVisible(false)}
+        footer={null}
+        width={800}
+      >
+        <FileUpload
+          projectName={projectName}
+          onUploadComplete={() => {
+            setIsUploadModalVisible(false);
+            loadSearchResults();
+          }}
+        />
+      </Modal>
+
+      <ScanPopup // Add ScanPopup component
+        visible={isScanPopupVisible}
+        onCancel={() => setIsScanPopupVisible(false)}
+        onStartScan={handleStartScan}
       />
     </div>
   );

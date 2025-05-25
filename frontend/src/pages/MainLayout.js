@@ -11,15 +11,33 @@ function MainLayout() {
   const location = useLocation(); // Get the current location
 
   const handleBack = () => {
-    if (window.history.state && window.history.state.idx > 0) {
-      if (location.pathname === "/newscan" || location.pathname === "/projectview") {
-        navigate("/projectview"); // Redirect to project view instead of navigating back to newscan
-      } else {
-        navigate(-1); // Navigate to the previous page
-      }
-    } else {
-      navigate("/projectview"); // Default to project view if no history exists
+    console.log("Current Path:", location.pathname); // Debugging: Log the current path
+
+    if (location.pathname === "/newscan") {
+      console.log("Navigating from newscan to project view."); // Debugging: Log navigation action
+      navigate("/projectview"); // From newscan, go to project view
+      return;
     }
+
+    if (location.pathname === "/projectview") {
+      console.log("Already on project view. No further navigation."); // Debugging: Stay on project view
+      return;
+    }
+
+    if (location.pathname === "/docresults") {
+      console.log("Navigating from docresults to results."); // Debugging: Log navigation action
+      navigate("/results"); // From docresults, go to results
+      return;
+    }
+
+    if (location.pathname === "/results") {
+      console.log("Navigating from results to project view."); // Debugging: Log navigation action
+      navigate("/projectview"); // From results, go to project view
+      return;
+    }
+
+    console.log("Unhandled path. Redirecting to project view."); // Debugging: Default case
+    navigate("/projectview"); // Default to project view for any other case
   };
 
   useEffect(() => {
