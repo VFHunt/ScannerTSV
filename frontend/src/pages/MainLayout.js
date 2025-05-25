@@ -1,44 +1,14 @@
 import React, { useEffect } from "react";
 import { Layout, Button } from "antd";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
-import { ArrowLeftOutlined } from "@ant-design/icons"; // Import the back arrow icon
-import Sidebar from "./Sidebar"; // Assuming Sidebar is your sidebar component
+import { ArrowLeftOutlined } from "@ant-design/icons";
+import Sidebar from "./Sidebar";
 
 const { Sider, Content } = Layout;
 
 function MainLayout() {
   const navigate = useNavigate();
-  const location = useLocation(); // Get the current location
-
-  const handleBack = () => {
-    console.log("Current Path:", location.pathname); // Debugging: Log the current path
-
-    if (location.pathname === "/newscan") {
-      console.log("Navigating from newscan to project view."); // Debugging: Log navigation action
-      navigate("/projectview"); // From newscan, go to project view
-      return;
-    }
-
-    if (location.pathname === "/projectview") {
-      console.log("Already on project view. No further navigation."); // Debugging: Stay on project view
-      return;
-    }
-
-    if (location.pathname === "/docresults") {
-      console.log("Navigating from docresults to results."); // Debugging: Log navigation action
-      navigate("/results"); // From docresults, go to results
-      return;
-    }
-
-    if (location.pathname === "/results") {
-      console.log("Navigating from results to project view."); // Debugging: Log navigation action
-      navigate("/projectview"); // From results, go to project view
-      return;
-    }
-
-    console.log("Unhandled path. Redirecting to project view."); // Debugging: Default case
-    navigate("/projectview"); // Default to project view for any other case
-  };
+  const location = useLocation();
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -46,7 +16,7 @@ function MainLayout() {
     }, 1000);
 
     return () => {
-      clearTimeout(timer); // Cleanup the timer
+      clearTimeout(timer);
     };
   }, []);
 
@@ -76,17 +46,14 @@ function MainLayout() {
         >
           {/* Back Button */}
           <Button
-            type="link"
             icon={<ArrowLeftOutlined />}
-            onClick={handleBack}
+            onClick={() => navigate(-1)}
             style={{ marginBottom: "20px" }}
           >
             Back
           </Button>
 
-          <React.Fragment>
-            <Outlet />
-          </React.Fragment>
+          <Outlet />
         </Content>
       </Layout>
     </Layout>

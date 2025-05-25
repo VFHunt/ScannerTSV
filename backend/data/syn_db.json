@@ -416,5 +416,12 @@
         "schadeloosstelling",
         "genoegdoening",
         "restitutie"
+    ],
+    "learning": [
+        "Leren",
+        "Studie",
+        "Kennisverwerving",
+        "Onderwijs",
+        "Inzicht"
     ]
 }

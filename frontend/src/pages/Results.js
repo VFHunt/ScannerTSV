@@ -1,58 +1,107 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Tag, Space, message, Row, Col, Input, Modal } from "antd";
+import {
+  Table,
+  Button,
+  Tag,
+  Space,
+  message,
+  Row,
+  Col,
+  Input,
+  Modal,
+  Checkbox,
+} from "antd";
 import {
   DeleteOutlined,
   EyeOutlined,
   PlusOutlined,
-  ReloadOutlined,
   DownloadOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
-import { fetchSearchResults, downloadZip, setProjectName, deleteFile } from "../utils/api";
+import {
+  fetchSearchResults,
+  downloadZip,
+  setProjectName,
+  deleteFile,
+  statusData,
+} from "../utils/api";
 import { useNavigate, useParams } from "react-router-dom";
 import FileUpload from "../components/FileUpload";
-import ScanPopup from "./ScanPopup"; // Import ScanPopup
+import ScanPopup from "./ScanPopup";
 
 function Results() {
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [isUploadModalVisible, setIsUploadModalVisible] = useState(false);
-  const [isScanPopupVisible, setIsScanPopupVisible] = useState(false); // State for ScanPopup visibility
+  const [isScanPopupVisible, setIsScanPopupVisible] = useState(false);
   const navigate = useNavigate();
   const { projectName } = useParams();
+  const [fileStatuses, setFileStatuses] = useState({});
 
-  const loadSearchResults = async () => {
+  const loadSearchResultsAndStatuses = async () => {
     setLoading(true);
     try {
-      const data = await fetchSearchResults(projectName);
-      console.log("Fetched projects:", data);
-      const processedResults = processResults(data.results || []);
+      // Fetch search results
+      const searchData = await fetchSearchResults(projectName);
+      console.log("Fetched projects:", searchData);
+      const processedResults = processResults(searchData.results || []);
       setSearchResults(processedResults);
     } catch (error) {
-      message.error("Error fetching search results");
+      console.error("Error fetching search results:", error);
+      message.error("Error fetching search results.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      // Fetch status data
+      const statusDataResult = await statusData(projectName);
+      console.log("Status data received:", statusDataResult);
+
+      if (Array.isArray(statusDataResult)) {
+        const statuses = {};
+        statusDataResult.forEach((item) => {
+          statuses[item.file_name] = item;
+        });
+        setFileStatuses(statuses);
+      } else {
+        console.error("Invalid format for status data:", statusDataResult);
+        message.error("Invalid status data format from server.");
+      }
+    } catch (error) {
+      console.error("Error fetching status data:", error);
+      message.error("Error fetching status data.");
     } finally {
       setLoading(false);
     }
   };
 
-const handleDeleteFile = async (fileName) => {
-  try {
-    await deleteFile(projectName, fileName); // use API function
-    message.success(`Bestand '${fileName}' succesvol verwijderd.`);
-    loadSearchResults(); // Refresh the table
-  } catch (error) {
-    console.error("Delete failed:", error);
-    message.error("Bestand verwijderen is mislukt.");
-  }
-};
 
+  useEffect(() => {
+    loadSearchResultsAndStatuses();
+  }, [projectName]);
+
+  const handleDeleteFile = async (fileName) => {
+    try {
+      await deleteFile(projectName, fileName);
+      message.success(`Bestand '${fileName}' succesvol verwijderd.`);
+      loadSearchResultsAndStatuses();
+    } catch (error) {
+      console.error("Delete failed:", error);
+      message.error("Bestand verwijderen is mislukt.");
+    }
+  };
 
   const processResults = (results) => {
-    return results.map((row) => ({
-      filename: row["Document Name"],
-      keywords: row["Keywords"],
-    }));
+    return results.map((row) => {
+      const filename = row["Document Name"] || row["file_name"];
+      return {
+        filename,
+        keywords: row["Keywords"],
+        key: filename,
+      };
+    });
   };
 
   useEffect(() => {
@@ -67,14 +116,22 @@ const handleDeleteFile = async (fileName) => {
     };
 
     updateProjectName();
-    loadSearchResults();
   }, [projectName]);
 
   const columns = [
     {
-      title: "Bestandsnaam",
+      title: (
+        <>
+          <Checkbox /> Bestandsnaam
+        </>
+      ),
       dataIndex: "filename",
       key: "filename",
+      render: (filename) => (
+        <>
+          <Checkbox /> {filename}
+        </>
+      ),
     },
     {
       title: "Matchende termen",
@@ -88,6 +145,37 @@ const handleDeleteFile = async (fileName) => {
         )),
     },
     {
+      title: "Status",
+      dataIndex: "filename",
+      key: "status",
+      render: (filename) => {
+        const status = fileStatuses[filename];
+        return status ? (
+          status.scanned ? (
+            <Tag color="green">Scanned</Tag>
+          ) : (
+            <Tag color="orange">Not Scanned</Tag>
+          )
+        ) : (
+          "Loading..."
+        );
+      },
+    },
+    {
+      title: "Laatste scan",
+      dataIndex: "filename",
+      key: "scanned_time",
+      render: (filename) => {
+        const status = fileStatuses[filename];
+        return status?.scanned_time
+          ? new Date(status.scanned_time).toLocaleString("nl-NL", {
+              dateStyle: "short",
+              timeStyle: "short",
+            })
+          : "N/A";
+      },
+    },
+    {
       title: "Actie",
       key: "action",
       render: (_, record) => (
@@ -95,7 +183,7 @@ const handleDeleteFile = async (fileName) => {
           <Button
             type="link"
             icon={<EyeOutlined />}
-            onClick={() => navigate(`/docresults/${record.filename}`)} // Pass the filename as a route parameter
+            onClick={() => navigate(`/docresults/${record.filename}`)}
           >
             View
           </Button>
@@ -113,11 +201,8 @@ const handleDeleteFile = async (fileName) => {
   ];
 
   const handleStartScan = (woordenlijst, documentSelectie, terms) => {
-    console.log("Starting scan with:");
-    console.log("Woordenlijst:", woordenlijst);
-    console.log("Document Selectie:", documentSelectie);
-    console.log("Terms:", terms);
-    setIsScanPopupVisible(false); // Close the ScanPopup after starting the scan
+    console.log("Starting scan with:", woordenlijst, documentSelectie, terms);
+    setIsScanPopupVisible(false);
   };
 
   return (
@@ -137,7 +222,7 @@ const handleDeleteFile = async (fileName) => {
             <Button
               type="primary"
               icon={<PlusOutlined />}
-              onClick={() => setIsScanPopupVisible(true)} // Open ScanPopup
+              onClick={() => setIsScanPopupVisible(true)}
             >
               Nieuwe Scan
             </Button>
@@ -180,12 +265,12 @@ const handleDeleteFile = async (fileName) => {
           projectName={projectName}
           onUploadComplete={() => {
             setIsUploadModalVisible(false);
-            loadSearchResults();
+            loadSearchResultsAndStatuses();
           }}
         />
       </Modal>
 
-      <ScanPopup // Add ScanPopup component
+      <ScanPopup
         visible={isScanPopupVisible}
         onCancel={() => setIsScanPopupVisible(false)}
         onStartScan={handleStartScan}

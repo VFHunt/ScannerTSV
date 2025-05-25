@@ -9,7 +9,7 @@ function LoginPage() {
 
   const handleLogin = () => {
     // For simplicity, no authentication logic is implemented
-    navigate("/projectview"); // Navigate to the ProjectView page
+    navigate("/projectview", {replace: true}); // Navigate to the ProjectView page
   };
 
   return (

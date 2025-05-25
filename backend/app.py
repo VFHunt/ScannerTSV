@@ -303,6 +303,28 @@ def get_keywords():
         print(f"Error getting keywords: {e}")
         return jsonify({"error": str(e)}), 500
 
+@app.route("/status_data", methods=["GET"])
+def status_data():
+    """Return the status data for the frontend."""
+    try:
+        project_name = request.args.get("project_name")
+        if not project_name:
+            return jsonify({"error": "Project name is required"}), 400
+
+        # Hard-coded status data
+        status_data_list = [
+            {"file_name": "test.pdf", "scanned": True, "scanned_time": "2025-05-25T18:16:21.766752"},
+            {"file_name": "test2.pdf", "scanned": True, "scanned_time": "2025-05-25T18:16:21.779831"},
+            {"file_name": "test3.pdf", "scanned": True, "scanned_time": "2025-05-25T18:16:21.822380"}
+        ]
+
+        # Log the processed data
+        print("Processed status data:", status_data_list, type(status_data_list))
+        return jsonify({"statuses": status_data_list}), 200
+
+    except Exception as e:
+        print(f"Error in /status_data: {e}")
+        return jsonify({"error": str(e)}), 500
     
 if __name__ == "__main__":
     app.debug = True  # Enable debug mode for development
