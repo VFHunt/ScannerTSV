@@ -342,27 +342,26 @@ class ChunkDatabase:
         return embeddings
 
     def get_all_retrieved_keywords_by_project(self, project_name):
-        logger.info(f"Getting keywords for project: {project_name}")
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT DISTINCT keyword
-            FROM file_chunks 
-            WHERE project_name = ? AND keyword IS NOT NULL AND keyword != ''
-        """, (project_name,))
-        rows = cursor.fetchall()
-        conn.close()
-        keywords_found = [row[0].strip() for row in rows if row[0] and row[0].strip()]
-        # Remove duplicates while preserving order
-        seen = set()
-        unique_keywords = []
-        for keyword in keywords_found:
-            if keyword not in seen:
-                seen.add(keyword)
-                unique_keywords.append(keyword)
+            logger.info(f"Getting keywords for project: {project_name}")
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT DISTINCT keyword
+                FROM file_chunks 
+                WHERE project_name = ? AND keyword IS NOT NULL AND keyword != ''
+            """, (project_name,))
+            rows = cursor.fetchall()
+            conn.close()
+            keywords_found = [row[0].strip() for row in rows if row[0] and row[0].strip()]
+            # Remove duplicates while preserving order
+            seen = set()
+            unique_keywords = []
+            for keyword in keywords_found:
+                if keyword not in seen:
+                    seen.add(keyword)
+                    unique_keywords.append(keyword)
 
-        return unique_keywords
-
+            return unique_keywords
 
 
 if __name__ == "__main__":
