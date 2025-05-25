@@ -87,7 +87,7 @@ def search():
 
     #print("[DEBUG] Manually calling add_keyword_and_distance()...")
     #db.add_keyword_and_distance("2b5813b4-0079-40b3-aea3-3c886eb2469e", "machine", 0.123)
-
+    db.mark_project_chunks_scanned(handler.get_project_name())
     return jsonify({"message": "Search completed!"})
 
 @app.route("/search_unscanned", methods=["POST"])
@@ -117,8 +117,6 @@ def download_zip():
         return send_file(zip_file_path, as_attachment=True)
     else:
         return jsonify({"error": "ZIP file not found."}), 404
-
-
     
 @app.route("/get_synonyms", methods=["POST"])
 def getting_syn(): 
@@ -163,22 +161,6 @@ def list_uploaded_files():
                 "keywords": "N/A"
             })
     return jsonify({"files": files})
-
-@app.route("/delete_file", methods=["POST"])
-def delete_file():
-    data = request.get_json()
-    filename = data.get("filename")
-
-    if not filename:
-        return jsonify({"error": "Filename not provided"}), 400
-
-    file_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
-
-    if os.path.exists(file_path):
-        os.remove(file_path)
-        return jsonify({"message": f"{filename} deleted successfully"}), 200
-    else:
-        return jsonify({"error": "File not found"}), 404
 
     
 @app.route("/fetch_results/<project_name>", methods=["GET"])
@@ -246,8 +228,6 @@ def reset_db():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
-
-
 @app.route("/get_project_name", methods=["GET"])
 def get_project_name():
     """Return the current project name."""
@@ -256,6 +236,36 @@ def get_project_name():
         return jsonify({"error": "No project name set"}), 404
     return jsonify({"projectName": project_name}), 200
 
+@app.route("/delete_project", methods=["POST"])
+def delete_project():
+    try:
+        data = request.get_json()
+        project_name = data.get("projectName") if data else None
+
+        if not project_name:
+            return jsonify({"error": "Missing project name"}), 400
+
+        db.delete_project(project_name)
+        return jsonify({"success": True, "message": f"Project '{project_name}' deleted successfully."}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/delete_file", methods=["POST"])
+def delete_file_endpoint():
+    try:
+        data = request.get_json()
+        project_name = data.get("project_name")
+        file_name = data.get("file_name")
+
+        if not project_name or not file_name:
+            return jsonify({"error": "Missing project_name or file_name"}), 400
+
+        db.delete_file(project_name, file_name)
+        return jsonify({"message": f"File '{file_name}' deleted from project '{project_name}'."}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/get_project_date", methods=["GET"])
 def get_project_date():

@@ -8,7 +8,7 @@ import {
   DownloadOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
-import { fetchSearchResults, downloadZip, setProjectName } from "../utils/api";
+import { fetchSearchResults, downloadZip, setProjectName, deleteFile } from "../utils/api";
 import { useNavigate, useParams } from "react-router-dom";
 import FileUpload from "../components/FileUpload";
 import ScanPopup from "./ScanPopup"; // Import ScanPopup
@@ -35,6 +35,18 @@ function Results() {
       setLoading(false);
     }
   };
+
+const handleDeleteFile = async (fileName) => {
+  try {
+    await deleteFile(projectName, fileName); // use API function
+    message.success(`Bestand '${fileName}' succesvol verwijderd.`);
+    loadSearchResults(); // Refresh the table
+  } catch (error) {
+    console.error("Delete failed:", error);
+    message.error("Bestand verwijderen is mislukt.");
+  }
+};
+
 
   const processResults = (results) => {
     return results.map((row) => ({
@@ -77,15 +89,25 @@ function Results() {
     },
     {
       title: "Actie",
-      key: "view",
+      key: "action",
       render: (_, record) => (
-        <Button
-          type="link"
-          icon={<EyeOutlined />}
-          onClick={() => navigate(`/docresults/${record.filename}`)}
-        >
-          View
-        </Button>
+        <Space>
+          <Button
+            type="link"
+            icon={<EyeOutlined />}
+            onClick={() => navigate(`/docresults/${record.filename}`)} // Pass the filename as a route parameter
+          >
+            View
+          </Button>
+          <Button
+            type="link"
+            danger
+            icon={<DeleteOutlined />}
+            onClick={() => handleDeleteFile(record.filename)}
+          >
+            Delete
+          </Button>
+        </Space>
       ),
     },
   ];

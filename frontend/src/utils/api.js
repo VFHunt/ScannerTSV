@@ -42,11 +42,6 @@ export const getSynonyms = async (keywordsList) => {
   return await response.json();
 };
 
-export const deleteFile = async (filename) => {
-  const response = await axios.post(`${API_BASE_URL}/delete_file`, { filename });
-  return response.data;
-};
-
 export const processFiles = async () => {
   const response = await axios.post(`${API_BASE_URL}/process-files`);
   return response.data;
@@ -189,3 +184,31 @@ export const get_keywords = async () => {
   }
 };
 
+export const deleteProject = async (projectName) => {
+  const response = await axios.post(
+    `${API_BASE_URL}/delete_project`,
+    { projectName },               // <-- send projectName here
+    { headers: { "Content-Type": "application/json" } }
+  );
+
+  if (response.status !== 200) {
+    throw new Error("Failed to delete the project.");
+  }
+
+  return response.data;
+};
+
+
+export const deleteFile = async (projectName, fileName) => {
+  const response = await axios.post(
+    `${API_BASE_URL}/delete_file`,
+    { project_name: projectName, file_name: fileName },  // Match backend field names
+    { headers: { "Content-Type": "application/json" } }
+  );
+
+  if (response.status !== 200) {
+    throw new Error("Failed to delete the file.");
+  }
+
+  return response.data.message; // Return the success message
+};
