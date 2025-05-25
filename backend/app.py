@@ -208,16 +208,27 @@ def set_project_name():
         print(f"Error in /set_project_name: {e}")
         return jsonify({"error": str(e)}), 500
 
-@app.route("/projects", methods=["GET"])
+@app.route("/projects", methods=["GET"]) # HERE IS THE IMPLEMENTATION
 def get_projects():
     try:
-        # Retrieve the list of projects from the ProjectHandler
-        projects = db.get_projects()  # Returns list of project names as strings
-        project_data = [{"projectName": name} for name in projects]
+        # Get list of project names
+        project_names = db.get_projects()  # e.g., ["project1", "project2", ...]
+
+        project_data = []
+        for name in project_names:
+            upload_date, scanned = db.get_project_time_and_status(name)
+            project_data.append({
+                "projectName": name,
+                "uploadDate": upload_date,
+                "scanned": scanned
+            })
+
         return jsonify({"projects": project_data}), 200
+
     except Exception as e:
         print(f"Error in /projects: {e}")
         return jsonify({"error": str(e)}), 500
+
 
 
 @app.route('/reset_db', methods=['POST'])
@@ -231,7 +242,7 @@ def reset_db():
 @app.route("/get_project_name", methods=["GET"])
 def get_project_name():
     """Return the current project name."""
-    project_name = handler.get_project_name()  # Assuming `handler` has a method to get the project name
+    project_name = handler.get_project_name()
     if not project_name:
         return jsonify({"error": "No project name set"}), 404
     return jsonify({"projectName": project_name}), 200
@@ -267,6 +278,7 @@ def delete_file_endpoint():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
 @app.route("/get_project_date", methods=["GET"])
 def get_project_date():
     """Return the creation date for a project."""
@@ -282,26 +294,28 @@ def get_project_date():
     except Exception as e:
         print(f"Error getting project date: {e}")  # Add debug logging
         return jsonify({"error": str(e)}), 500
-    
+
+
 @app.route("/get_keywords", methods=["GET"])
 def get_keywords():
     project_name = handler.get_project_name()
     print(f"Getting keywords for project: {project_name}")
-    
+
     if not project_name:
         return jsonify({"error": "Project name is required"}), 400
-    
+
     try:
         keywords = db.get_all_retrieved_keywords_by_project(project_name)
         if not keywords:
             return jsonify({"error": "No keywords found for this project"}), 404
 
-        print(f"Unique keywords for project {project_name}: {keywords}")
-        return jsonify({"keywords": keywords}), 200
+        return jsonify({"project_name": project_name, "keywords": keywords})
 
     except Exception as e:
-        print(f"Error getting keywords: {e}")
-        return jsonify({"error": str(e)}), 500
+        print(f"Error fetching keywords: {e}")
+        return jsonify({"error": "Internal server error"}), 500
+
+
 
 @app.route("/status_data", methods=["GET"])
 def status_data():

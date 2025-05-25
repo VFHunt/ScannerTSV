@@ -224,3 +224,29 @@ export const statusData = async (projectName) => {
   
   return response.data.statuses; // Return the statuses array
 };
+export const getProjectStatus = async (projectName) => {
+  const response = await axios.get(
+    `${API_BASE_URL}/project/status`,
+    {
+      params: { project_name: projectName },
+      headers: { "Content-Type": "application/json" }
+    }
+  );
+
+  if (response.status !== 200) {
+    throw new Error("Failed to fetch project status.");
+  }
+
+  return {
+    uploadDate: response.data.upload_date,
+    projectScanned: response.data.project_scanned,
+  }
+};
+
+
+
+
+
+
+
+

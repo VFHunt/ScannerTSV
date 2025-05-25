@@ -83,9 +83,7 @@ class FileHandler:
         if not self.files:
             logger.warning("No files to process")
             return {}
-
         results = {}
-
         for file_path in self.files:
             logger.info(f"Processing file: {file_path}")
             chunks = self.extract_text_chunks(file_path)  # Extract text chunks
@@ -101,7 +99,6 @@ class FileHandler:
                 }
                 for i in range(len(chunks))
             ]
-
         # logger.debug(f"Results structure: {results}")
         self.set_results(results)  # Set results for each file
         return results

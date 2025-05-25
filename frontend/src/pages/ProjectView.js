@@ -3,7 +3,7 @@ import { Table, Button, Input, Space, Layout, message, Modal, Form } from "antd"
 import { PlusOutlined, ReloadOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import "../styles/ProjectView.css";
-import { get_projects, setProjectName, reset_db, getProjectDate, deleteProject } from "../utils/api"; // Import setProjectName
+import { get_projects, setProjectName, reset_db, deleteProject } from "../utils/api"; // Import setProjectName
 
 const { Content } = Layout;
 
@@ -28,7 +28,7 @@ function ProjectView() {
         message.error("No projects have beeen created yet");
       }
     };
-  
+
     fetchProjects();
   }, []);
 
@@ -126,47 +126,53 @@ function ProjectView() {
     setNewProjectName(""); // Reset the input field
   };
 
-  // Add this function before the columns definition
-const getCreationDate = async (projectName) => {
-  try {
-    const date = await getProjectDate(projectName);
-    return date || "N/A";
-  } catch (error) {
-    console.error(`Error fetching creation date for project "${projectName}":`, error);
-    return "N/A";
-  }
-};
 
   // Update the columns definition
-  const columns = [
+    const columns = [
     {
-      title: "Projectnaam",
-      dataIndex: "projectName",
-      key: "projectName",
+        title: "Projectnaam",
+        dataIndex: "projectName",
+        key: "projectName",
     },
     {
-      title: "Datuum angemakt",
-      key: "creationDate",
-      render: async (_, record) => {
-        const date = await getCreationDate(record.projectName);
-        return date;
-      }
+        title: "Status",
+        dataIndex: "scanned",
+        key: "scanned",
+        render: (scanned) => (scanned ? "Geslaagd" : "Niet gescand"),
     },
     {
-      title: "Actie",
-      key: "action",
-      render: (_, record) => (
-        <Space size="middle">
-          <Button type="link" onClick={() => navigate(`/results/${record.projectName}`)}> {/* Pass the project name */}
-            View
-          </Button>
-          <Button type="link" danger onClick={() => handleDeleteProject(record.projectName)}>
-            Delete
-          </Button>
-        </Space>
-      ),
+        title: "Datum Aangemaakt",
+        dataIndex: "uploadDate",
+        key: "uploadDate",
+        render: (uploadDate) => {
+          const date = new Date(uploadDate);
+          return isNaN(date)
+            ? "Onbekend"
+            : date.toLocaleString("nl-NL", {
+                day: "2-digit",
+                month: "long",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              });
+        },
     },
-  ];
+    {
+        title: "Actie",
+        key: "action",
+        render: (_, record) => (
+          <Space size="middle">
+            <Button type="link" onClick={() => navigate(`/results/${record.projectName}`)}>
+              Bekijk
+            </Button>
+            <Button type="link" danger onClick={() => handleDeleteProject(record.projectName)}>
+              Verwijderen
+            </Button>
+          </Space>
+        ),
+        },
+    ];
+
 
   return (
     <Layout style={{ minHeight: "100vh", padding: "20px", backgroundColor: "#f0f2f5" }}>
