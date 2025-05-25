@@ -1,6 +1,6 @@
 import sqlite3
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 import numpy as np
 from typing import List, Tuple
 import pickle
@@ -30,7 +30,8 @@ class ChunkDatabase:
                 page_number INTEGER,
                 upload_date TEXT,
                 keyword TEXT,
-                distance REAL
+                distance REAL,
+                scanned BOOLEAN DEFAULT 0
             )
         ''')
         existing_columns = [row[1] for row in cursor.execute("PRAGMA table_info(file_chunks)").fetchall()]
@@ -39,6 +40,10 @@ class ChunkDatabase:
             cursor.execute("ALTER TABLE file_chunks ADD COLUMN keyword TEXT")
         if "distance" not in existing_columns:
             cursor.execute("ALTER TABLE file_chunks ADD COLUMN distance REAL")
+        if "scanned" not in existing_columns:
+            cursor.execute("ALTER TABLE file_chunks ADD COLUMN scanned INTEGER DEFAULT 0")
+        if "scanned_time" not in existing_columns:
+            cursor.execute("ALTER TABLE file_chunks ADD COLUMN scanned_time TEXT")
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_project ON file_chunks(project_name)')
         conn.commit()
         conn.close()
@@ -245,20 +250,6 @@ class ChunkDatabase:
         logger.info(f"Fetched {len(rows)} results for project: {project_name}")
         return [row[0] for row in rows]
 
-    def get_upload_time_file(self, file_name, project_name):
-        logger.info(f"Fetching upload time for distinct file {file_name} under project: {project_name}")
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT DISTINCT upload_date
-            FROM file_chunks
-            WHERE project_name = ? AND file_name = ?
-        """, (project_name,))
-        rows = cursor.fetchall()
-        conn.close()
-        logger.info(f"Fetched {len(rows)} results for file {file_name} under project: {project_name}")
-        return [row[0] for row in rows]
-
     def delete_project(self, project_name):
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
@@ -279,6 +270,74 @@ class ChunkDatabase:
         conn.commit()
         conn.close()
 
+    def mark_project_chunks_scanned(self, project_name):
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        scanned_time = datetime.now(timezone.utc).isoformat()
+        cursor.execute("""
+            UPDATE file_chunks
+            SET scanned = 1, scanned_time = ?
+            WHERE project_name = ?
+        """, (scanned_time, project_name,))
+        conn.commit()
+        conn.close()
+
+    def get_files_scanned_status_and_time(self, project_name):
+        """
+        For each file in a project, check if scanned, and if yes, get the latest scanned time.
+        Returns a list of dicts: [{'file_name': ..., 'scanned': bool, 'scanned_time': str or None}, ...]
+        """
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT file_name,
+                   MAX(CASE WHEN scanned = 1 THEN upload_date ELSE NULL END) AS scanned_time,
+                   MAX(scanned) as is_scanned
+            FROM file_chunks
+            WHERE project_name = ?
+            GROUP BY file_name
+        ''', (project_name,))
+
+        rows = cursor.fetchall()
+        conn.close()
+
+        results = []
+        for file_name, scanned_time, is_scanned in rows:
+            results.append({
+                "file_name": file_name,
+                "scanned": bool(is_scanned),
+                "scanned_time": scanned_time if scanned_time else None
+            })
+        return results
+
+    def get_new_embeddings_by_project(self, project_name: str) -> List[Tuple[str, np.ndarray]]:
+        logger.info(f"Fetching embeddings for project: {project_name}, not scanned")
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT chunk_id, embedding
+            FROM file_chunks WHERE project_name = ? AND scanned  == 0
+        ''', (project_name,))
+        rows = cursor.fetchall()
+        conn.close()
+        embeddings = [(chunk_id, np.frombuffer(embedding_blob, dtype=np.float32)) for chunk_id, embedding_blob in rows]
+        return embeddings
+
+    def get_all_retrieved_keywords_by_project(self, project_name):
+        logger.info(f"Getting keywords for project: {project_name}")
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT DISTINCT keyword
+            FROM file_chunks 
+            WHERE project_name = ? AND keyword IS NOT NULL AND keyword != ''
+        """, (project_name,))
+        rows = cursor.fetchall()
+        conn.close()
+        keywords_found = [row[0] for row in rows]
+        return keywords_found
+
+
 
 if __name__ == "__main__":
     db = ChunkDatabase()  # This triggers init_db()
@@ -289,3 +348,8 @@ if __name__ == "__main__":
     #for result in results:
     #    print(result)
     db.get_projects()
+    results = db.get_files_scanned_status_and_time(project_name='test')
+    for r in results:
+        print(r)
+    keywords = db.get_all_retrieved_keywords_by_project(project_name='test')
+    for k in keywords: print(k)

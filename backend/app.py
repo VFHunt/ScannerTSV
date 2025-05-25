@@ -87,7 +87,7 @@ def search():
 
     #print("[DEBUG] Manually calling add_keyword_and_distance()...")
     #db.add_keyword_and_distance("2b5813b4-0079-40b3-aea3-3c886eb2469e", "machine", 0.123)
-
+    db.mark_project_chunks_scanned(handler.get_project_name())
     return jsonify({"message": "Search completed!"})
 
 @app.route("/download_zip", methods=["GET"])
@@ -98,8 +98,6 @@ def download_zip():
         return send_file(zip_file_path, as_attachment=True)
     else:
         return jsonify({"error": "ZIP file not found."}), 404
-
-
     
 @app.route("/get_synonyms", methods=["POST"])
 def getting_syn(): 
@@ -211,8 +209,6 @@ def reset_db():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
-
-
 @app.route("/get_project_name", methods=["GET"])
 def get_project_name():
     """Return the current project name."""
@@ -251,9 +247,6 @@ def delete_file_endpoint():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-
-
 
 
 if __name__ == "__main__":
