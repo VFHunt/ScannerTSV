@@ -465,5 +465,47 @@
         "gegevens",
         "synoniemen",
         "beschikbaar"
+    ],
+    "ballerina": [
+        "danseres",
+        "balletdanseres",
+        "soliste",
+        "balleteur",
+        "prima ballerina"
+    ],
+    "cappuccina": [
+        "Espressovariatie",
+        "melkschuimdrank",
+        "koffiespecialiteit",
+        "barista-mix",
+        "cafeïneblend"
+    ],
+    "legal": [
+        "Wettelijk",
+        "Juridisch",
+        "Rechtsgeldig",
+        "Legitiek",
+        "Gerechtelijk"
+    ],
+    "constructie": [
+        "opbouw",
+        "structuur",
+        "bouwwerk",
+        "samenstelling",
+        "ontwerp"
+    ],
+    "controleer": [
+        "Verifieer",
+        "inspecteer",
+        "onderzoek",
+        "toets",
+        "analyseer"
+    ],
+    "Overzicht": [
+        "Samenvatting",
+        "Schets",
+        "Uitzicht",
+        "Tabel",
+        "Inventarisatie"
     ]
 }

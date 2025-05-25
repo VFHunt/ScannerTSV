@@ -194,10 +194,7 @@ function ProjectView() {
             }}
             style={{ width: "300px" }}
           />
-          <Button onClick={handleReset}>Reset</Button>
-          <Button type="primary" onClick={handleSearch}>
-            Search
-          </Button>
+          <Button onClick={handleReset}>Alle projecten verwijderen</Button>
           <Button
             type="primary"
             icon={<PlusOutlined />}
