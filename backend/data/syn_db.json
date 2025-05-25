@@ -395,5 +395,26 @@
         "regelingen",
         "afspraken",
         "akkoorden"
+    ],
+    "betalingstermijn": [
+        "Factuurperiode",
+        "krediettermijn",
+        "betalingstijd",
+        "aflossingsperiode",
+        "termijnbetalingen"
+    ],
+    "herroepingsrecht": [
+        "Annuleringsrecht",
+        "intrekkingsrecht",
+        "terugtredingsrecht",
+        "bedenktijd",
+        "verzakingsrecht"
+    ],
+    "schadevergoeding": [
+        "Vergoeding",
+        "compensatie",
+        "schadeloosstelling",
+        "genoegdoening",
+        "restitutie"
     ]
 }

@@ -17,36 +17,40 @@ class ChunkDatabase:
         self.init_db()
 
     def init_db(self):
-        logger.info("Initializing the database.")
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS file_chunks (
-                chunk_id TEXT PRIMARY KEY,
-                project_name TEXT,
-                file_name TEXT,
-                chunk_text TEXT,
-                embedding BLOB,
-                page_number INTEGER,
-                upload_date TEXT,
-                keyword TEXT,
-                distance REAL,
-                scanned BOOLEAN DEFAULT 0
-            )
-        ''')
-        existing_columns = [row[1] for row in cursor.execute("PRAGMA table_info(file_chunks)").fetchall()]
+        try:
+            logger.info("Initializing the database.")
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS file_chunks (
+                    chunk_id TEXT PRIMARY KEY,
+                    project_name TEXT,
+                    file_name TEXT,
+                    chunk_text TEXT,
+                    embedding BLOB,
+                    page_number INTEGER,
+                    upload_date TEXT,
+                    keyword TEXT,
+                    distance REAL,
+                    scanned BOOLEAN DEFAULT 0
+                )
+            ''')
+            existing_columns = [row[1] for row in cursor.execute("PRAGMA table_info(file_chunks)").fetchall()]
 
-        if "keyword" not in existing_columns:
-            cursor.execute("ALTER TABLE file_chunks ADD COLUMN keyword TEXT")
-        if "distance" not in existing_columns:
-            cursor.execute("ALTER TABLE file_chunks ADD COLUMN distance REAL")
-        if "scanned" not in existing_columns:
-            cursor.execute("ALTER TABLE file_chunks ADD COLUMN scanned INTEGER DEFAULT 0")
-        if "scanned_time" not in existing_columns:
-            cursor.execute("ALTER TABLE file_chunks ADD COLUMN scanned_time TEXT")
-        cursor.execute('CREATE INDEX IF NOT EXISTS idx_project ON file_chunks(project_name)')
-        conn.commit()
-        conn.close()
+            if "keyword" not in existing_columns:
+                cursor.execute("ALTER TABLE file_chunks ADD COLUMN keyword TEXT")
+            if "distance" not in existing_columns:
+                cursor.execute("ALTER TABLE file_chunks ADD COLUMN distance REAL")
+            if "scanned" not in existing_columns:
+                cursor.execute("ALTER TABLE file_chunks ADD COLUMN scanned INTEGER DEFAULT 0")
+            if "scanned_time" not in existing_columns:
+                cursor.execute("ALTER TABLE file_chunks ADD COLUMN scanned_time TEXT")
+            cursor.execute('CREATE INDEX IF NOT EXISTS idx_project ON file_chunks(project_name)')
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            logger.error(f"Error during database initialization: {e}")
+            raise
 
     def print_all_rows(self):
         conn = sqlite3.connect(self.db_path)
