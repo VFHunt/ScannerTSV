@@ -352,8 +352,16 @@ class ChunkDatabase:
         """, (project_name,))
         rows = cursor.fetchall()
         conn.close()
-        keywords_found = [row[0] for row in rows]
-        return keywords_found
+        keywords_found = [row[0].strip() for row in rows if row[0] and row[0].strip()]
+        # Remove duplicates while preserving order
+        seen = set()
+        unique_keywords = []
+        for keyword in keywords_found:
+            if keyword not in seen:
+                seen.add(keyword)
+                unique_keywords.append(keyword)
+
+        return unique_keywords
 
 
 
