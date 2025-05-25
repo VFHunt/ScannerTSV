@@ -212,3 +212,30 @@ export const deleteFile = async (projectName, fileName) => {
 
   return response.data.message; // Return the success message
 };
+
+export const getProjectStatus = async (projectName) => {
+  const response = await axios.get(
+    `${API_BASE_URL}/project/status`,
+    {
+      params: { project_name: projectName },
+      headers: { "Content-Type": "application/json" }
+    }
+  );
+
+  if (response.status !== 200) {
+    throw new Error("Failed to fetch project status.");
+  }
+
+  return {
+    uploadDate: response.data.upload_date,
+    projectScanned: response.data.project_scanned,
+  }
+};
+
+
+
+
+
+
+
+
