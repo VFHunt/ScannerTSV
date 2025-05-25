@@ -236,19 +236,33 @@ class ChunkDatabase:
         conn.commit()
         conn.close()
 
-    def get_upload_time_project(self, project_name):
-        logger.info(f"Fetching upload time for distinct project: {project_name}")
+    def get_project_time_and_status(self, project_name):
+        logger.info(f"Checking upload time and scan status for project: {project_name}")
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
+
+        # Get one upload_date (for example, the earliest upload_date for the project)
         cursor.execute("""
-            SELECT DISTINCT upload_date
+            SELECT MIN(upload_date)
             FROM file_chunks
             WHERE project_name = ?
         """, (project_name,))
-        rows = cursor.fetchall()
+        upload_date_row = cursor.fetchone()
+        upload_date = upload_date_row[0] if upload_date_row else None
+
+        # Check if any file chunk in the project is not scanned (scanned == 0)
+        cursor.execute("""
+            SELECT EXISTS(
+                SELECT 1 FROM file_chunks WHERE project_name = ? AND scanned = 0
+            )
+        """, (project_name,))
+        any_not_scanned_row = cursor.fetchone()
+        any_not_scanned = bool(any_not_scanned_row[0]) if any_not_scanned_row else False
         conn.close()
-        logger.info(f"Fetched {len(rows)} results for project: {project_name}")
-        return [row[0] for row in rows]
+        # Project scanned status: True if all scanned, False if any not scanned
+        project_scanned = not any_not_scanned
+        logger.info(f"Project '{project_name}' upload date: {upload_date}, scanned status: {project_scanned}")
+        return upload_date, project_scanned
 
     def delete_project(self, project_name):
         conn = sqlite3.connect(self.db_path)
@@ -353,3 +367,6 @@ if __name__ == "__main__":
         print(r)
     keywords = db.get_all_retrieved_keywords_by_project(project_name='test')
     for k in keywords: print(k)
+    upload_time, scanned_status = db.get_project_time_and_status(project_name='test')
+    print(f"Upload time: {upload_time}")
+    print(f"Project scanned: {scanned_status}")
