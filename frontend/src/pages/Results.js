@@ -7,7 +7,7 @@ import {
   ReloadOutlined,
   DownloadOutlined,
 } from "@ant-design/icons";
-import { fetchSearchResults, downloadZip, setProjectName } from "../utils/api"; // Import setProjectName
+import { fetchSearchResults, downloadZip, setProjectName, deleteFile } from "../utils/api"; // Import setProjectName
 import { useNavigate, useParams } from "react-router-dom"; // Import useParams
 
 function Results() {
@@ -29,6 +29,18 @@ function Results() {
       setLoading(false);
     }
   };
+
+const handleDeleteFile = async (fileName) => {
+  try {
+    await deleteFile(projectName, fileName); // use API function
+    message.success(`Bestand '${fileName}' succesvol verwijderd.`);
+    loadSearchResults(); // Refresh the table
+  } catch (error) {
+    console.error("Delete failed:", error);
+    message.error("Bestand verwijderen is mislukt.");
+  }
+};
+
 
   const processResults = (results) => {
     // Map the pandas DataFrame-like structure to the required format
@@ -72,15 +84,25 @@ function Results() {
     },
     {
       title: "Actie",
-      key: "view",
+      key: "action",
       render: (_, record) => (
-        <Button
-          type="link"
-          icon={<EyeOutlined />}
-          onClick={() => navigate(`/docresults/${record.filename}`)} // Pass the filename as a route parameter
-        >
-          View
-        </Button>
+        <Space>
+          <Button
+            type="link"
+            icon={<EyeOutlined />}
+            onClick={() => navigate(`/docresults/${record.filename}`)} // Pass the filename as a route parameter
+          >
+            View
+          </Button>
+          <Button
+            type="link"
+            danger
+            icon={<DeleteOutlined />}
+            onClick={() => handleDeleteFile(record.filename)}
+          >
+            Delete
+          </Button>
+        </Space>
       ),
     },
   ];

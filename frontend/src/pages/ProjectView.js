@@ -3,7 +3,7 @@ import { Table, Button, Input, Space, Layout, message, Modal, Form } from "antd"
 import { PlusOutlined, ReloadOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import "../styles/ProjectView.css";
-import { get_projects, setProjectName, reset_db } from "../utils/api"; // Import setProjectName
+import { get_projects, setProjectName, reset_db, deleteProject } from "../utils/api"; // Import setProjectName
 
 const { Content } = Layout;
 
@@ -68,7 +68,28 @@ function ProjectView() {
     }
   };
 
-
+  const handleDeleteProject = async (projectName) => {
+    Modal.confirm({
+      title: `Delete project "${projectName}"?`,
+      content: "This action cannot be undone.",
+      okText: "Delete",
+      okType: "danger",
+      cancelText: "Cancel",
+      onOk: async () => {
+        try {
+          await deleteProject(projectName);
+          message.success(`Project '${projectName}' deleted successfully.`);
+          // Refresh the projects list after deletion
+          const data = await get_projects();
+          setProjects(data || []);
+          setFilteredProjects(data || []);
+        } catch (error) {
+          message.error("Failed to delete the project.");
+          console.error(error);
+        }
+      },
+    });
+  };
 
   // Handle modal submission
   const handleModalOk = async () => {
@@ -120,7 +141,7 @@ function ProjectView() {
           <Button type="link" onClick={() => navigate(`/results/${record.projectName}`)}> {/* Pass the project name */}
             View
           </Button>
-          <Button type="link" danger onClick={() => console.log("Delete", record)}>
+          <Button type="link" danger onClick={() => handleDeleteProject(record.projectName)}>
             Delete
           </Button>
         </Space>
