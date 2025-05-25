@@ -232,7 +232,7 @@ class ChunkDatabase:
         conn.close()
 
     def get_upload_time_project(self, project_name):
-        logger.info(f"Fetchin upload time for distinct project: {project_name}")
+        logger.info(f"Fetching upload time for distinct project: {project_name}")
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
         cursor.execute("""
@@ -243,9 +243,10 @@ class ChunkDatabase:
         rows = cursor.fetchall()
         conn.close()
         logger.info(f"Fetched {len(rows)} results for project: {project_name}")
+        return [row[0] for row in rows]
 
     def get_upload_time_file(self, file_name, project_name):
-        logger.info(f"Fetchin upload time for distinct file {file_name} under project: {project_name}")
+        logger.info(f"Fetching upload time for distinct file {file_name} under project: {project_name}")
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
         cursor.execute("""
@@ -256,6 +257,7 @@ class ChunkDatabase:
         rows = cursor.fetchall()
         conn.close()
         logger.info(f"Fetched {len(rows)} results for file {file_name} under project: {project_name}")
+        return [row[0] for row in rows]
 
     def delete_project(self, project_name):
         conn = sqlite3.connect(self.db_path)
