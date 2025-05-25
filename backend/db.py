@@ -164,31 +164,42 @@ class ChunkDatabase:
         conn.close()
 
     def get_filename(self, project_name):
-        logger.info(f"Fetching filenames for project: {project_name} with non-empty keywords")
+        logger.info(f"Fetching filenames and keywords for project: {project_name}")
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
+
+        # Fetch all rows for the project, including scanned flag, filename and keyword
         cursor.execute('''
-            SELECT file_name, keyword
+            SELECT file_name, keyword, scanned
             FROM file_chunks
-            WHERE project_name = ? AND keyword IS NOT NULL AND keyword != ''
+            WHERE project_name = ?
         ''', (project_name,))
 
         rows = cursor.fetchall()
         conn.close()
-        # Group keywords by filename
+
         grouped = {}
-        for file_name, keyword in rows:
+
+        for file_name, keyword, scanned in rows:
             if file_name not in grouped:
                 grouped[file_name] = set()
-            grouped[file_name].add(keyword)
-        # Format for frontend
-        results = [
-            {
-                "Document Name": file,
-                "Keywords": list(keywords)
-            }
-            for file, keywords in grouped.items()
-        ]
+
+            if scanned == 0:
+                # If scanned is 0, no keywords, so keep empty set
+                continue
+            else:
+                # For scanned != 0, only add non-null, non-empty keywords
+                if keyword is not None and keyword.strip() != '':
+                    grouped[file_name].add(keyword.strip())
+
+        # Format results: if scanned=0 files should have empty keyword list
+        results = []
+        for file_name, keywords in grouped.items():
+            results.append({
+                "Document Name": file_name,
+                "Keywords": list(keywords)  # Will be empty list if scanned=0
+            })
+
         logger.info(f"Fetched {len(results)} results for project: {project_name}")
         return results
 
@@ -334,7 +345,7 @@ class ChunkDatabase:
         cursor = conn.cursor()
         cursor.execute('''
             SELECT chunk_id, embedding
-            FROM file_chunks WHERE project_name = ? AND scanned  == 0
+            FROM file_chunks WHERE project_name = ? AND scanned == 0
         ''', (project_name,))
         rows = cursor.fetchall()
         conn.close()
