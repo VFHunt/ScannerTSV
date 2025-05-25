@@ -30,9 +30,11 @@ import FileUpload from "../components/FileUpload";
 import ScanPopup from "./ScanPopup";
 
 function Results() {
-  const [searchResults, setSearchResults] = useState([]);
+
+  const [searchResults, setSearchResults] = useState([]); // Original data
+  const [filteredResults, setFilteredResults] = useState([]); // Filtered data
   const [loading, setLoading] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState(""); // Search term
   const [isUploadModalVisible, setIsUploadModalVisible] = useState(false);
   const [isScanPopupVisible, setIsScanPopupVisible] = useState(false);
   const navigate = useNavigate();
@@ -47,6 +49,7 @@ function Results() {
       console.log("Fetched projects:", searchData);
       const processedResults = processResults(searchData.results || []);
       setSearchResults(processedResults);
+      setFilteredResults(processedResults); // Initialize filtered results
     } catch (error) {
       console.error("Error fetching search results:", error);
       message.error("Error fetching search results.");
@@ -77,10 +80,24 @@ function Results() {
     }
   };
 
-
   useEffect(() => {
     loadSearchResultsAndStatuses();
   }, [projectName]);
+
+  // Filter logic
+  useEffect(() => {
+    if (searchTerm.trim() === "") {
+      setFilteredResults(searchResults); // Reset to all results if search term is empty
+    } else {
+      const lowercasedSearchTerm = searchTerm.toLowerCase();
+      const filtered = searchResults.filter((result) =>
+        result.keywords.some((keyword) =>
+          keyword.toLowerCase().includes(lowercasedSearchTerm)
+        )
+      );
+      setFilteredResults(filtered);
+    }
+  }, [searchTerm, searchResults]);
 
   const handleDeleteFile = async (fileName) => {
     try {
@@ -245,7 +262,7 @@ function Results() {
       <Table
         style={{ marginTop: "1rem" }}
         columns={columns}
-        dataSource={searchResults}
+        dataSource={filteredResults} // Use filtered results here
         loading={loading}
         rowKey="filename"
         pagination={{
@@ -272,7 +289,10 @@ function Results() {
 
       <ScanPopup
         visible={isScanPopupVisible}
-        onCancel={() => setIsScanPopupVisible(false)}
+        onCancel={() => {
+          setIsScanPopupVisible(false);
+          loadSearchResultsAndStatuses(); // Refresh the page data
+        }}
         onStartScan={handleStartScan}
       />
     </div>

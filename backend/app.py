@@ -325,12 +325,14 @@ def status_data():
         if not project_name:
             return jsonify({"error": "Project name is required"}), 400
 
+        status_data_list = db.get_files_scanned_status_and_time(project_name)
+        print(f"Status data for project '{project_name}': {status_data_list}")  # Debug logging
         # Hard-coded status data
-        status_data_list = [
-            {"file_name": "test.pdf", "scanned": True, "scanned_time": "2025-05-25T18:16:21.766752"},
-            {"file_name": "test2.pdf", "scanned": True, "scanned_time": "2025-05-25T18:16:21.779831"},
-            {"file_name": "test3.pdf", "scanned": True, "scanned_time": "2025-05-25T18:16:21.822380"}
-        ]
+        # status_data_list = [
+        #     {"file_name": "test.pdf", "scanned": True, "scanned_time": None},
+        #     {"file_name": "test2.pdf", "scanned": True, "scanned_time": "2025-05-25T18:16:21.779831"},
+        #     {"file_name": "test3.pdf", "scanned": False, "scanned_time": "2025-05-25T18:16:21.822380"}
+        # ]
 
         # Log the processed data
         print("Processed status data:", status_data_list, type(status_data_list))

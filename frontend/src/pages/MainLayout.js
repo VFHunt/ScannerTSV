@@ -42,6 +42,8 @@ function MainLayout() {
             backgroundColor: "#fff",
             borderRadius: "16px",
             boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
+            overflow: "auto", // Enable scrolling for overflowing content
+            maxHeight: "calc(100vh - 80px)", // Adjust height to fit within the viewport
           }}
         >
           {/* Back Button */}

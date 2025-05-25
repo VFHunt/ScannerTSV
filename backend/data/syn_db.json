@@ -423,5 +423,33 @@
         "Kennisverwerving",
         "Onderwijs",
         "Inzicht"
+    ],
+    "niveaumeting": [
+        "hoogtemeting",
+        "peiling",
+        "niveaucontrole",
+        "kalibratie",
+        "hoogtebepaling"
+    ],
+    "grondwerken ": [
+        "aarde",
+        "ontgraving",
+        "bodemwerkzaamheden",
+        "uitgraving",
+        "fundering"
+    ],
+    "fundering ": [
+        "Basis",
+        "onderbouw",
+        "grondslag",
+        "fundament",
+        "bodem"
+    ],
+    "kadastraal ": [
+        "Landmeetkundig",
+        "perceelgebonden",
+        "grondregistratie",
+        "eigendomsadministratie",
+        "vastgoedregistratie"
     ]
 }

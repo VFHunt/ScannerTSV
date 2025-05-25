@@ -47,8 +47,16 @@ function FileUpload() {
       setIsUploadComplete(true);
 
       // Display the list of successfully uploaded files
-      const fileNames = files.map((file) => file.name).join(", ");
-      setStatusMessage(`The following files have been successfully uploaded and processed: ${fileNames}`);
+      setStatusMessage(
+        <>
+          <p>The following files have been successfully uploaded and processed:</p>
+          <ul>
+            {files.map((file, index) => (
+              <li key={index}>{file.name}</li>
+            ))}
+          </ul>
+        </>
+      );
     } catch (error) {
       console.error("Upload or processing error:", error);
       setStatusMessage("Something went wrong during upload or processing.");
