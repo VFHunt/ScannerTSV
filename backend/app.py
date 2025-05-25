@@ -97,8 +97,7 @@ def search_unscanned():
 
     if not isinstance(keywords, list):
         return jsonify({"error": "No keyword provided"}), 400
-    
-    # todo: the embeddings have to be the ones for the unscanned files
+
     emb = db.get_new_embeddings_by_project(handler.get_project_name())  # Get chunks from the database
 
     f = FaissIndex(emb, temperature=0.5)  # Initialize the FAISS index
@@ -106,7 +105,7 @@ def search_unscanned():
 
     #print("[DEBUG] Manually calling add_keyword_and_distance()...")
     #db.add_keyword_and_distance("2b5813b4-0079-40b3-aea3-3c886eb2469e", "machine", 0.123)
-
+    db.mark_project_chunks_scanned(handler.get_project_name())
     return jsonify({"message": "Search completed!"})
 
 @app.route("/download_zip", methods=["GET"])

@@ -213,7 +213,6 @@ export const deleteFile = async (projectName, fileName) => {
   return response.data.message; // Return the success message
 };
 
-
 export const statusData = async (projectName) => {
   const response = await axios.get(`${API_BASE_URL}/status_data`, {
     params: { project_name: projectName } // Pass the project
@@ -242,6 +241,7 @@ export const getProjectStatus = async (projectName) => {
     projectScanned: response.data.project_scanned,
   }
 };
+
 
 
 
