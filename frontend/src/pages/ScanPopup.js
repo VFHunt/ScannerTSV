@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Button, Select, Input, Radio, Space, List, Tag } from "antd";
-import { 
-  getSynonyms, 
+import { Modal, Button, Select, Input, Radio, Space } from "antd";
+import {
+  getSynonyms,
   searchKeywords,
   searchKeywordsUnscanned,
-  get_keywords // Add this import
+  get_keywords,
 } from "../utils/api";
 
 const { Option } = Select;
@@ -17,7 +17,7 @@ const ScanPopup = ({ visible, onCancel, onStartScan, onRefresh }) => {
   const [documentSelectie, setDocumentSelectie] = useState("alles");
   const [message, setMessage] = useState("");
 
-  // Keyword handling functions
+  // Add a keyword to the list
   const addKeyword = () => {
     if (keyword && !keywordsList.includes(keyword)) {
       setKeywordsList([...keywordsList, keyword]);
@@ -25,42 +25,47 @@ const ScanPopup = ({ visible, onCancel, onStartScan, onRefresh }) => {
     }
   };
 
-  const removeKeyword = (kw) => {
-    setKeywordsList(keywordsList.filter((k) => k !== kw));
+  const handleSynonymGeneration = async () => {
+      try {
+        if (keywordsList.length === 0) {
+          setMessage("No keywords available to generate synonyms.");
+          return;
+        }
+
+        setMessage(`Generating synonyms for: ${keywordsList.join(", ")}`);
+        const data = await getSynonyms(keywordsList); // Fetch synonyms for all keywords in the list
+        setSynonymsList(data.synonyms || []); // Assuming the API returns an array of synonyms
+        setMessage("Synonyms generated successfully!");
+      } catch (error) {
+        setMessage(`Error in Synonym Generation: ${error.response?.data?.error || error.message}, please make sure you uploaded one or more files.`);
+      }
+    };
+    // Remove a keyword from the list
+    const removeKeyword = (keywordToRemove) => {
+      setKeywordsList((prevKeywordsList) =>
+        prevKeywordsList.filter((kw) => kw !== keywordToRemove)
+      );
+    };
+
+  // Remove a synonym from the list
+  const removeSynonym = (synonymToRemove) => {
+    setSynonymsList((prevSynonymsList) =>
+      prevSynonymsList.filter((syn) => syn !== synonymToRemove)
+    );
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       addKeyword();
     }
-  };
-
-  // Synonym handling functions
-  const handleSynonymGeneration = async () => {
-    try {
-          if (keywordsList.length === 0) {
-            setMessage("No keywords available to generate synonyms.");
-            return;
-          }
-    
-          setMessage(`Generating synonyms for: ${keywordsList.join(", ")}`);
-          const data = await getSynonyms(keywordsList); // Fetch synonyms for all keywords in the list
-          setSynonymsList(data.synonyms || []); // Assuming the API returns an array of synonyms
-          setMessage("Synonyms generated successfully!");
-        } catch (error) {
-          setMessage(`Error in Synonym Generation: ${error.response?.data?.error || error.message}, please make sure you uploaded one or more files.`);
-        }
-  };
-
-  const removeSynonym = (syn) => {
-    setSynonymsList(synonymsList.filter((s) => s !== syn));
   };
 
   const handleScan = async () => {
     try {
       const terms = [...keywordsList, ...synonymsList];
-      const scanFunction = documentSelectie === "alles" ? searchKeywords : searchKeywordsUnscanned;
-      
+      const scanFunction =
+        documentSelectie === "alles" ? searchKeywords : searchKeywordsUnscanned;
+
       const result = await scanFunction(terms);
       onStartScan(woordenlijst, documentSelectie, terms);
       onCancel();
@@ -70,7 +75,6 @@ const ScanPopup = ({ visible, onCancel, onStartScan, onRefresh }) => {
     }
   };
 
-  // Add useEffect to fetch keywords when woordenlijst changes
   useEffect(() => {
     const fetchKeywords = async () => {
       if (woordenlijst === "previously_searched") {
@@ -91,7 +95,6 @@ const ScanPopup = ({ visible, onCancel, onStartScan, onRefresh }) => {
     fetchKeywords();
   }, [woordenlijst]);
 
-  // Update the Select onChange handler
   const handleWoordenlijstChange = (value) => {
     setWoordenlijst(value);
     setMessage(""); // Clear any existing messages
@@ -106,11 +109,7 @@ const ScanPopup = ({ visible, onCancel, onStartScan, onRefresh }) => {
         <Button key="cancel" onClick={onCancel}>
           Cancel
         </Button>,
-        <Button
-          key="start"
-          type="primary"
-          onClick={handleScan}  // Updated to use handleScan
-        >
+        <Button key="start" type="primary" onClick={handleScan}>
           Start Scan
         </Button>,
       ]}
@@ -137,65 +136,102 @@ const ScanPopup = ({ visible, onCancel, onStartScan, onRefresh }) => {
               onPressEnter={addKeyword}
               style={{ width: "calc(100% - 88px)", marginRight: "8px" }}
             />
-            <Button 
-              type="primary"
-              onClick={addKeyword}
-            >
+            <Button type="primary" onClick={addKeyword}>
               Add
             </Button>
           </div>
 
-          <div style={{ marginBottom: "1rem" }}>
-            <Space wrap>
-              {keywordsList.map((kw, index) => (
-                <Tag
-                  key={index}
-                  closable
-                  onClose={() => removeKeyword(kw)}
+          <div className="keywordsRow" style={{ marginBottom: "1rem" }}>
+            {keywordsList.map((kw, index) => (
+              <div
+                key={index}
+                className="keyword"
+                style={{
+                  display: "inline-block",
+                  margin: "4px",
+                  padding: "4px 8px",
+                  backgroundColor: "#f0f8ff", // Light blue background
+                  color: "#333", // Darker text for contrast
+                  fontSize: "12px", // Smaller font size
+                  borderRadius: "4px",
+                  border: "1px solid #ccc",
+                }}
+              >
+                {kw}
+                <button
+                  onClick={() => removeKeyword(kw)}
+                  className="deleteButton"
+                  style={{
+                    marginLeft: "8px",
+                    backgroundColor: "transparent",
+                    border: "none",
+                    color: "#ff4d4f", // Red color for delete button
+                    cursor: "pointer",
+                    fontSize: "12px",
+                  }}
                 >
-                  {kw}
-                </Tag>
-              ))}
-            </Space>
+                  ✖
+                </button>
+              </div>
+            ))}
           </div>
 
           <div style={{ marginBottom: "1rem" }}>
-            <Button 
-              type="primary"
-              onClick={handleSynonymGeneration}
-            >
+            <Button type="primary" onClick={handleSynonymGeneration}>
               Extra words
             </Button>
           </div>
 
-          <div style={{ marginBottom: "1rem" }}>
-            <Space wrap>
-              {synonymsList.map((syn, index) => (
-                <Tag
-                  key={index}
-                  closable
-                  onClose={() => removeSynonym(syn)}
+          <div className="keywordsRow" style={{ marginBottom: "1rem" }}>
+            {synonymsList.map((syn, index) => (
+              <div key={index} className="keyword">
+                {syn}
+                <button
+                  onClick={() => removeSynonym(syn)}
+                  className="deleteButton"
                 >
-                  {syn}
-                </Tag>
-              ))}
-            </Space>
+                  ✖
+                </button>
+              </div>
+            ))}
           </div>
 
           {message && <div style={{ marginBottom: "1rem" }}>{message}</div>}
         </div>
       ) : (
-        <div style={{ marginBottom: "1rem" }}>
-          <List
-            dataSource={keywordsList}
-            renderItem={(term) => (
-              <List.Item>
-                <Tag closable onClose={() => removeKeyword(term)}>
-                  {term}
-                </Tag>
-              </List.Item>
-            )}
-          />
+        <div className="keywordsRow" style={{ marginBottom: "1rem" }}>
+          {keywordsList.map((kw, index) => (
+            <div
+              key={index}
+              className="keyword"
+              style={{
+                display: "inline-block",
+                margin: "4px",
+                padding: "4px 8px",
+                backgroundColor: "#f0f8ff", // Light blue background
+                color: "#333", // Darker text for contrast
+                fontSize: "12px", // Smaller font size
+                borderRadius: "4px",
+                border: "1px solid #ccc",
+              }}
+            >
+              {kw}
+              <button
+                onClick={() => removeKeyword(kw)}
+                className="deleteButton"
+                style={{
+                  marginLeft: "8px",
+                  backgroundColor: "transparent",
+                  border: "none",
+                  color: "#ff4d4f", // Red color for delete button
+                  cursor: "pointer",
+                  fontSize: "12px",
+                }}
+              >
+                ✖
+              </button>
+            </div>
+          ))}
         </div>
       )}
 

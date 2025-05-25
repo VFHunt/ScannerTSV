@@ -5,6 +5,7 @@ import numpy as np
 from typing import List, Tuple
 import pickle
 import logging
+import ast
 from ast import literal_eval
 
 # Configure logger
@@ -353,13 +354,26 @@ class ChunkDatabase:
         rows = cursor.fetchall()
         conn.close()
         keywords_found = [row[0].strip() for row in rows if row[0] and row[0].strip()]
+
+        all_words = []
+
+        for item in keywords_found:
+            # Safely parse the string to a list object
+            words_list = ast.literal_eval(item)
+            # Clean each word and extend all_words
+            cleaned_words = [word.strip() for word in words_list]
+            all_words.extend(cleaned_words)
+
         # Remove duplicates while preserving order
         seen = set()
         unique_keywords = []
-        for keyword in keywords_found:
+        for keyword in all_words:
             if keyword not in seen:
                 seen.add(keyword)
                 unique_keywords.append(keyword)
+
+
+        
         return unique_keywords
 
 

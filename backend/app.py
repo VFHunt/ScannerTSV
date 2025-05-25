@@ -138,7 +138,7 @@ def getting_syn():
                 db_handler.add_synonyms(keyword, synonyms)
 
             all_words.extend(synonyms)
-            print(f'MAIN;"{keyword}" synonyms: {synonyms}')
+            # print(f'MAIN;"{keyword}" synonyms: {synonyms}')
 
         all_words = list(set(word.lower() for word in all_words))
         
@@ -167,10 +167,10 @@ def list_uploaded_files():
 def fetch_results(project_name):
     try:
         results = db.get_filename(project_name)  # Fetch filenames and keywords from the database
-        print(f"Fetched results: {results}")  # Log the fetched results
+        # print(f"Fetched results: {results}")  # Log the fetched results
 
         cleaned = db.clean_results(results)
-        print(f"Cleaned results: {cleaned}")
+        # print(f"Cleaned results: {cleaned}")
         
         return jsonify({"results": cleaned}), 200
     except Exception as e:
@@ -179,7 +179,7 @@ def fetch_results(project_name):
 @app.route("/fetch_docresults/<filename>", methods=["GET"])
 def fetch_doc_results(filename):
     try:
-        print(f"Fetching results for filename: {filename}")
+        # print(f"Fetching results for filename: {filename}")
         project_name = handler.get_project_name()
         if not project_name:
             return jsonify({"error": "Missing project name"}), 400
@@ -306,6 +306,7 @@ def get_keywords():
 
     try:
         keywords = db.get_all_retrieved_keywords_by_project(project_name)
+        print(f"Keywords for project '{project_name}': {keywords}")  # Debug logging
         if not keywords:
             return jsonify({"error": "No keywords found for this project"}), 404
 
@@ -326,16 +327,7 @@ def status_data():
             return jsonify({"error": "Project name is required"}), 400
 
         status_data_list = db.get_files_scanned_status_and_time(project_name)
-        print(f"Status data for project '{project_name}': {status_data_list}")  # Debug logging
-        # Hard-coded status data
-        # status_data_list = [
-        #     {"file_name": "test.pdf", "scanned": True, "scanned_time": None},
-        #     {"file_name": "test2.pdf", "scanned": True, "scanned_time": "2025-05-25T18:16:21.779831"},
-        #     {"file_name": "test3.pdf", "scanned": False, "scanned_time": "2025-05-25T18:16:21.822380"}
-        # ]
 
-        # Log the processed data
-        print("Processed status data:", status_data_list, type(status_data_list))
         return jsonify({"statuses": status_data_list}), 200
 
     except Exception as e:
