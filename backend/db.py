@@ -231,6 +231,52 @@ class ChunkDatabase:
         conn.commit()
         conn.close()
 
+    def get_upload_time_project(self, project_name):
+        logger.info(f"Fetchin upload time for distinct project: {project_name}")
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT DISTINCT upload_date
+            FROM file_chunks
+            WHERE project_name = ?
+        """, (project_name,))
+        rows = cursor.fetchall()
+        conn.close()
+        logger.info(f"Fetched {len(rows)} results for project: {project_name}")
+
+    def get_upload_time_file(self, file_name, project_name):
+        logger.info(f"Fetchin upload time for distinct file {file_name} under project: {project_name}")
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT DISTINCT upload_date
+            FROM file_chunks
+            WHERE project_name = ? AND file_name = ?
+        """, (project_name,))
+        rows = cursor.fetchall()
+        conn.close()
+        logger.info(f"Fetched {len(rows)} results for file {file_name} under project: {project_name}")
+
+    def delete_project(self, project_name):
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute("""
+            DELETE FROM file_chunks
+            WHERE project_name = ?
+        """, (project_name,))
+        conn.commit()
+        conn.close()
+
+    def delete_file(self, project_name, file_name):
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute("""
+            DELETE FROM file_chunks
+            WHERE project_name = ? AND file_name = ?
+        """, (project_name, file_name))
+        conn.commit()
+        conn.close()
+
 
 if __name__ == "__main__":
     db = ChunkDatabase()  # This triggers init_db()
