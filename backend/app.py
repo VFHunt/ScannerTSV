@@ -72,17 +72,32 @@ def process_files():
     return jsonify({"message": "Files processed successfully"}), 200
 
 
+def scope_transaltion(scope):
+    """Translate scope to a more readable format."""
+    if scope == "focused":
+        return 0.7
+    elif scope == "balanced":
+        return 0.5
+    elif scope == "broad":
+        return 0.4
+    else:
+        return 0.5
+
 @app.route("/search", methods=["POST"])
 def search():
     data = request.json
     keywords = data.get("keyword", [])
+    scope = data.get("scope", "all")  # Get the scope of the search
+    temp = scope_transaltion(scope)  # Translate scope to a temperature value
+    print(f"[DEBUG] Searching with keywords: {keywords} and scope: {scope} (temp: {temp})")
+
 
     if not isinstance(keywords, list):
         return jsonify({"error": "No keyword provided"}), 400
     
     emb = db.get_embeddings_by_project(handler.get_project_name())  # Get chunks from the database
 
-    f = FaissIndex(emb, temperature=0.5)  # Initialize the FAISS index
+    f = FaissIndex(emb, temperature=temp)  # Initialize the FAISS index
     f.f_search(keywords, db)  # Search for keywords in the FAISS index and save them in the database
 
     #print("[DEBUG] Manually calling add_keyword_and_distance()...")
@@ -94,13 +109,16 @@ def search():
 def search_unscanned():
     data = request.json
     keywords = data.get("keyword", [])
+    scope = data.get("scope", "all")  # Get the scope of the search
+    temp = scope_transaltion(scope)  # Translate scope to a temperature value
+    print(f"[DEBUG] Searching with keywords: {keywords} and scope: {scope} (temp: {temp})")
 
     if not isinstance(keywords, list):
         return jsonify({"error": "No keyword provided"}), 400
 
     emb = db.get_new_embeddings_by_project(handler.get_project_name())  # Get chunks from the database
 
-    f = FaissIndex(emb, temperature=0.5)  # Initialize the FAISS index
+    f = FaissIndex(emb, temperature=temp)  # Initialize the FAISS index
     f.f_search(keywords, db)  # Search for keywords in the FAISS index and save them in the database
 
     #print("[DEBUG] Manually calling add_keyword_and_distance()...")
