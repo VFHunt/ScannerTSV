@@ -30,7 +30,6 @@ import FileUpload from "../components/FileUpload";
 import ScanPopup from "./ScanPopup";
 
 function Results() {
-
   const [searchResults, setSearchResults] = useState([]); // Original data
   const [filteredResults, setFilteredResults] = useState([]); // Filtered data
   const [loading, setLoading] = useState(false);
@@ -87,7 +86,13 @@ function Results() {
   // Filter logic
   useEffect(() => {
     if (searchTerm.trim() === "") {
-      setFilteredResults(searchResults); // Reset to all results if search term is empty
+      // Sort by the number of keywords (descending order)
+      const sortedResults = [...searchResults].sort((a, b) => {
+        const aKeywordCount = a.keywords ? a.keywords.length : 0;
+        const bKeywordCount = b.keywords ? b.keywords.length : 0;
+        return bKeywordCount - aKeywordCount; // More keywords come first
+      });
+      setFilteredResults(sortedResults); // Reset to all results if search term is empty
     } else {
       const lowercasedSearchTerm = searchTerm.toLowerCase();
       const filtered = searchResults.filter((result) =>
@@ -95,7 +100,13 @@ function Results() {
           keyword.toLowerCase().includes(lowercasedSearchTerm)
         )
       );
-      setFilteredResults(filtered);
+      // Sort filtered results by the number of keywords
+      const sortedFiltered = [...filtered].sort((a, b) => {
+        const aKeywordCount = a.keywords ? a.keywords.length : 0;
+        const bKeywordCount = b.keywords ? b.keywords.length : 0;
+        return bKeywordCount - aKeywordCount; // More keywords come first
+      });
+      setFilteredResults(sortedFiltered);
     }
   }, [searchTerm, searchResults]);
 
@@ -137,18 +148,10 @@ function Results() {
 
   const columns = [
     {
-      title: (
-        <>
-          <Checkbox /> Bestandsnaam
-        </>
-      ),
+      title: "Bestandsnaam",
       dataIndex: "filename",
       key: "filename",
-      render: (filename) => (
-        <>
-          <Checkbox /> {filename}
-        </>
-      ),
+      render: (filename) => <>{filename}</>,
     },
     {
       title: "Matchende termen",
@@ -160,6 +163,12 @@ function Results() {
             {word.trim()}
           </Tag>
         )),
+      sorter: (a, b) => {
+        // Sort by whether keywords are empty or not
+        const aHasKeywords = a.keywords && a.keywords.length > 0;
+        const bHasKeywords = b.keywords && b.keywords.length > 0;
+        return bHasKeywords - aHasKeywords; // Non-empty keywords come first
+      },
     },
     {
       title: "Status",

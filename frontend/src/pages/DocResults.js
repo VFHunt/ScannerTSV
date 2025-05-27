@@ -33,26 +33,41 @@ const DocumentResultItem = ({ item }) => (
               Match:
             </Text>
             {(item.keywords || []).map((kw, i) => (
-              <Tag color="geekblue" key={i} style={{ marginBottom: "0.25rem" }}>
+              <Tag
+                color="geekblue"
+                key={i}
+                style={{
+                  marginBottom: "0.25rem",
+                  whiteSpace: "normal",
+                  wordBreak: "break-word",
+                }}
+              >
                 {kw}
               </Tag>
             ))}
           </div>
-          <Tooltip title={`Page number`}>
-            <Tag
-              color="gold"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                padding: "0 6px", // Adjust padding to fit the text
-                height: "auto", // Remove fixed height
-                lineHeight: "1.5", // Adjust line height for better alignment
-                fontSize: "14px", // Ensure font size matches the text
-              }}
-            >
-              Page {item.page}
-            </Tag>
-          </Tooltip>
+          <Tooltip title="Page number" placement="top" mouseEnterDelay={0.2}>
+          <Tag
+            color="gold"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "0 0.6rem",
+              height: "22px",
+              fontSize: "12px",
+              fontWeight: 500,
+              borderRadius: "1px",
+              lineHeight: 1,
+              whiteSpace: "nowrap",
+              cursor: "default",
+            }}
+            role="contentinfo"
+            aria-label={`Page ${item.page}`}
+          >
+            Page {item.page}
+          </Tag>
+        </Tooltip>
         </div>
       </Col>
     </Row>

@@ -9,6 +9,8 @@ from docx import Document
 import pytesseract
 from pdf2image import convert_from_path
 from constants import get_model
+import re
+import string
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -102,7 +104,79 @@ class FileHandler:
         # logger.debug(f"Results structure: {results}")
         self.set_results(results)  # Set results for each file
         return results
+    
+    def _split_text(self, text, sent_length):
+        """
+        Split text into chunks of up to `sent_length` characters, combining smaller sentences if needed.
+        """
+        # Clean excessive dots and other unnecessary characters
+        text = self._clean_text(text)
 
+        # Split text into sentences
+        pattern = r'(?i)((?<!\bMr\.)(?<!\bMrs\.)(?<!\bDr\.)(?<=[.!?])\s+|(?<=[.!?]["”]))'
+        sentences = [s.strip() for s in re.split(pattern, text.strip()) if s.strip()]
+
+        chunks = []
+        current_chunk = ""
+
+        for sentence in sentences:
+            # Check if adding the sentence exceeds the maximum chunk size
+            if len(current_chunk) + len(sentence) + 1 <= sent_length:
+                # Add the sentence to the current chunk
+                current_chunk += (" " + sentence).strip()
+            else:
+                # Save the current chunk and start a new one
+                if current_chunk:
+                    chunks.append(current_chunk)
+                current_chunk = sentence
+
+        # Add the last chunk if it exists
+        if current_chunk:
+            chunks.append(current_chunk)
+
+        return chunks
+
+    def _get_index(self, sent, ind):
+        ind -= 10
+        if ind < 0:
+            ind = len(sent) - 1
+        else:
+            while ind < len(sent) and (sent[ind] not in string.punctuation and not sent[ind].isspace()):
+                ind += 1
+        return ind + 1
+
+    def _halve(self, sent):
+        result = []
+        index1 = int(len(sent) / 2)
+        index = self._get_index(sent, index1)
+        part1 = sent[:index].strip()
+        part2 = sent[index:].strip()
+        result.append(part1)
+        result.append(part2)
+        return result
+
+
+    # function to split the sentences according to a maximum number of characters
+    def _split_sentences(self, one_sent, maxchar):
+        if not one_sent.strip():  # Skip empty sentences
+            return []
+        result = []
+        if len(one_sent) <= maxchar:
+            result.append(one_sent)
+        elif len(one_sent) <= 2 * maxchar:
+            result.extend(self._halve(one_sent))
+        else:
+            index = self._get_index(one_sent, maxchar)
+            part1 = one_sent[:index].strip()
+            result.append(part1)
+            part2 = one_sent[index:].strip()
+            if len(part2) > maxchar:
+                part2 = self._split_sentences(part2, maxchar)
+                result.extend(part2)
+            else:
+                result.append(part2)
+        return result
+    
     def extract_text_chunks(self, file_path: str) -> List[Dict[str, Any]]:
         """
         Extract text from a file and split into chunks.
@@ -125,18 +199,15 @@ class FileHandler:
                 if not text.strip():
                     continue  # Skip empty pages
 
-                paragraphs = text.split("\n\n")
-                for paragraph in paragraphs:
-                    if len(paragraph) > 500:
-                        sub_chunks = self._split_into_chunks(paragraph)
-                        for sub_chunk in sub_chunks:
-                            chunks.append({
-                                "content": sub_chunk,
-                                "metadata": {"page": page_num}
-                            })
-                    else:
+                clean_text = self._clean_text(text)  # Clean the text
+                # print(f"Extracted text from page {page_num}: {clean_text}")  # Debugging output
+                text_chunks = self._split_text(clean_text, 500)  # Split long paragraphs
+
+                for sub_chunk in text_chunks:
+                    if sub_chunk.strip():  # Skip empty sub-chunks
+                        # print(f"Processing sub-chunk: {sub_chunk, len(sub_chunk)} ")  # Debugging output
                         chunks.append({
-                            "content": paragraph,
+                            "content": sub_chunk,
                             "metadata": {"page": page_num}
                         })
 
@@ -197,10 +268,13 @@ class FileHandler:
         with open(file_path, 'r', encoding='utf-8') as file:
             return file.read().strip()
 
-    def _split_into_chunks(self, text: str, chunk_size: int = 200) -> List[str]:
+    def _split_into_chunks(self, text: str, chunk_size: int = 500) -> List[str]:
         """
         Split text into smaller chunks while preserving word boundaries.
         """
+        if not text.strip():  # Skip empty text
+            return []
+
         words = text.split()
         chunks, current_chunk = [], []
         current_length = 0
@@ -221,3 +295,39 @@ class FileHandler:
 
     def get_embeddings(self, text_chunks: List[str]):
         return self.embedder.encode(text_chunks, convert_to_numpy=True)
+
+    def _clean_text(self, text: str) -> str:
+        """
+        Clean excessive dots, new lines, bullet points, and other unnecessary characters from the text.
+        """
+        # Replace 3 or more dots with a single space
+        text = re.sub(r"\.{3,}", " ", text)
+        # Replace new lines with a single space
+        text = text.replace("\n", " ")
+        # Remove bullet points (e.g., •, -, *, or numbered lists like 1.)
+        text = re.sub(r"^\s*[\u2022\-\*\d]+\.\s*", " ", text, flags=re.MULTILINE)
+        # Remove extra spaces
+        text = re.sub(r"\s+", " ", text)
+        return text.strip()  # Ensure no leading/trailing whitespace
+
+"""
+Initialize the FileHandler with default settings.
+"""
+# logger.info("Initializing FileHandler...")
+# folder = os.path.join(os.path.dirname(__file__), "uploads")
+
+# if not os.path.exists(folder):
+#     logger.error(f"Folder not found: {folder}")
+#     os.makedirs(folder)  # Create the folder if it doesn't exist
+#     logger.info(f"Created folder: {folder}")
+
+# files = [os.path.join(folder, file) for file in os.listdir(folder) if file.endswith(('.pdf', '.docx', '.txt'))]
+# handler = FileHandler(files)
+# handler.extract_text_chunks(files[1])  # Process the first file as an example
+
+
+# if files:
+#     result = handler.extract_text_chunks(files[0])  # Process the first file as an example
+#     print(result)
+# else:
+#     logger.warning("No files found in the uploads folder.")
