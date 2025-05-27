@@ -229,6 +229,8 @@ class ChunkDatabase:
             })
 
         return cleaned_results
+    
+        
 
     def get_projects(self):
         logger.info(f"Searching for existing projects")
