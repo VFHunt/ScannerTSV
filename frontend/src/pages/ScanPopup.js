@@ -6,6 +6,7 @@ import {
   searchKeywordsUnscanned,
   get_keywords,
 } from "../utils/api";
+import SearchScope from "../components/SearchScope"; // Import the SearchScope component
 
 const { Option } = Select;
 
@@ -15,6 +16,7 @@ const ScanPopup = ({ visible, onCancel, onStartScan, onRefresh }) => {
   const [keywordsList, setKeywordsList] = useState([]);
   const [synonymsList, setSynonymsList] = useState([]);
   const [documentSelectie, setDocumentSelectie] = useState("alles");
+  const [searchScope, setSearchScope] = useState("balanced"); // Default to "balanced"
   const [message, setMessage] = useState("");
 
   // Add a keyword to the list
@@ -26,26 +28,30 @@ const ScanPopup = ({ visible, onCancel, onStartScan, onRefresh }) => {
   };
 
   const handleSynonymGeneration = async () => {
-      try {
-        if (keywordsList.length === 0) {
-          setMessage("No keywords available to generate synonyms.");
-          return;
-        }
-
-        setMessage(`Generating synonyms for: ${keywordsList.join(", ")}`);
-        const data = await getSynonyms(keywordsList); // Fetch synonyms for all keywords in the list
-        setSynonymsList(data.synonyms || []); // Assuming the API returns an array of synonyms
-        setMessage("Synonyms generated successfully!");
-      } catch (error) {
-        setMessage(`Error in Synonym Generation: ${error.response?.data?.error || error.message}, please make sure you uploaded one or more files.`);
+    try {
+      if (keywordsList.length === 0) {
+        setMessage("No keywords available to generate synonyms.");
+        return;
       }
-    };
-    // Remove a keyword from the list
-    const removeKeyword = (keywordToRemove) => {
-      setKeywordsList((prevKeywordsList) =>
-        prevKeywordsList.filter((kw) => kw !== keywordToRemove)
+
+      setMessage(`Generating synonyms for: ${keywordsList.join(", ")}`);
+      const data = await getSynonyms(keywordsList); // Fetch synonyms for all keywords in the list
+      setSynonymsList(data.synonyms || []); // Assuming the API returns an array of synonyms
+      setMessage("Synonyms generated successfully!");
+    } catch (error) {
+      setMessage(
+        `Error in Synonym Generation: ${
+          error.response?.data?.error || error.message
+        }, please make sure you uploaded one or more files.`
       );
-    };
+    }
+  };
+  // Remove a keyword from the list
+  const removeKeyword = (keywordToRemove) => {
+    setKeywordsList((prevKeywordsList) =>
+      prevKeywordsList.filter((kw) => kw !== keywordToRemove)
+    );
+  };
 
   // Remove a synonym from the list
   const removeSynonym = (synonymToRemove) => {
@@ -66,7 +72,7 @@ const ScanPopup = ({ visible, onCancel, onStartScan, onRefresh }) => {
       const scanFunction =
         documentSelectie === "alles" ? searchKeywords : searchKeywordsUnscanned;
 
-      const result = await scanFunction(terms);
+      const result = await scanFunction(terms, searchScope); // Pass searchScope
       onStartScan(woordenlijst, documentSelectie, terms);
       onCancel();
       if (onRefresh) await onRefresh(); // Refresh results without full page reload
@@ -234,6 +240,9 @@ const ScanPopup = ({ visible, onCancel, onStartScan, onRefresh }) => {
           ))}
         </div>
       )}
+
+      {/* Add SearchScope Component */}
+      <SearchScope scope={searchScope} setScope={setSearchScope} />
 
       <div>
         <label>Document Selectie:</label>

@@ -71,18 +71,33 @@ def process_files():
     db.insert_chunks(handler.get_project_name(), handler.get_results())  # Save chunks to the database
     return jsonify({"message": "Files processed successfully"}), 200
 
+def gen_temperature(scope):
+    """Generate temperature based on the scope."""
+    if scope == "focused":
+        return 0.7
+    elif scope == "balanced":
+        return 0.5
+    elif scope == "broad":
+        return 0.4
+    else:
+        return 0.5  # Default temperature
 
 @app.route("/search", methods=["POST"])
 def search():
     data = request.json
     keywords = data.get("keyword", [])
+    scope = None
+    scope = data.get("scope", "all")  # Get the scope of the search
 
     if not isinstance(keywords, list):
         return jsonify({"error": "No keyword provided"}), 400
     
     emb = db.get_embeddings_by_project(handler.get_project_name())  # Get chunks from the database
 
-    f = FaissIndex(emb, temperature=0.5)  # Initialize the FAISS index
+    temp = gen_temperature(scope)
+    print(f"Using temperature: {temp} for scope: {scope}")  # Debug logging
+
+    f = FaissIndex(emb, temperature=temp)  # Initialize the FAISS index
     f.f_search(keywords, db)  # Search for keywords in the FAISS index and save them in the database
 
     #print("[DEBUG] Manually calling add_keyword_and_distance()...")
@@ -94,13 +109,19 @@ def search():
 def search_unscanned():
     data = request.json
     keywords = data.get("keyword", [])
+    scope = None
+    scope = data.get("scope", "all")  # Get the scope of the searc
 
     if not isinstance(keywords, list):
         return jsonify({"error": "No keyword provided"}), 400
+    
 
     emb = db.get_new_embeddings_by_project(handler.get_project_name())  # Get chunks from the database
+    
+    temp = gen_temperature(scope)  # Generate temperature based on the scope
+    print(f"Using temperature: {temp} for scope: {scope}")  # Debug logging
 
-    f = FaissIndex(emb, temperature=0.5)  # Initialize the FAISS index
+    f = FaissIndex(emb, temperature=temp)  # Initialize the FAISS index
     f.f_search(keywords, db)  # Search for keywords in the FAISS index and save them in the database
 
     #print("[DEBUG] Manually calling add_keyword_and_distance()...")

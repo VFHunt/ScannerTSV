@@ -1,14 +1,15 @@
 import React, { useState } from "react";
-import { getSynonyms, searchKeywords, getProjectName } from "../utils/api"; // Import getProjectName
-import "../styles/KeywordSearch.css";
+import { getSynonyms, searchKeywords, getProjectName } from "../utils/api";
 import { useNavigate } from "react-router-dom";
-
+import SearchScope from "./SearchScope"; // Import the new component
+import "../styles/KeywordSearch.css";
 
 function KeywordSearch() {
   const [keyword, setKeyword] = useState("");
   const [keywordsList, setKeywordsList] = useState([]);
   const [synonymsList, setSynonymsList] = useState([]);
   const [message, setMessage] = useState("");
+  const [searchScope, setSearchScope] = useState("balanced"); // Default to "balanced"
   const navigate = useNavigate();
 
   const addKeyword = () => {
@@ -34,11 +35,15 @@ function KeywordSearch() {
       }
 
       setMessage(`Generating synonyms for: ${keywordsList.join(", ")}`);
-      const data = await getSynonyms(keywordsList); // Fetch synonyms for all keywords in the list
-      setSynonymsList(data.synonyms || []); // Assuming the API returns an array of synonyms
+      const data = await getSynonyms(keywordsList);
+      setSynonymsList(data.synonyms || []);
       setMessage("Synonyms generated successfully!");
     } catch (error) {
-      setMessage(`Error in Synonym Generation: ${error.response?.data?.error || error.message}, please make sure you uploaded one or more files.`);
+      setMessage(
+        `Error in Synonym Generation: ${
+          error.response?.data?.error || error.message
+        }, please make sure you uploaded one or more files.`
+      );
     }
   };
 
@@ -50,13 +55,12 @@ function KeywordSearch() {
       }
 
       setMessage("Searching...");
-      const data = await searchKeywords([...keywordsList, ...synonymsList]); // Combine keywords and synonyms
+      const data = await searchKeywords([...keywordsList, ...synonymsList], searchScope); // Pass searchScope
       setMessage(data.message || "Search completed!");
 
-      // Fetch the project name before navigating
       const projectName = await getProjectName();
       if (projectName) {
-        navigate(`/results/${projectName}`); // Navigate to results with the project name
+        navigate(`/results/${projectName}`);
       } else {
         setMessage("Error: Project name not found.");
       }
@@ -67,7 +71,6 @@ function KeywordSearch() {
 
   return (
     <div className="keywordSearchContainer">
-
       {/* Input Row */}
       <div className="inputRow">
         <label className="label">Woordenlijst:</label>
@@ -99,6 +102,9 @@ function KeywordSearch() {
           </div>
         ))}
       </div>
+
+      {/* Search Scope Toggle */}
+      <SearchScope scope={searchScope} setScope={setSearchScope} />
 
       {/* Extra Words Button */}
       <div className="extraWordsRow">

@@ -67,8 +67,8 @@ class FaissIndex:
         k = len(self.vectors)  # Number of vectors in the index
         query_vector = self._vectorize_queries(queries)
 
-        print("[DEBUG] Norms of query vectors:", np.linalg.norm(query_vector, axis=1))
-        print("[DEBUG] Norms of indexed vectors:", np.linalg.norm(self.vectors, axis=1)[:5])  # Show first 5
+        # print("[DEBUG] Norms of query vectors:", np.linalg.norm(query_vector, axis=1))
+        # print("[DEBUG] Norms of indexed vectors:", np.linalg.norm(self.vectors, axis=1)[:5])  # Show first 5
 
 
         # Validate dimensionality
@@ -83,7 +83,7 @@ class FaissIndex:
         # Iterate over each query and its corresponding distances and indices
         for query_str, dist_list, idx_list in zip(queries, distances, indices):
             for dist, idx in zip(dist_list, idx_list):
-                print(f"[DEBUG] raw dist = {dist}, idx = {idx}, threshold = {self.temperature}, total_ids = {len(self.ids)}")
+                # print(f"[DEBUG] raw dist = {dist}, idx = {idx}, threshold = {self.temperature}, total_ids = {len(self.ids)}")
                 if dist >= self.temperature and idx != -1 and idx < len(self.ids):
                     # Ensure that self._index_to_ids([idx]) returns an iterable
                     chunk_id_result = self._index_to_ids([idx])

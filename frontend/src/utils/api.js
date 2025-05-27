@@ -2,13 +2,13 @@ import axios from "axios";
 
 const API_BASE_URL = "http://127.0.0.1:5000"; // Adjust based on backend
 
-export const searchKeywords = async (keyword) => {
-  const response = await axios.post(`${API_BASE_URL}/search`, { keyword });
+export const searchKeywords = async (keyword, scope) => {
+  const response = await axios.post(`${API_BASE_URL}/search`, { keyword, scope });
   return response.data;
 };
 
-export const searchKeywordsUnscanned = async (keyword) => {
-  const response = await axios.post(`${API_BASE_URL}/search_unscanned`, { keyword });
+export const searchKeywordsUnscanned = async (keyword, scope) => {
+  const response = await axios.post(`${API_BASE_URL}/search_unscanned`, { keyword, scope });
   return response.data;
 };
 
