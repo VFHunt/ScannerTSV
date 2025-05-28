@@ -202,7 +202,10 @@ def fetch_doc_results(filename):
             return jsonify({"error": "Missing project name"}), 400
 
         results = db.get_chunks_by_project_and_file(project_name, filename)
-        return jsonify({"results": results}), 200
+
+        cleaned = db.clean_docresults(results)
+
+        return jsonify({"results": cleaned}), 200
 
     except Exception as e:
         print(f"Error in /fetch_docresults: {e}")

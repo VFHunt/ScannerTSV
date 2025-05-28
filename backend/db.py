@@ -126,7 +126,29 @@ class ChunkDatabase:
             for (text, page), keywords in grouped.items()
         ]
         logger.info(f"Fetched {len(results)} formatted chunks for file: {file_name} in project: {project_name}")
+
         return results
+
+    def clean_docresults(self, results):
+        cleaned = []
+        for item in results:
+            try:
+                # Safely evaluate the string to a Python list
+                keyword_list = ast.literal_eval(item['keywords'][0])
+                if isinstance(keyword_list, list):
+                    keywords_str = ', '.join(keyword_list)
+                else:
+                    keywords_str = str(keyword_list)
+            except Exception as e:
+                keywords_str = str(item['keywords'])  # fallback to raw if parsing fails
+
+            cleaned.append({
+                'text': item['text'],
+                'page': item['page'],
+                'keywords': keywords_str
+            })
+        #logger.info(f"This is what gets returned to FLASK: {cleaned}")
+        return cleaned
 
     def get_embeddings_by_project(self, project_name: str) -> List[Tuple[str, np.ndarray]]:
         logger.info(f"Fetching embeddings for project: {project_name}")

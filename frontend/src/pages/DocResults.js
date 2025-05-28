@@ -32,7 +32,7 @@ const DocumentResultItem = ({ item }) => (
             <Text strong style={{ fontSize: "14px" }}>
               Match:
             </Text>
-            {(item.keywords || []).map((kw, i) => (
+            {(item.keywords ? item.keywords.split(",").map(kw => kw.trim()) : []).map((kw, i) => (
               <Tag
                 color="geekblue"
                 key={i}
@@ -99,11 +99,14 @@ function DocResults() {
   }, [filename]);
 
   // Extract unique keywords for filtering
-  const allKeywords = [...new Set(content.flatMap(item => item.keywords || []))];
+  const allKeywords = [...new Set(content.flatMap(item => item.keywords ? item.keywords.split(",").map(kw => kw.trim()) : []))];
 
   // Filter content based on selected keywords
   const filteredContent = selectedKeywords.length > 0
-    ? content.filter(item => item.keywords && item.keywords.some(kw => selectedKeywords.includes(kw)))
+    ? content.filter(item => {
+        const kwList = item.keywords ? item.keywords.split(",").map(kw => kw.trim()) : [];
+        return kwList.some(kw => selectedKeywords.includes(kw));
+      })
     : content;
 
   return (
