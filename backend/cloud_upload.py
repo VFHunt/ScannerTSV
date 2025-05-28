@@ -35,15 +35,13 @@ def upload_multiple_route():
         if not uploaded_files:
             return jsonify({"error": "No files provided"}), 400
 
-        temp_file_paths = []
+        temp_file_map = {}
 
         for file in uploaded_files:
             filename = secure_filename(file.filename)
-
-            # Save locally to a temp file first
             temp = tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(filename)[1])
             file.save(temp.name)
-            temp_file_paths.append(temp.name)
+            temp_file_map[filename] = temp.name
 
             # Then upload that saved file to Azure
             with open(temp.name, "rb") as data:
@@ -53,11 +51,7 @@ def upload_multiple_route():
 
         # Use singleton instance and initialize with file paths
         handler = FileHandler()
-        handler.initialize(temp_file_paths)
-
-        # # Optional: Process files here
-        # results = handler.process_all_files()
-        # print("Processed results:", results)
+        handler.initialize(temp_file_map)
 
         return jsonify({"message": "Files uploaded and processed successfully"}), 200
 

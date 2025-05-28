@@ -39,16 +39,16 @@ class FileHandler:
             self.project_name = None
             self.initialized = True  # Mark as initialized
 
-    def initialize(self, files):
+    def initialize(self, file_map: dict[str, str]):
         """
         Initialize the FileHandler with a new set of files.
         """
-        self.files = files
+        self.files_map = file_map  # Store the file map
         self.results = {}
 
     def reset_project(self):
         """Reset the project name and results."""
-        self.files = []
+        self.files = {}
         self.results = {}        
         self.project_name = None
         logger.info("Project reset: project name and results cleared.")
@@ -89,35 +89,41 @@ class FileHandler:
         self.results = results
         logger.info(f"Results set with {len(self.results)} entries.")
 
-    def add_files(self, files: List[str]):
-        """Add files to process."""
-        self.files.extend(files)
-        logger.info(f"Added {len(files)} files. Total files: {len(self.files)}")
+    # def add_files(self, files: List[str]):
+    #     """Add files to process."""
+    #     self.files.extend(files)
+    #     logger.info(f"Added {len(files)} files. Total files: {len(self.files)}")
 
     def process_all_files(self) -> Dict[str, List[Dict[str, Any]]]:
         """Process all files and return tokenized and embedded chunks."""
-        if not self.files:
+        if not self.files_map:
             logger.warning("No files to process")
             return {}
+
         results = {}
-        for file_path in self.files:
-            logger.info(f"Processing file: {file_path}")
-            chunks = self.extract_text_chunks(file_path)  # Extract text chunks
 
-            # Embed text directly
-            embeddings = self.get_embeddings([chunk["content"] for chunk in chunks])
+        for original_name, file_path in self.files_map.items():
+            try:
+                logger.info(f"Processing file: {original_name}")
+                chunks = self.extract_text_chunks(file_path)
 
-            results[os.path.basename(file_path)] = [
-                {
-                    "content": chunks[i]["content"],
-                    "embedding": embeddings[i],
-                    "metadata": chunks[i]["metadata"]
-                }
-                for i in range(len(chunks))
-            ]
-        # logger.debug(f"Results structure: {results}")
-        self.set_results(results)  # Set results for each file
+                # Embed text directly
+                embeddings = self.get_embeddings([chunk["content"] for chunk in chunks])
+
+                results[original_name] = [
+                    {
+                        "content": chunks[i]["content"],
+                        "embedding": embeddings[i],
+                        "metadata": chunks[i]["metadata"]
+                    }
+                    for i in range(len(chunks))
+                ]
+            except Exception as e:
+                logger.error(f"Error processing {original_name}: {str(e)}")
+
+        self.set_results(results)
         return results
+
     
     def _split_text(self, text, sent_length):
         """
