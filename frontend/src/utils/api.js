@@ -18,7 +18,7 @@ export const uploadFile = async (files) => {
     formData.append("files", file); // Append each file
   });
 
-  const response = await axios.post(`${API_BASE_URL}/upload`, formData, {
+  const response = await axios.post(`${API_BASE_URL}/upload-multiple`, formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
 
@@ -79,10 +79,14 @@ export const create_new_project = async () => {
   }
 }
 
-export const downloadZip = async () => {
+export const downloadZip = async (projectName) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/download_zip`, {
-      method: "GET",
+    const response = await fetch(`${API_BASE_URL}/download-multiple`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ project_name: projectName }), // Send projectName to the backend
     });
 
     if (!response.ok) {
@@ -97,12 +101,11 @@ export const downloadZip = async () => {
     // Create a temporary link to trigger the download
     const link = document.createElement("a");
     link.href = url;
-    link.setAttribute("download", "search_results.zip");
+    link.setAttribute("download", `${projectName}_results.zip`); // Use projectName in the filename
     document.body.appendChild(link);
     link.click();
     link.remove();
     window.URL.revokeObjectURL(url);
-
   } catch (error) {
     throw new Error(`Download failed: ${error.message}`);
   }

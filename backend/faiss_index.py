@@ -27,13 +27,18 @@ class FaissIndex:
         self._add()
 
     def _normalize(self, vectors: np.ndarray) -> np.ndarray:
+        """
+        Normalize the vectors to have unit length.
+        """
+        # Ensure vectors are 2D
+        if vectors.ndim == 1:
+            vectors = vectors.reshape(1, -1)  # Reshape to (1, n_features)
         return vectors / np.linalg.norm(vectors, axis=1, keepdims=True)
 
     def _add(self):
         """Add vectors to the index."""
         self.index.add(self.vectors)
         assert self.index.ntotal == len(self.ids), f"Index size mismatch: {self.index.ntotal} vs {len(self.ids)}"
-
 
     def _vectorize_queries(self, queries: List[str]) -> np.ndarray:
         vecs = self.encoder.encode(queries, convert_to_numpy=True)
