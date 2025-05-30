@@ -507,5 +507,12 @@
         "Uitzicht",
         "Tabel",
         "Inventarisatie"
+    ],
+    "offerte": [
+        "aanbieding",
+        "voorstel",
+        "schatting",
+        "inschatting",
+        "prijsopgave"
     ]
 }

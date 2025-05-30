@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, Blueprint, request, jsonify
 from flask_cors import CORS
 import logging
 import os
@@ -10,9 +10,13 @@ import time
 from document_pro import ProjectHandler
 from db import ChunkDatabase
 from faiss_index import FaissIndex
+from cloud_upload import cloud_routes
 
 app = Flask(__name__)
 CORS(app)  # Allows React frontend to talk to Flask backend
+
+# Create a Blueprint for the routes in this file
+app.register_blueprint(cloud_routes)
 
 logging.basicConfig(level=logging.INFO)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # Get backend folder path
@@ -27,16 +31,12 @@ judge, eng = generate_judge_eng(syn_number=5)  # Change the number to the user's
 syn = GenModel('gpt-4o', "You are a Dutch linguist and construction specialist with expertise in industry terminology. Output only five words separated by commas")
 db_handler = DataHandler(os.path.join(os.getcwd(), "data", "syn_db.json"))
 
-global p_handler # to delete
-p_handler = ProjectHandler(10)  # Initialize the project handler
-
-global handler
-handler = FileHandler([])  # Initialize the file handler
-
 global db 
 db = ChunkDatabase()  # Initialize the database handler
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+
+handler = FileHandler([])  # Initialize the project handler
 
 @app.route("/upload", methods=["POST"])
 def upload_file():
@@ -126,14 +126,14 @@ def search_unscanned():
     db.mark_project_chunks_scanned(handler.get_project_name())
     return jsonify({"message": "Search completed!"})
 
-@app.route("/download_zip", methods=["GET"])
-def download_zip():
-    zip_file_path = "backend/zipped_results"
+# @app.route("/download_zip", methods=["GET"])
+# def download_zip():
+#     zip_file_path = "backend/zipped_results"
 
-    if os.path.exists(zip_file_path):
-        return send_file(zip_file_path, as_attachment=True)
-    else:
-        return jsonify({"error": "ZIP file not found."}), 404
+#     if os.path.exists(zip_file_path):
+#         return send_file(zip_file_path, as_attachment=True)
+#     else:
+#         return jsonify({"error": "ZIP file not found."}), 404
     
 @app.route("/get_synonyms", methods=["POST"])
 def getting_syn(): 

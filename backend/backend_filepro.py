@@ -17,18 +17,32 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG, force=True)
 
 class FileHandler:
-    def __init__(self, files: List[str] = None):
+    _instance = None  # Class-level variable to store the single instance
+
+    def __new__(cls, *args, **kwargs):
+        if cls._instance is None:
+            # Create a new instance if it doesn't exist
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
+    def __init__(self, files=None):
         """
         Initialize FileHandler to process files.
         Args:
             files: List of file paths to process. If None, no files are loaded.
         """
-        self.tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
-        self.embedder = get_model()
-        self.initialize(files)
+        if not hasattr(self, "initialized"):  # Ensure __init__ runs only once
+            self.tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
+            self.embedder = get_model()
+            self.files = files or []
+            self.results = {}
+            self.project_name = None
+            self.initialized = True  # Mark as initialized
 
     def initialize(self, files):
-        self.files = []
+        """
+        Initialize the FileHandler with a new set of files.
+        """
         self.files = files
         self.results = {}
 
@@ -309,25 +323,3 @@ class FileHandler:
         # Remove extra spaces
         text = re.sub(r"\s+", " ", text)
         return text.strip()  # Ensure no leading/trailing whitespace
-
-"""
-Initialize the FileHandler with default settings.
-"""
-# logger.info("Initializing FileHandler...")
-# folder = os.path.join(os.path.dirname(__file__), "uploads")
-
-# if not os.path.exists(folder):
-#     logger.error(f"Folder not found: {folder}")
-#     os.makedirs(folder)  # Create the folder if it doesn't exist
-#     logger.info(f"Created folder: {folder}")
-
-# files = [os.path.join(folder, file) for file in os.listdir(folder) if file.endswith(('.pdf', '.docx', '.txt'))]
-# handler = FileHandler(files)
-# handler.extract_text_chunks(files[1])  # Process the first file as an example
-
-
-# if files:
-#     result = handler.extract_text_chunks(files[0])  # Process the first file as an example
-#     print(result)
-# else:
-#     logger.warning("No files found in the uploads folder.")

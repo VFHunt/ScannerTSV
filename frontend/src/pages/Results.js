@@ -254,7 +254,15 @@ function Results() {
             </Button>
             <Button
               icon={<DownloadOutlined />}
-              onClick={() => message.info("Download not implemented")}
+              onClick={async () => {
+                try {
+                  await downloadZip(projectName); // Call the API function to download the zip
+                  message.success("Bestanden succesvol gedownload.");
+                } catch (error) {
+                  console.error("Error downloading files:", error);
+                  message.error("Fout bij het downloaden van bestanden.");
+                }
+              }}
             >
               Bestanden Downloaden
             </Button>
