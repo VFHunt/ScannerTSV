@@ -1,0 +1,32 @@
+.container {
+    display: flex;
+    flex-direction: row; /* Ensure the container stacks its children vertically */
+    align-items: stretch; /* Stretch to fill the allocated space */
+    justify-content: stretch; /* Stretch to fill the allocated space */
+    height: 100%; /* Take up the full height of the parent container */
+    width: 100%; /* Take up the full width of the parent container */
+    box-sizing: border-box;
+  }
+  
+  .content {
+    display: flex;
+    flex-direction: column; /* Stack KeywordSearch and FileUpload horizontally */
+    align-items: stretch; /* Stretch to fill the allocated space */
+    justify-content: flex-start; /* Align content to the top */
+    width: 100%; /* Full width of the parent container */
+    gap: 20px; /* Space between KeywordSearch and FileUpload */
+  }
+  
+  .KeywordSearch {
+    width: 100%;
+    padding: 40px;
+    background-color: #f9f9f9;
+    box-sizing: border-box;
+}
+
+.FileUpload {
+    width: 100%;
+    padding: 20px;
+    background-color: #f9f9f9;
+    box-sizing: border-box;
+}

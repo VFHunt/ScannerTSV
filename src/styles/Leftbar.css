@@ -1,0 +1,20 @@
+.leftbarContainer {
+    display: flex;
+    flex-direction: column; /* Stack items vertically */
+    align-items: center; /* Center content horizontally */
+    justify-content: flex-start; /* Align content to the top */
+    width: 80px; /* Set a thinner width for the Leftbar */
+    height: 100%; /* Match the height of the parent component */
+    background-color: #f0f0f0; /* Light gray background for visibility */
+    border-right: 1px solid #ccc; /* Optional border for separation */
+    box-sizing: border-box;
+    padding: 10px; /* Add padding for spacing */
+}
+
+.logo {
+    margin-bottom: 20px; /* Add spacing below the logo */
+    width: 100%; /* Ensure the logo takes full width of the container */
+    max-width: 60px; /* Limit the maximum width of the logo */
+    height: auto; /* Maintain aspect ratio of the logo */
+    display: block; /* Ensure the logo is a block element for better spacing */
+}

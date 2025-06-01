@@ -1,0 +1,117 @@
+.keywordSearchContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+.header {
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+  text-align: left;
+  margin-bottom: 10px;
+}
+
+.inputRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.label {
+  font-size: 16px;
+  color: #333;
+}
+
+.input {
+  flex: 1;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.addButton {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 15px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.keywordsRow,
+.synonymsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.keyword,
+.synonym {
+  background-color: #f0f0f0;
+  padding: 8px 12px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.deleteButton {
+  background-color: red;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.extraWordsRow {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.extraWordsButton {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 15px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.startScanRow {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.startScanButton {
+  background-color: #003366;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.startScanButton:hover {
+  background-color: #002244;
+}
+
+.message {
+  color: #666;
+  font-size: 14px;
+  margin-top: 10px;
+}

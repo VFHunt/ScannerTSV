@@ -1,0 +1,72 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    background-color: #f9f9f9;
+    width: 100%;
+    max-width: 500px;
+    box-sizing: border-box;
+}
+
+.header {
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.dropZone {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    border: 2px dashed #007BFF;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #eaf4ff;
+    cursor: pointer;
+    margin-bottom: 20px;
+}
+
+.fileInput {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.iconContainer {
+    text-align: center;
+}
+
+.cloudIcon {
+    font-size: 3rem;
+    color: #007BFF;
+    margin-bottom: 10px;
+}
+
+.text {
+    font-size: 1rem;
+    color: #555;
+}
+
+.uploadButton {
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.message {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #333;
+}
