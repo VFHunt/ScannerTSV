@@ -11,6 +11,7 @@ from document_pro import ProjectHandler
 from db import ChunkDatabase
 from faiss_index import FaissIndex
 from cloud_upload import cloud_routes
+from constants import get_model, get_openai_client
 
 app = Flask(__name__)
 CORS(app)  # Allows React frontend to talk to Flask backend
@@ -28,7 +29,7 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)  # Ensure folder exists
 judge, eng = generate_judge_eng(syn_number=5)  # Change the number to the user's preference
     
 # Initialize the synonym generator 
-syn = GenModel('gpt-4o', "You are a Dutch linguist and construction specialist with expertise in industry terminology. Output only five words separated by commas")
+syn = GenModel(get_model(), "You are a Dutch linguist and construction specialist with expertise in industry terminology. Output only five words separated by commas")
 db_handler = DataHandler(os.path.join(os.getcwd(), "data", "syn_db.json"))
 
 global db 
