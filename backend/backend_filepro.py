@@ -94,20 +94,34 @@ class FileHandler:
         self.files.extend(files)
         logger.info(f"Added {len(files)} files. Total files: {len(self.files)}")
 
+    def set_actual_names(self, actual_names: List[str]):
+        self.actual_names = actual_names
+        logger.info(f"Actual names set with {len(self.actual_names)} entries.")
+
+    def get_actual_names(self) -> List[str]:
+        """Get the actual names of the files."""
+        if not hasattr(self, 'actual_names'):
+            logger.warning("Actual names are not set.")
+            return []
+        return self.actual_names
+
     def process_all_files(self) -> Dict[str, List[Dict[str, Any]]]:
         """Process all files and return tokenized and embedded chunks."""
         if not self.files:
             logger.warning("No files to process")
             return {}
-        results = {}
-        for file_path in self.files:
+        
+        actual_names = self.get_actual_names()  # Get actual names if set
+        for i, file_path in enumerate(self.files):
             logger.info(f"Processing file: {file_path}")
             chunks = self.extract_text_chunks(file_path)  # Extract text chunks
 
             # Embed text directly
             embeddings = self.get_embeddings([chunk["content"] for chunk in chunks])
 
-            results[os.path.basename(file_path)] = [
+            # Use actual name if available and valid, otherwise use the filename from the path
+            file_key = actual_names[i] if actual_names and i < len(actual_names) else os.path.basename(file_path)
+            self.results[file_key] = [
                 {
                     "content": chunks[i]["content"],
                     "embedding": embeddings[i],
@@ -116,8 +130,8 @@ class FileHandler:
                 for i in range(len(chunks))
             ]
         # logger.debug(f"Results structure: {results}")
-        self.set_results(results)  # Set results for each file
-        return results
+        self.set_results(self.results)  # Set results for each file
+        return self.results
     
     def _split_text(self, text, sent_length):
         """

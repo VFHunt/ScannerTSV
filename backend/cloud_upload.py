@@ -36,12 +36,16 @@ def upload_multiple_route():
             return jsonify({"error": "No files provided"}), 400
 
         temp_file_paths = []
+        original_filenames = []
 
         for file in uploaded_files:
-            filename = secure_filename(file.filename)
-
+            original_filename = file.filename
+            original_filenames.append(original_filename)  # Store original filename
+            filename = secure_filename(original_filename)
+            
             # Save locally to a temp file first
-            temp = tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(filename)[1])
+            file_ext = os.path.splitext(filename)[1] if filename else ''
+            temp = tempfile.NamedTemporaryFile(delete=False, suffix=file_ext)
             file.save(temp.name)
             temp_file_paths.append(temp.name)
 
@@ -54,6 +58,7 @@ def upload_multiple_route():
         # Use singleton instance and initialize with file paths
         handler = FileHandler()
         handler.initialize(temp_file_paths)
+        handler.set_actual_names(original_filenames)  # Pass original filenames
 
         # # Optional: Process files here
         # results = handler.process_all_files()
