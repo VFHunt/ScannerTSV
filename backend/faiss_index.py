@@ -1,6 +1,5 @@
 import faiss
 import numpy as np
-from sentence_transformers import SentenceTransformer
 from typing import List, Tuple, Dict, Any
 from db import ChunkDatabase
 from constants import get_model

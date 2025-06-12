@@ -514,5 +514,40 @@
         "schatting",
         "inschatting",
         "prijsopgave"
+    ],
+    "doorsneden": [
+        "Kruisen",
+        "doorkruisen",
+        "dwarsen",
+        "snijden",
+        "oversteken"
+    ],
+    "bestek": [
+        "ontwerp",
+        "begroting",
+        "plan",
+        "offerte",
+        "specificatie"
+    ],
+    "offrteanvraag": [
+        "Prijsaanvraag",
+        "kostenraming",
+        "offerteverzoek",
+        "prijsopgave",
+        "offerteaanvraag."
+    ],
+    "offerteanvraag": [
+        "aanbestedingsverzoek",
+        "prijsaanvraag",
+        "biedingsverzoek",
+        "kostencalculatieverzoek",
+        "offerteverzoek"
+    ],
+    "offerteanvrrag": [
+        "aanbestedingsaanvraag",
+        "prijsaanvraag",
+        "prijsofferteverzoek",
+        "offertespecificatie",
+        "kostenramingaanvraag"
     ]
 }
