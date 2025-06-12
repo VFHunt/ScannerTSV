@@ -19,12 +19,7 @@ _TRANS_MODEL = None
 def get_model():
     global _TRANS_MODEL
     if _TRANS_MODEL is None:
-        logger.info("Loading Sentence Transformer model...")
-        model_name = 'paraphrase-multilingual-MiniLM-L12-v2'
-        cache_dir = os.path.join(os.path.dirname(__file__), 'model_cache')
-        os.makedirs(cache_dir, exist_ok=True)
-        _TRANS_MODEL = SentenceTransformer(model_name, cache_folder=cache_dir)
-        logger.info("Model loaded successfully")
+        _TRANS_MODEL = 'sentence-transformers/paraphrase-MiniLM-L12-v2' # paraphrase-multilingual-MiniLM-L12-v2
     return _TRANS_MODEL
 
 # ____________________________ OpenAI Client ___________________________
