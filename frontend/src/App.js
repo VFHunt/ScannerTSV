@@ -11,18 +11,17 @@ import "./styles/App.css";
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        {/* Login Page is standalone */}
-        <Route path="/" element={<LoginPage />} />
-
-        {/* These pages use the main layout */}
-        <Route element={<MainLayout />}>
-          <Route path="/newscan" element={<NewScan />} />
-          <Route path="/projectview" element={<ProjectView />} />
-          <Route path="/results/:projectName" element={<Results />} />
-          <Route path="/docresults/:filename" element={<DocResults />} /> {/* Dynamic route */}
-        </Route>       
+    <Router>      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        
+        {/* Main Layout with nested routes */}
+        <Route path="/" element={<MainLayout />}>
+          <Route index element={<LoginPage />} />
+          <Route path="newscan" element={<NewScan />} />
+          <Route path="projectview" element={<ProjectView />} />
+          <Route path="results/:projectName" element={<Results />} />
+          <Route path="docresults/:filename" element={<DocResults />} />
+        </Route>
       </Routes>
     </Router>
   );
