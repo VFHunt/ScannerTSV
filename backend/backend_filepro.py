@@ -2,6 +2,8 @@ import os
 import logging
 from typing import List, Dict, Any
 from transformers import AutoTokenizer
+from torch import Tensor
+from sentence_transformers import SentenceTransformer
 import PyPDF2
 from docx import Document
 import pytesseract
@@ -13,6 +15,7 @@ import string
 # Configure logging
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG, force=True)
+
 
 class FileHandler:
     _instance = None  # Class-level variable to store the single instance
@@ -47,7 +50,7 @@ class FileHandler:
     def reset_project(self):
         """Reset the project name and results."""
         self.files = []
-        self.results = {}        
+        self.results = {}
         self.project_name = None
         logger.info("Project reset: project name and results cleared.")
 
@@ -69,9 +72,9 @@ class FileHandler:
     def get_results(self) -> List[Dict[str, Any]]:
         if not self.results:
             logger.warning("No results available. Please process files first.")
-            return [] 
+            return []
 
-        # Flatten the results dictionary into a list of dictionaries
+            # Flatten the results dictionary into a list of dictionaries
         flattened_results = []
         for file_name, chunks in self.results.items():
             for chunk in chunks:
@@ -79,7 +82,7 @@ class FileHandler:
                 flattened_results.append(chunk)
 
         return flattened_results
-    
+
     def set_results(self, results):
         if not results:
             logger.warning("No results to set.")
@@ -92,20 +95,34 @@ class FileHandler:
         self.files.extend(files)
         logger.info(f"Added {len(files)} files. Total files: {len(self.files)}")
 
+    def set_actual_names(self, actual_names: List[str]):
+        self.actual_names = actual_names
+        logger.info(f"Actual names set with {len(self.actual_names)} entries.")
+
+    def get_actual_names(self) -> List[str]:
+        """Get the actual names of the files."""
+        if not hasattr(self, 'actual_names'):
+            logger.warning("Actual names are not set.")
+            return []
+        return self.actual_names
+
     def process_all_files(self) -> Dict[str, List[Dict[str, Any]]]:
         """Process all files and return tokenized and embedded chunks."""
         if not self.files:
             logger.warning("No files to process")
             return {}
-        results = {}
-        for file_path in self.files:
+
+        actual_names = self.get_actual_names()  # Get actual names if set
+        for i, file_path in enumerate(self.files):
             logger.info(f"Processing file: {file_path}")
             chunks = self.extract_text_chunks(file_path)  # Extract text chunks
 
             # Embed text directly
             embeddings = self.get_embeddings([chunk["content"] for chunk in chunks])
 
-            results[os.path.basename(file_path)] = [
+            # Use actual name if available and valid, otherwise use the filename from the path
+            file_key = actual_names[i] if actual_names and i < len(actual_names) else os.path.basename(file_path)
+            self.results[file_key] = [
                 {
                     "content": chunks[i]["content"],
                     "embedding": embeddings[i],
@@ -114,9 +131,9 @@ class FileHandler:
                 for i in range(len(chunks))
             ]
         # logger.debug(f"Results structure: {results}")
-        self.set_results(results)  # Set results for each file
-        return results
-    
+        self.set_results(self.results)  # Set results for each file
+        return self.results
+
     def _split_text(self, text, sent_length):
         """
         Split text into chunks of up to `sent_length` characters, combining smaller sentences if needed.
@@ -167,7 +184,6 @@ class FileHandler:
         result.append(part2)
         return result
 
-
     # function to split the sentences according to a maximum number of characters
     def _split_sentences(self, one_sent, maxchar):
         if not one_sent.strip():  # Skip empty sentences
@@ -188,7 +204,7 @@ class FileHandler:
             else:
                 result.append(part2)
         return result
-    
+
     def extract_text_chunks(self, file_path: str) -> List[Dict[str, Any]]:
         """
         Extract text from a file and split into chunks.

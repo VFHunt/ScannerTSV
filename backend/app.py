@@ -353,3 +353,6 @@ def status_data():
         print(f"Error in /status_data: {e}")
         return jsonify({"error": str(e)}), 500
 
+if __name__ == "__main__":
+    app.debug = True  # Enable debug mode for development
+    app.run()

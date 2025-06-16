@@ -549,5 +549,12 @@
         "prijsofferteverzoek",
         "offertespecificatie",
         "kostenramingaanvraag"
+    ],
+    "test": [
+        "proef",
+        "toets",
+        "inspectie",
+        "experiment",
+        "evaluatie"
     ]
 }
