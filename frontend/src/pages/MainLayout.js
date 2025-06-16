@@ -20,6 +20,8 @@ function MainLayout() {
     };
   }, []);
 
+  const showBackButton = location.pathname !== "/"; // Hide on home page
+
   return (
     <Layout style={{ height: "100vh" }}>
       {/* Sidebar */}
@@ -46,14 +48,27 @@ function MainLayout() {
             maxHeight: "calc(100vh - 80px)", // Adjust height to fit within the viewport
           }}
         >
-          {/* Back Button */}
-          <Button
-            icon={<ArrowLeftOutlined />}
-            onClick={() => navigate(-1)}
-            style={{ marginBottom: "20px" }}
-          >
-            Back
-          </Button>
+          {showBackButton && (
+            <Button
+              icon={<ArrowLeftOutlined />}
+              onClick={() => {
+                if (window.history.length > 1) {
+                  navigate(-1);
+                } else {
+                  navigate("/");
+                }
+              }}
+              style={{
+                marginBottom: "20px",
+                borderRadius: "6px",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+              }}
+            >
+              Back
+            </Button>
+          )}
 
           <Outlet />
         </Content>
