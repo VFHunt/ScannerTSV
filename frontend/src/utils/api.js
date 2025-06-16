@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = "https://scannertsv.onrender.com"; // Adjust based on backend
+const API_BASE_URL = "http://127.0.0.1:5000"; // Adjust based on backend
 
 export const searchKeywords = async (keyword, scope) => {
   const response = await axios.post(`${API_BASE_URL}/search`, { keyword, scope });
@@ -245,8 +245,22 @@ export const getProjectStatus = async (projectName) => {
   }
 };
 
+export const loginUser = async (username, password) => {
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/loginUser`, // 1st argument: URL
+      { username: username, password: password }, // 2nd argument: data (body)
+      { headers: { "Content-Type": "application/json" } } // 3rd argument: config (headers)
+    );
 
-
+    return response.data; // { success: true/false, message: ... }
+  } catch (error) {
+    if (error.response) {
+      return error.response.data; // backend returned error JSON
+    }
+    throw new Error("Login request failed");
+  }
+};
 
 
 

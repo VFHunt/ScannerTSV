@@ -1,16 +1,21 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/LoginPage.css";
+import { loginUser } from "../utils/api";
 
 function LoginPage() {
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleLogin = () => {
-    // For simplicity, no authentication logic is implemented
-    navigate("/projectview", {replace: true}); // Navigate to the ProjectView page
-  };
+const handleLogin = async () => {
+  const result = await loginUser(username, password);
+  if (result.success) {
+    navigate("/projectview", { replace: true });
+  } else {
+    alert(result.message);
+  }
+};
 
   return (
     <div className="loginContainer">
