@@ -335,8 +335,6 @@ def get_keywords():
         print(f"Error fetching keywords: {e}")
         return jsonify({"error": "Internal server error"}), 500
 
-
-
 @app.route("/status_data", methods=["GET"])
 def status_data():
     """Return the status data for the frontend."""
@@ -352,6 +350,19 @@ def status_data():
     except Exception as e:
         print(f"Error in /status_data: {e}")
         return jsonify({"error": str(e)}), 500
+
+@app.route("/loginUser", methods=["POST"])
+def login():
+    VALID_USERNAME = "UserTSV"
+    VALID_PASSWORD = "123"
+    data = request.json
+    username = data.get("username")
+    password = data.get("password")
+
+    if username == VALID_USERNAME and password == VALID_PASSWORD:
+        return jsonify({"success": True, "message": "Login successful"})
+    else:
+        return jsonify({"success": False, "message": "Invalid credentials"}), 401
 
 if __name__ == "__main__":
     app.debug = True  # Enable debug mode for development

@@ -556,5 +556,12 @@
         "inspectie",
         "experiment",
         "evaluatie"
+    ],
+    "metal": [
+        "metaal",
+        "edelmetaal",
+        "ferrometaal",
+        "legering",
+        "metaalsoort"
     ]
 }
