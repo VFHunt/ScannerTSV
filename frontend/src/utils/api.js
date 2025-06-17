@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = "http://127.0.0.1:5000"; // Adjust based on backend
+const API_BASE_URL = "https://scannertsv.onrender.com"; // Adjust based on backend
 
 export const searchKeywords = async (keyword, scope) => {
   const response = await axios.post(`${API_BASE_URL}/search`, { keyword, scope });
