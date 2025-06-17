@@ -12,11 +12,11 @@ import "./styles/App.css";
 function App() {
   return (
     <Router>      <Routes>
-        <Route path="/login" element={<LoginPage />} />
+        {/* Login page as standalone full-screen route */}
+        <Route path="/" element={<LoginPage />} />
         
-        {/* Main Layout with nested routes */}
-        <Route path="/" element={<MainLayout />}>
-          <Route index element={<LoginPage />} />
+        {/* All other pages under MainLayout */}
+        <Route element={<MainLayout />}>
           <Route path="newscan" element={<NewScan />} />
           <Route path="projectview" element={<ProjectView />} />
           <Route path="results/:projectName" element={<Results />} />

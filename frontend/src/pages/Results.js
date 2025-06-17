@@ -253,10 +253,9 @@ function Results() {
               Nieuwe Scan
             </Button>
             <Button
-              icon={<DownloadOutlined />}
-              onClick={async () => {
+              icon={<DownloadOutlined />}              onClick={async () => {
                 try {
-                  await downloadZip(projectName); // Call the API function to download the zip
+                  await downloadZip(projectName);
                   message.success("Bestanden succesvol gedownload.");
                 } catch (error) {
                   console.error("Error downloading files:", error);

@@ -337,3 +337,113 @@ class FileHandler:
         # Remove extra spaces
         text = re.sub(r"\s+", " ", text)
         return text.strip()  # Ensure no leading/trailing whitespace
+    
+
+class FileNaming:
+    _instance = None
+    
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            # Initialize the instance attributes
+            cls._instance._actual_names = []
+            cls._instance._temp_names = []
+            cls._instance._name_mapping = {}
+        return cls._instance
+    
+    def __init__(self):
+        """
+        Initialize the FileNaming singleton if it hasn't been initialized.
+        The actual initialization is done in __new__.
+        """
+        pass
+    
+    def update_names(self, actual_names: List[str], temp_names: List[str]) -> None:
+        """
+        Update the naming dictionary with new actual and temporary names.
+        Skip names that are already in the mapping.
+        
+        Args:
+            actual_names: List of actual file names
+            temp_names: List of temporary file names
+        """
+        if len(actual_names) != len(temp_names):
+            raise ValueError("The lists of actual names and temporary names must have the same length")
+            
+        for actual, temp in zip(actual_names, temp_names):
+            if temp not in self._name_mapping:
+                self._name_mapping[temp] = actual
+                self._actual_names.append(actual)
+                self._temp_names.append(temp)
+                logger.info(f"Added mapping: {temp} -> {actual}")
+            else:
+                logger.debug(f"Skipping existing mapping for {temp}")
+    
+    def get_actual_name(self, temp_name: str) -> str:
+        """
+        Get the actual name for a temporary name.
+        
+        Args:
+            temp_name: The temporary name to look up
+            
+        Returns:
+            The actual name if found, otherwise returns the temporary name
+        """
+        return self._name_mapping.get(temp_name, temp_name)
+    
+    def get_temp_name(self, actual_name: str) -> str:
+        """
+        Get the temporary name for an actual name.
+        
+        Args:
+            actual_name: The actual name to look up
+            
+        Returns:
+            The temporary name if found, otherwise returns None
+        """
+        for temp, actual in self._name_mapping.items():
+            if actual == actual_name:
+                return temp
+        return None
+    
+    def get_temp_names_for_actuals(self, actual_names: List[str]) -> List[str]:
+        """
+        Get the temporary names for a list of actual names.
+        If an actual name doesn't have a mapping, it will be excluded from the result.
+        
+        Args:
+            actual_names: List of actual file names to look up
+            
+        Returns:
+            List of corresponding temporary names (in the same order)
+        """
+        temp_names = []
+        for actual_name in actual_names:
+            temp_name = self.get_temp_name(actual_name)
+            if temp_name is not None:
+                temp_names.append(temp_name)
+            else:
+                logger.debug(f"No temporary name found for {actual_name}")
+        return temp_names
+    
+    def get_all_mappings(self) -> Dict[str, str]:
+        """
+        Get all name mappings.
+        
+        Returns:
+            Dictionary with temporary names as keys and actual names as values
+        """
+        return self._name_mapping.copy()
+    
+    def clear_mappings(self) -> None:
+        """
+        Clear all name mappings.
+        """
+        self._actual_names.clear()
+        self._temp_names.clear()
+        self._name_mapping.clear()
+        logger.info("All file name mappings cleared")
+
+# Example usage:
+# file_naming = FileNaming()  # Gets the singleton instance
+# file_naming.update_names(['actual1.pdf', 'actual2.pdf'], ['temp1.pdf', 'temp2.pdf'])
