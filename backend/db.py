@@ -406,26 +406,63 @@ class ChunkDatabase:
             if keyword not in seen:
                 seen.add(keyword)
                 unique_keywords.append(keyword)
-
-
-        
         return unique_keywords
 
+    def debug_print_all_chunks(self, project_name):
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute('''
+                       SELECT chunk_text, page_number, keyword
+                       FROM file_chunks
+                       WHERE project_name = ?
+                       ''', (project_name,))
+
+        rows = cursor.fetchall()
+        conn.close()
+
+        for idx, (chunk_text, page, keyword) in enumerate(rows, 1):
+            print(f"--- Chunk {idx} ---")
+            print(f"Page: {page}")
+            print(f"Keyword: {keyword}")
+            print(f"Text: {chunk_text[:300]}...")  # Limit output length for readability
+            print()
+
+    def add_exact_keyword_matches_to_chunks(self, keyword: str):
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        # Fetch all chunk_ids and their text
+        cursor.execute("SELECT chunk_id, chunk_text, keyword FROM file_chunks")
+        rows = cursor.fetchall()
+
+        for chunk_id, text, keyword_str in rows:
+            if keyword.lower() in text.lower():  # Case-insensitive exact word match
+                # Parse existing keyword list
+                try:
+                    keywords = ast.literal_eval(keyword_str) if keyword_str else []
+                except Exception:
+                    keywords = []
+
+                if not isinstance(keywords, list):
+                    keywords = [keywords]
+
+                if keyword not in keywords:
+                    keywords.append(keyword)
+
+                    # Update keyword list and distance
+                    updated_keywords_str = str(keywords)
+                    cursor.execute('''
+                                   UPDATE file_chunks
+                                   SET keyword  = ?,
+                                       distance = ?
+                                   WHERE chunk_id = ?
+                                   ''', (updated_keywords_str, 0.99, chunk_id))
+        conn.commit()
+        conn.close()
+        print(f"[INFO] Exact keyword '{keyword}' added to matching chunks.")
 
 if __name__ == "__main__":
     db = ChunkDatabase()  # This triggers init_db()
-    db.print_table_schema()
-    db.get_filename(project_name='test')
-    #db.add_keyword_and_distance(chunk_id='c262a5af-9e51-4aba-abfd-76e9e0391b62', query='requirements', distance=0.123)
-    #results = db.get_chunks_by_project_and_file(project_name='test', file_name='ES10ST_1.pdf')
-    #for result in results:
-    #    print(result)
-    db.get_projects()
-    results = db.get_files_scanned_status_and_time(project_name='test')
-    for r in results:
-        print(r)
-    keywords = db.get_all_retrieved_keywords_by_project(project_name='test')
-    for k in keywords: print(k)
-    upload_time, scanned_status = db.get_project_time_and_status(project_name='test')
-    print(f"Upload time: {upload_time}")
-    print(f"Project scanned: {scanned_status}")
+    db.debug_print_all_chunks("test")
+    db.add_exact_keyword_matches_to_chunks("ongevallen")
+    db.debug_print_all_chunks("test")
+
