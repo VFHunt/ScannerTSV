@@ -42,20 +42,29 @@ function ProjectView() {
 
   // Handle reset functionality
   const handleReset = async () => {
-    try {
-      await reset_db();  // Call backend to reset
-      setSearchTerm("");
+    Modal.confirm({
+      title: 'Weet je het zeker?',
+      content: 'Dit verwijdert alle projecten. Deze actie kan niet ongedaan worden gemaakt.',
+      okText: 'Ja, verwijderen',
+      okType: 'danger',
+      cancelText: 'Annuleren',
+      onOk: async () => {
+        try {
+          await reset_db();  // Call backend to reset
+          setSearchTerm("");
 
-      // Re-fetch projects after reset
-      const data = await get_projects();
-      setProjects(data || []);
-      setFilteredProjects(data || []);
+          // Re-fetch projects after reset
+          const data = await get_projects();
+          setProjects(data || []);
+          setFilteredProjects(data || []);
 
-      message.success("Projects reset successfully.");
-    } catch (error) {
-      console.error("Failed to reset projects:", error);
-      message.error("Failed to reset projects.");
-    }
+          message.success("Projects reset successfully.");
+        } catch (error) {
+          console.error("Failed to reset projects:", error);
+          message.error("Failed to reset projects.");
+        }
+      },
+    });
   };
 
   // Handle creating a new project
@@ -224,8 +233,8 @@ function ProjectView() {
           visible={isModalVisible}
           onOk={handleModalOk}
           onCancel={handleModalCancel}
-          okText="Create"
-          cancelText="Cancel"
+          okText="Creëren"
+          cancelText="Annuleren"
         >
           <Form>
             <Form.Item label="Projectnaam" required>
@@ -237,7 +246,7 @@ function ProjectView() {
                     handleModalOk(); // Trigger modal submission on Enter key press
                   }
                 }}
-                placeholder="Enter project name"
+                placeholder="Voer projectnaam in"
                 autoFocus // Automatically focus the input field when the modal opens
               />
             </Form.Item>

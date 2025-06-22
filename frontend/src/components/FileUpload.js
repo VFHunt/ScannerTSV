@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { uploadFile, processFiles } from "../utils/api"; // you handle upload and processing separately
+import { uploadFile, processFiles } from "../utils/api";
 import { Upload, message as antdMessage, Button, Spin } from "antd";
 import { CloudUploadOutlined, DeleteOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
@@ -18,12 +18,12 @@ function FileUpload() {
 
   const handleRemove = (file) => {
     setFiles((prevFiles) => prevFiles.filter((item) => item.uid !== file.uid));
-    antdMessage.info(`${file.name} removed.`);
+    antdMessage.info(`${file.name} verwijderd.`);
   };
 
   const handleUpload = async () => {
     if (files.length === 0) {
-      setStatusMessage("Please select at least one file.");
+      setStatusMessage("Selecteer minstens één bestand.");
       return;
     }
 
@@ -36,12 +36,12 @@ function FileUpload() {
       // Step 1: Upload
       setLoadingStep("uploading");
       const uploadResponse = await uploadFile(formData);
-      setStatusMessage(uploadResponse.message || "Files uploaded!");
+      setStatusMessage(uploadResponse.message || "Bestanden geüpload!");
 
       // Step 2: Process
       setLoadingStep("processing");
       const processResponse = await processFiles();
-      setStatusMessage(processResponse.message || "Files processed!");
+      setStatusMessage(processResponse.message || "Bestanden verwerkt!");
 
       // Mark upload as complete
       setIsUploadComplete(true);
@@ -49,7 +49,7 @@ function FileUpload() {
       // Display the list of successfully uploaded files
       setStatusMessage(
         <>
-          <p>The following files have been successfully uploaded and processed:</p>
+          <p>De volgende bestanden zijn succesvol geüpload en verwerkt:</p>
           <ul>
             {files.map((file, index) => (
               <li key={index}>{file.name}</li>
@@ -58,8 +58,8 @@ function FileUpload() {
         </>
       );
     } catch (error) {
-      console.error("Upload or processing error:", error);
-      setStatusMessage("Something went wrong during upload or processing.");
+      console.error("Upload- of verwerkingsfout:", error);
+      setStatusMessage("Er is iets misgegaan tijdens het uploaden of verwerken.");
     } finally {
       setLoadingStep(null); // Reset loading step
     }
@@ -89,8 +89,8 @@ function FileUpload() {
           <p className="ant-upload-drag-icon">
             <CloudUploadOutlined style={{ fontSize: "64px", color: "#1890ff" }} />
           </p>
-          <p className="ant-upload-text">Click or drag files here to upload</p>
-          <p className="ant-upload-hint">Supports single or multiple files</p>
+          <p className="ant-upload-text">Klik of sleep bestanden hierheen om te uploaden</p>
+          <p className="ant-upload-hint">Ondersteunt één of meerdere bestanden</p>
         </Dragger>
       )}
 
@@ -98,10 +98,10 @@ function FileUpload() {
       {files.length > 0 && !loadingStep && !isUploadComplete && (
         <div style={{ marginTop: "20px", textAlign: "center" }}>
           <Button type="primary" onClick={handleUpload} style={{ marginRight: "10px" }}>
-            Upload & Process
+            Uploaden & Verwerken
           </Button>
           <Button danger icon={<DeleteOutlined />} onClick={() => setFiles([])}>
-            Clear All
+            Alles wissen
           </Button>
         </div>
       )}
@@ -111,8 +111,8 @@ function FileUpload() {
         <div style={{ marginTop: "20px", textAlign: "center" }}>
           <Spin size="large" />
           <p style={{ marginTop: "10px", color: "#1890ff" }}>
-            {loadingStep === "uploading" && "Uploading files..."}
-            {loadingStep === "processing" && "Processing files..."}
+            {loadingStep === "uploading" && "Bestanden worden geüpload..."}
+            {loadingStep === "processing" && "Bestanden worden verwerkt..."}
           </p>
         </div>
       )}

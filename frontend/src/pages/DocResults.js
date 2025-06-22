@@ -20,7 +20,7 @@ const DocumentResultItem = ({ item }) => (
     <Row gutter={[16, 16]}>
       <Col span={18}>
         {/* Semantic Chunk */}
-        <Paragraph ellipsis={{ rows: 4, expandable: true, symbol: "more" }} style={{ fontSize: "15px" }}>
+        <Paragraph ellipsis={{ rows: 4, expandable: true, symbol: "meer" }} style={{ fontSize: "15px" }}>
           {item.text}
         </Paragraph>
       </Col>
@@ -46,28 +46,28 @@ const DocumentResultItem = ({ item }) => (
               </Tag>
             ))}
           </div>
-          <Tooltip title="Page number" placement="top" mouseEnterDelay={0.2}>
-          <Tag
-            color="gold"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: "0 0.6rem",
-              height: "22px",
-              fontSize: "12px",
-              fontWeight: 500,
-              borderRadius: "1px",
-              lineHeight: 1,
-              whiteSpace: "nowrap",
-              cursor: "default",
-            }}
-            role="contentinfo"
-            aria-label={`Page ${item.page}`}
-          >
-            Page {item.page}
-          </Tag>
-        </Tooltip>
+          <Tooltip title="Paginanummer" placement="top" mouseEnterDelay={0.2}>
+            <Tag
+              color="gold"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "0 0.6rem",
+                height: "22px",
+                fontSize: "12px",
+                fontWeight: 500,
+                borderRadius: "1px",
+                lineHeight: 1,
+                whiteSpace: "nowrap",
+                cursor: "default",
+              }}
+              role="contentinfo"
+              aria-label={`Pagina ${item.page}`}
+            >
+              Pagina {item.page}
+            </Tag>
+          </Tooltip>
         </div>
       </Col>
     </Row>
@@ -88,7 +88,7 @@ function DocResults() {
       const data = await fetchDocumentResults(encodedFilename);
       setContent(data.results || []);
     } catch (error) {
-      console.error("Error fetching document results:", error);
+      console.error("Fout bij het ophalen van documentresultaten:", error);
     } finally {
       setLoading(false);
     }
@@ -114,21 +114,21 @@ function DocResults() {
       <Row gutter={[16, 16]}>
         <Col span={24}>
           <Title level={2} style={{ marginBottom: "1rem" }}>
-            Semantic Search Results
+            Semantische zoekresultaten
           </Title>
           <Paragraph>
-            Viewing results for: <Text code>{filename}</Text>
+            Resultaten voor: <Text code>{filename}</Text>
           </Paragraph>
         </Col>
 
         <Col span={24}>
           <div style={{ marginBottom: "1rem" }}>
-            <Text strong>Filter by Keywords:</Text>
+            <Text strong>Filter op trefwoorden:</Text>
             <Select
               mode="multiple"
               allowClear
               style={{ width: "100%" }}
-              placeholder="Select keywords to filter"
+              placeholder="Selecteer trefwoorden om te filteren"
               onChange={setSelectedKeywords}
             >
               {allKeywords.map((keyword, index) => (

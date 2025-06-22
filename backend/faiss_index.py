@@ -12,7 +12,11 @@ class FaissIndex:
         Args:
             embeddings: A list of tuples where each tuple contains an integer and a numpy array (embedding).
             temperature: A threshold for filtering results based on distance.
+
         """
+        if not embeddings:
+            raise ValueError("Embeddings list is empty. Cannot build FAISS index.")
+
         self.temperature = temperature
         self.embeddings = embeddings
         self.encoder = get_model()  # Initialize the encoder model
