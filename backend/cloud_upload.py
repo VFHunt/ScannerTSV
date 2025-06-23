@@ -48,6 +48,7 @@ def upload_multiple_route():
             file_ext = os.path.splitext(filename)[1] if filename else ''
             temp = tempfile.NamedTemporaryFile(delete=False, suffix=file_ext)
             file.save(temp.name)
+            temp_file_paths.append(temp.name)
 
             # Then upload that saved file to Azure
             with open(temp.name, "rb") as data:
@@ -59,6 +60,10 @@ def upload_multiple_route():
         handler = FileHandler()
         handler.initialize(temp_file_paths)
         handler.set_actual_names(original_filenames)  # Pass original filenames
+
+        # # Optional: Process files here
+        # results = handler.process_all_files()
+        # print("Processed results:", results)
 
         return jsonify({"message": "Files uploaded and processed successfully"}), 200
 
@@ -72,7 +77,6 @@ def download_multiple_route():
     try:
         data = request.get_json()
         files = data.get('files', [])  # List of blob names
-        print(f"Files to download: {files}")
         if not files:
             return jsonify({"error": "No files provided"}), 400
 

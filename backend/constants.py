@@ -19,7 +19,7 @@ _TRANS_MODEL = None
 def get_model():
     global _TRANS_MODEL
     if _TRANS_MODEL is None:
-        _TRANS_MODEL = SentenceTransformer('sentence-transformers/paraphrase-MiniLM-L3-v2') # paraphrase-multilingual-MiniLM-L12-v2
+        _TRANS_MODEL = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2') # paraphrase-multilingual-MiniLM-L12-v2
     return _TRANS_MODEL
 
 # ____________________________ OpenAI Client ___________________________

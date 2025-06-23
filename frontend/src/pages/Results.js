@@ -24,6 +24,7 @@ import {
   setProjectName,
   deleteFile,
   statusData,
+  getFocus,
 } from "../utils/api";
 import { useNavigate, useParams } from "react-router-dom";
 import FileUpload from "../components/FileUpload";
@@ -44,7 +45,7 @@ function Results() {
     setLoading(true);
     try {
       // Fetch search results
-      const searchData = await fetchSearchResults(projectName);
+      const searchData = await fetchSearchResults(projectName); // fetching results by project name from the database 
       console.log("Fetched projects:", searchData);
       const processedResults = processResults(searchData.results || []);
       setSearchResults(processedResults);
@@ -60,6 +61,13 @@ function Results() {
       // Fetch status data
       const statusDataResult = await statusData(projectName);
       console.log("Statusgegevens ontvangen:", statusDataResult);
+
+      // try {
+      //   const focus = await getFocus(projectName);
+      //   console.log("Laatste focus ontvangen:", focus);
+      // } catch (error) {
+      //   console.error("Fout bij het ophalen van de laatste focus:", error);
+      // }
 
       if (Array.isArray(statusDataResult)) {
         const statuses = {};
@@ -300,7 +308,7 @@ function Results() {
           onUploadComplete={() => {
             setIsUploadModalVisible(false);
             loadSearchResultsAndStatuses();
-            window.location.reload();
+            // window.location.reload();
           }}
         />
       </Modal>

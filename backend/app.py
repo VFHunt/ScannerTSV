@@ -96,8 +96,6 @@ def search():
     
     emb = db.get_embeddings_by_project(handler.get_project_name())  # Get chunks from the database
 
-    print("DEBUG: Embeddings fetched from database:", emb)  # Debugging line to check embeddings
-
     f = FaissIndex(emb, temperature=temp)  # Initialize the FAISS index
     f.f_search(keywords, db)  # Search for keywords in the FAISS index and save them in the database
 
@@ -367,5 +365,5 @@ def login():
         return jsonify({"success": False, "message": "Invalid credentials"}), 401
 
 if __name__ == "__main__":
-    app.debug = True  # Enable debug mode for development
-    app.run()
+    # Run the Flask app
+    app.run(debug=True)

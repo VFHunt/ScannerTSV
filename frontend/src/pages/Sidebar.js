@@ -21,7 +21,7 @@ function Sidebar() {
         <button className="settingsButton">Instellingen</button>
         <div className="settingsSubMenu">
           <button className="subMenuButton"> Gebruikersbeheer </button>
-          <button className="subMenuButton"> kostenbeheer </button>
+          <button className="subMenuButton"> Kostenbeheer </button>
         </div>
       </div>
     </div>

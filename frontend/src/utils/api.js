@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = "http://127.0.0.1:5000"; // Adjust based on backend
+const API_BASE_URL = "https://scannertsv.onrender.com"; // Adjust based on backend
 
 export const searchKeywords = async (keyword, scope) => {
   const response = await axios.post(`${API_BASE_URL}/search`, { keyword, scope });
@@ -262,8 +262,15 @@ export const loginUser = async (username, password) => {
   }
 };
 
-
-
-
-
-
+export const getFocus = async (projectName) => {
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/get_focus`,
+      { params: { project_name: projectName } }
+    );
+    return response.data.focus;
+  } catch (error) {
+    console.error("Error fetching focus:", error);
+    throw new Error("Failed to fetch focus.");
+  }
+};

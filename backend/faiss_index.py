@@ -12,11 +12,7 @@ class FaissIndex:
         Args:
             embeddings: A list of tuples where each tuple contains an integer and a numpy array (embedding).
             temperature: A threshold for filtering results based on distance.
-
         """
-        if not embeddings:
-            raise ValueError("Embeddings list is empty. Cannot build FAISS index.")
-
         self.temperature = temperature
         self.embeddings = embeddings
         self.encoder = get_model()  # Initialize the encoder model
@@ -113,10 +109,10 @@ class FaissIndex:
 
         # Print the resulting dictionary
         for chunk_id, data in chunk_query_dict.items():
-            # print(f"Chunk ID: {chunk_id}")
-            # print("Queries:", data["queries"])
-            # print("Distances:", data["distances"])
-            # print(f"[DEBUG] About to call add_keyword_and_distance for chunk {chunk_id}")
             db.add_keyword_and_distance(str(chunk_id), str(data["queries"]), str(data["distances"]))
+
+        # Add exact keyword matches for each query (once)
+        for query in queries:
+            db.add_exact_keyword_matches_to_chunks(query)
 
         return distances, indices
