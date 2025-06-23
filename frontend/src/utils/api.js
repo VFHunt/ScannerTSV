@@ -175,8 +175,39 @@ export const getProjectDate = async (projectName) => {
     throw error;
   }
 };
+/*
+get_keywords gets replaced by:
+export const get_focus_keywords = async () => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/get_keywords/focus`);
+    return response.data.keywords;
+  } catch (error) {
+    console.error("Error fetching focus keywords:", error);
+    throw error;
+  }
+};
 
-// Add this new function to api.js: remember to get the name of the project with the handler
+export const get_balanced_keywords = async () => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/get_keywords/balanced`);
+    return response.data.keywords;
+  } catch (error) {
+    console.error("Error fetching balanced keywords:", error);
+    throw error;
+  }
+};
+
+export const get_broad_keywords = async () => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/get_keywords/broad`);
+    return response.data.keywords;
+  } catch (error) {
+    console.error("Error fetching broad keywords:", error);
+    throw error;
+  }
+};
+*/
+
 export const get_keywords = async () => { 
   try {
     const response = await axios.get(`${API_BASE_URL}/get_keywords`);

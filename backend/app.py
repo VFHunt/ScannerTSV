@@ -314,7 +314,69 @@ def get_project_date():
         print(f"Error getting project date: {e}")  # Add debug logging
         return jsonify({"error": str(e)}), 500
 
+"""
+/get_keywords becomes:
 
+@app.route("/get_keywords/focus", methods=["GET"])
+def get_focus_keywords_route():
+    project_name = handler.get_project_name()
+    print(f"Getting FOCUS keywords for project: {project_name}")
+
+    if not project_name:
+        return jsonify({"error": "Project name is required"}), 400
+
+    try:
+        keywords = db.get_focus_keywords(db.db_path, project_name)
+        if not keywords:
+            return jsonify({"error": "No focus keywords found for this project"}), 404
+
+        return jsonify({"project_name": project_name, "keywords": keywords})
+
+    except Exception as e:
+        print(f"Error fetching focus keywords: {e}")
+        return jsonify({"error": "Internal server error"}), 500
+
+
+@app.route("/get_keywords/balanced", methods=["GET"])
+def get_balanced_keywords_route():
+    project_name = handler.get_project_name()
+    print(f"Getting BALANCED keywords for project: {project_name}")
+
+    if not project_name:
+        return jsonify({"error": "Project name is required"}), 400
+
+    try:
+        keywords = db.get_balanced_keywords(db.db_path, project_name)
+        if not keywords:
+            return jsonify({"error": "No balanced keywords found for this project"}), 404
+
+        return jsonify({"project_name": project_name, "keywords": keywords})
+
+    except Exception as e:
+        print(f"Error fetching balanced keywords: {e}")
+        return jsonify({"error": "Internal server error"}), 500
+
+
+@app.route("/get_keywords/broad", methods=["GET"])
+def get_broad_keywords_route():
+    project_name = handler.get_project_name()
+    print(f"Getting BROAD keywords for project: {project_name}")
+
+    if not project_name:
+        return jsonify({"error": "Project name is required"}), 400
+
+    try:
+        keywords = db.get_broad_keywords(db.db_path, project_name)
+        if not keywords:
+            return jsonify({"error": "No broad keywords found for this project"}), 404
+
+        return jsonify({"project_name": project_name, "keywords": keywords})
+
+    except Exception as e:
+        print(f"Error fetching broad keywords: {e}")
+        return jsonify({"error": "Internal server error"}), 500
+
+"""
 @app.route("/get_keywords", methods=["GET"])
 def get_keywords():
     project_name = handler.get_project_name()

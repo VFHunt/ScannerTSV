@@ -377,6 +377,59 @@ class ChunkDatabase:
         embeddings = [(chunk_id, np.frombuffer(embedding_blob, dtype=np.float32)) for chunk_id, embedding_blob in rows]
         return embeddings
 
+
+    """
+    get_all_retrieved_keywords_by_project becomes (add quotations to sql code):
+    def _get_keywords_by_distance_range(db_path, project_name, min_distance, max_distance):
+    logger.info(f"Getting keywords for project: {project_name} in distance range {min_distance} to {max_distance}")
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute(
+        SELECT DISTINCT keyword
+        FROM file_chunks 
+        WHERE project_name = ?
+          AND keyword IS NOT NULL
+          AND keyword != ''
+          AND distance BETWEEN ? AND ?
+    , (project_name, min_distance, max_distance))
+    rows = cursor.fetchall()
+    conn.close()
+
+    keywords_found = [row[0].strip() for row in rows if row[0] and row[0].strip()]
+    all_words = []
+
+    for item in keywords_found:
+        try:
+            words_list = ast.literal_eval(item)
+            cleaned_words = [word.strip() for word in words_list]
+            all_words.extend(cleaned_words)
+        except Exception as e:
+            logger.warning(f"Skipping keyword parsing due to error: {e}")
+
+    # Remove duplicates while preserving order
+    seen = set()
+    unique_keywords = []
+    for keyword in all_words:
+        if keyword not in seen:
+            seen.add(keyword)
+            unique_keywords.append(keyword)
+
+    return unique_keywords
+    
+    def get_focus_keywords(db_path, project_name):
+    # Distance 0.75 to 1.0
+    return _get_keywords_by_distance_range(db_path, project_name, 0.75, 1.0)
+
+    def get_balanced_keywords(db_path, project_name):
+    # Distance 0.5 to 0.75
+    return _get_keywords_by_distance_range(db_path, project_name, 0.5, 0.75)
+
+    def get_broad_keywords(db_path, project_name):
+    # Distance 0.3 to 0.5
+    return _get_keywords_by_distance_range(db_path, project_name, 0.3, 0.5)
+
+    
+    """
     def get_all_retrieved_keywords_by_project(self, project_name):
         logger.info(f"Getting keywords for project: {project_name}")
         conn = sqlite3.connect(self.db_path)
