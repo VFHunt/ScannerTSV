@@ -406,26 +406,11 @@ class ChunkDatabase:
             if keyword not in seen:
                 seen.add(keyword)
                 unique_keywords.append(keyword)
-
-
-        
         return unique_keywords
+
 
 
 if __name__ == "__main__":
     db = ChunkDatabase()  # This triggers init_db()
     db.print_table_schema()
-    db.get_filename(project_name='test')
-    #db.add_keyword_and_distance(chunk_id='c262a5af-9e51-4aba-abfd-76e9e0391b62', query='requirements', distance=0.123)
-    #results = db.get_chunks_by_project_and_file(project_name='test', file_name='ES10ST_1.pdf')
-    #for result in results:
-    #    print(result)
-    db.get_projects()
-    results = db.get_files_scanned_status_and_time(project_name='test')
-    for r in results:
-        print(r)
-    keywords = db.get_all_retrieved_keywords_by_project(project_name='test')
-    for k in keywords: print(k)
-    upload_time, scanned_status = db.get_project_time_and_status(project_name='test')
-    print(f"Upload time: {upload_time}")
-    print(f"Project scanned: {scanned_status}")
+
