@@ -50,8 +50,8 @@ function Results() {
       setSearchResults(processedResults);
       setFilteredResults(processedResults); // Initialize filtered results
     } catch (error) {
-      console.error("Error fetching search results:", error);
-      message.error("Error fetching search results.");
+      console.error("Fout bij het ophalen van zoekresultaten:", error);
+      message.error("Fout bij het ophalen van zoekresultaten.");
       setLoading(false);
       return;
     }
@@ -59,7 +59,7 @@ function Results() {
     try {
       // Fetch status data
       const statusDataResult = await statusData(projectName);
-      console.log("Status data received:", statusDataResult);
+      console.log("Statusgegevens ontvangen:", statusDataResult);
 
       if (Array.isArray(statusDataResult)) {
         const statuses = {};
@@ -68,12 +68,12 @@ function Results() {
         });
         setFileStatuses(statuses);
       } else {
-        console.error("Invalid format for status data:", statusDataResult);
-        message.error("Invalid status data format from server.");
+        console.error("Ongeldig formaat voor statusgegevens:", statusDataResult);
+        message.error("Ongeldig statusgegevensformaat van de server.");
       }
     } catch (error) {
-      console.error("Error fetching status data:", error);
-      message.error("Error fetching status data.");
+      console.error("Fout bij het ophalen van statusgegevens:", error);
+      message.error("Fout bij het ophalen van statusgegevens.");
     } finally {
       setLoading(false);
     }
@@ -116,8 +116,8 @@ function Results() {
       message.success(`Bestand '${fileName}' succesvol verwijderd.`);
       loadSearchResultsAndStatuses();
     } catch (error) {
-      console.error("Delete failed:", error);
-      message.error("Bestand verwijderen is mislukt.");
+      console.error("Verwijderen mislukt:", error);
+      message.error("Verwijderen van bestand is mislukt.");
     }
   };
 
@@ -136,10 +136,10 @@ function Results() {
     const updateProjectName = async () => {
       try {
         await setProjectName(projectName);
-        console.log(`Project name "${projectName}" set successfully.`);
+        console.log(`Projectnaam "${projectName}" succesvol ingesteld.`);
       } catch (error) {
-        console.error("Error setting project name:", error);
-        message.error("Failed to set the project name.");
+        console.error("Fout bij het instellen van de projectnaam:", error);
+        message.error("Projectnaam instellen is mislukt.");
       }
     };
 
@@ -178,12 +178,12 @@ function Results() {
         const status = fileStatuses[filename];
         return status ? (
           status.scanned ? (
-            <Tag color="green">Scanned</Tag>
+            <Tag color="green">Gescand</Tag>
           ) : (
-            <Tag color="orange">Not Scanned</Tag>
+            <Tag color="orange">Niet gescand</Tag>
           )
         ) : (
-          "Loading..."
+          "Laden..."
         );
       },
     },
@@ -198,7 +198,7 @@ function Results() {
               dateStyle: "short",
               timeStyle: "short",
             })
-          : "N/A";
+          : "N/B";
       },
     },
     {
@@ -211,7 +211,7 @@ function Results() {
             icon={<EyeOutlined />}
             onClick={() => navigate(`/docresults/${record.filename}`)}
           >
-            View
+            Bekijken
           </Button>
           <Button
             type="link"
@@ -219,7 +219,7 @@ function Results() {
             icon={<DeleteOutlined />}
             onClick={() => handleDeleteFile(record.filename)}
           >
-            Delete
+            Verwijderen
           </Button>
         </Space>
       ),
@@ -227,7 +227,7 @@ function Results() {
   ];
 
   const handleStartScan = (woordenlijst, documentSelectie, terms) => {
-    console.log("Starting scan with:", woordenlijst, documentSelectie, terms);
+    console.log("Scan starten met:", woordenlijst, documentSelectie, terms);
     setIsScanPopupVisible(false);
   };
 
@@ -250,20 +250,21 @@ function Results() {
               icon={<PlusOutlined />}
               onClick={() => setIsScanPopupVisible(true)}
             >
-              Nieuwe Scan
+              Nieuwe scan
             </Button>
             <Button
-              icon={<DownloadOutlined />}              onClick={async () => {
+              icon={<DownloadOutlined />}
+              onClick={async () => {
                 try {
                   await downloadZip(projectName);
                   message.success("Bestanden succesvol gedownload.");
                 } catch (error) {
-                  console.error("Error downloading files:", error);
+                  console.error("Fout bij het downloaden van bestanden:", error);
                   message.error("Fout bij het downloaden van bestanden.");
                 }
               }}
             >
-              Bestanden Downloaden
+              Bestanden downloaden
             </Button>
             <Button
               icon={<PlusOutlined />}
@@ -299,6 +300,7 @@ function Results() {
           onUploadComplete={() => {
             setIsUploadModalVisible(false);
             loadSearchResultsAndStatuses();
+            window.location.reload();
           }}
         />
       </Modal>
