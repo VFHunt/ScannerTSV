@@ -365,5 +365,5 @@ def login():
         return jsonify({"success": False, "message": "Invalid credentials"}), 401
 
 if __name__ == "__main__":
-    app.debug = True  # Enable debug mode for development
-    app.run()
+    # Run the Flask app
+    app.run(debug=True)

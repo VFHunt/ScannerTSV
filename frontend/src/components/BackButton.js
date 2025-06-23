@@ -29,7 +29,7 @@ const BackButton = () => {
           borderRadius: '8px',
         }}
       >
-        Go Back
+        Teruggaan
       </Button>
     </div>
   );

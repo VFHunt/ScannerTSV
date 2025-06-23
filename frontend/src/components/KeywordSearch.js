@@ -30,19 +30,19 @@ function KeywordSearch() {
   const handleSynonymGeneration = async () => {
     try {
       if (keywordsList.length === 0) {
-        setMessage("No keywords available to generate synonyms.");
+        setMessage("Geen trefwoorden beschikbaar om synoniemen te genereren.");
         return;
       }
 
-      setMessage(`Generating synonyms for: ${keywordsList.join(", ")}`);
+      setMessage(`Synoniemen genereren voor: ${keywordsList.join(", ")}`);
       const data = await getSynonyms(keywordsList);
       setSynonymsList(data.synonyms || []);
-      setMessage("Synonyms generated successfully!");
+      setMessage("Synoniemen succesvol gegenereerd!");
     } catch (error) {
       setMessage(
-        `Error in Synonym Generation: ${
+        `Fout bij het genereren van synoniemen: ${
           error.response?.data?.error || error.message
-        }, please make sure you uploaded one or more files.`
+        }, zorg ervoor dat je één of meer bestanden hebt geüpload.`
       );
     }
   };
@@ -50,22 +50,22 @@ function KeywordSearch() {
   const handleSearch = async () => {
     try {
       if (keywordsList.length === 0 && synonymsList.length === 0) {
-        setMessage("No keywords or synonyms available to search.");
+        setMessage("Geen trefwoorden of synoniemen beschikbaar om te zoeken.");
         return;
       }
 
-      setMessage("Searching...");
+      setMessage("Zoeken...");
       const data = await searchKeywords([...keywordsList, ...synonymsList], searchScope); // Pass searchScope
-      setMessage(data.message || "Search completed!");
+      setMessage(data.message || "Zoekopdracht voltooid!");
 
       const projectName = await getProjectName();
       if (projectName) {
         navigate(`/results/${projectName}`);
       } else {
-        setMessage("Error: Project name not found.");
+        setMessage("Fout: projectnaam niet gevonden.");
       }
     } catch (error) {
-      setMessage(`Error in Search: ${error.response?.data?.error || error.message}`);
+      setMessage(`Fout bij zoeken: ${error.response?.data?.error || error.message}`);
     }
   };
 
@@ -76,7 +76,7 @@ function KeywordSearch() {
         <label className="label">Woordenlijst:</label>
         <input
           type="text"
-          placeholder="Enter a keyword"
+          placeholder="Voer een trefwoord in"
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
           onKeyDown={(e) => {
@@ -87,7 +87,7 @@ function KeywordSearch() {
           className="input"
         />
         <button onClick={addKeyword} className="addButton">
-          Add
+          Toevoegen
         </button>
       </div>
 
@@ -109,7 +109,7 @@ function KeywordSearch() {
       {/* Extra Words Button */}
       <div className="extraWordsRow">
         <button onClick={handleSynonymGeneration} className="extraWordsButton">
-          Extra words
+          Extra woorden
         </button>
       </div>
 
@@ -131,7 +131,7 @@ function KeywordSearch() {
       {/* Start Scan Button */}
       <div className="startScanRow">
         <button onClick={handleSearch} className="startScanButton">
-          Start Scan
+          Start scan
         </button>
       </div>
 
