@@ -376,81 +376,33 @@ class ChunkDatabase:
         conn.close()
         embeddings = [(chunk_id, np.frombuffer(embedding_blob, dtype=np.float32)) for chunk_id, embedding_blob in rows]
         return embeddings
-
-
     """
-    get_all_retrieved_keywords_by_project becomes (add quotations to sql code):
-    def _get_keywords_by_distance_range(db_path, project_name, min_distance, max_distance):
-    logger.info(f"Getting keywords for project: {project_name} in distance range {min_distance} to {max_distance}")
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
-    cursor.execute(
-        SELECT DISTINCT keyword
-        FROM file_chunks 
-        WHERE project_name = ?
-          AND keyword IS NOT NULL
-          AND keyword != ''
-          AND distance BETWEEN ? AND ?
-    , (project_name, min_distance, max_distance))
-    rows = cursor.fetchall()
-    conn.close()
 
-    keywords_found = [row[0].strip() for row in rows if row[0] and row[0].strip()]
-    all_words = []
-
-    for item in keywords_found:
-        try:
-            words_list = ast.literal_eval(item)
-            cleaned_words = [word.strip() for word in words_list]
-            all_words.extend(cleaned_words)
-        except Exception as e:
-            logger.warning(f"Skipping keyword parsing due to error: {e}")
-
-    # Remove duplicates while preserving order
-    seen = set()
-    unique_keywords = []
-    for keyword in all_words:
-        if keyword not in seen:
-            seen.add(keyword)
-            unique_keywords.append(keyword)
-
-    return unique_keywords
-    
-    def get_focus_keywords(db_path, project_name):
-    # Distance 0.75 to 1.0
-    return _get_keywords_by_distance_range(db_path, project_name, 0.75, 1.0)
-
-    def get_balanced_keywords(db_path, project_name):
-    # Distance 0.5 to 0.75
-    return _get_keywords_by_distance_range(db_path, project_name, 0.5, 0.75)
-
-    def get_broad_keywords(db_path, project_name):
-    # Distance 0.3 to 0.5
-    return _get_keywords_by_distance_range(db_path, project_name, 0.3, 0.5)
-
-    
-    """
-    def get_all_retrieved_keywords_by_project(self, project_name):
-        logger.info(f"Getting keywords for project: {project_name}")
+    def get_keywords_by_distance_range(self, project_name, min_distance, max_distance):
+        logger.info(f"Getting keywords for project: {project_name} in distance range {min_distance} to {max_distance}")
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
-        cursor.execute("""
+        cursor.execute(
             SELECT DISTINCT keyword
             FROM file_chunks 
-            WHERE project_name = ? AND keyword IS NOT NULL AND keyword != ''
-        """, (project_name,))
+            WHERE project_name = ?
+              AND keyword IS NOT NULL
+              AND keyword != ''
+              AND distance BETWEEN ? AND ?
+        , (project_name, min_distance, max_distance))
         rows = cursor.fetchall()
         conn.close()
-        keywords_found = [row[0].strip() for row in rows if row[0] and row[0].strip()]
 
+        keywords_found = [row[0].strip() for row in rows if row[0] and row[0].strip()]
         all_words = []
 
         for item in keywords_found:
-            # Safely parse the string to a list object
-            words_list = ast.literal_eval(item)
-            # Clean each word and extend all_words
-            cleaned_words = [word.strip() for word in words_list]
-            all_words.extend(cleaned_words)
+            try:
+                words_list = ast.literal_eval(item)
+                cleaned_words = [word.strip() for word in words_list]
+                all_words.extend(cleaned_words)
+            except Exception as e:
+                logger.warning(f"Skipping keyword parsing due to error: {e}")
 
         # Remove duplicates while preserving order
         seen = set()
@@ -459,8 +411,103 @@ class ChunkDatabase:
             if keyword not in seen:
                 seen.add(keyword)
                 unique_keywords.append(keyword)
-        return unique_keywords
 
+        return unique_keywords
+    
+    def get_focus_keywords(self, project_name):
+    # Distance 0.75 to 1.0
+        return self.get_keywords_by_distance_range(project_name, 0.75, 1.0)
+
+    def get_balanced_keywords(self, project_name):
+    # Distance 0.5 to 0.75
+        return self.get_keywords_by_distance_range(project_name, 0.5, 0.75)
+
+    def get_broad_keywords(self, project_name):
+    # Distance 0.3 to 0.5
+        return self.get_keywords_by_distance_range(project_name, 0.3, 0.5)
+
+    
+    """
+
+    def get_all_retrieved_keywords_and_distances_by_project(self, project_name):
+        logger.info(f"Getting separate keyword and distance lists for project: {project_name}")
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute("""
+                       SELECT DISTINCT keyword, distance
+                       FROM file_chunks
+                       WHERE project_name = ?
+                         AND keyword IS NOT NULL
+                         AND keyword != ''
+                         AND distance IS NOT NULL
+                         AND distance != ''
+                       """, (project_name,))
+        rows = cursor.fetchall()
+        conn.close()
+
+        keywords_list = []
+        distances_list = []
+
+        seen = set()
+
+        for keyword_str, distance_str in rows:
+            try:
+                keywords = ast.literal_eval(keyword_str)
+                distances = ast.literal_eval(distance_str)
+            except Exception as e:
+                logger.warning(f"Skipping row due to parsing error: {e}")
+                continue
+
+            if isinstance(keywords, list) and isinstance(distances, list) and len(keywords) == len(distances):
+                for word, score in zip(keywords, distances):
+                    word = word.strip()
+                    if word not in seen:
+                        seen.add(word)
+                        keywords_list.append(word)
+                        distances_list.append(float(score))
+
+        return keywords_list, distances_list
+
+    def add_exact_keyword_matches_to_chunks(self, keyword: str):
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute("SELECT chunk_id, chunk_text, keyword, distance FROM file_chunks")
+        rows = cursor.fetchall()
+
+        for chunk_id, text, keyword_str, distance_str in rows:
+            if keyword.lower() in text.lower():  # Case-insensitive match
+
+                # Parse existing keywords
+                try:
+                    keywords = ast.literal_eval(keyword_str) if keyword_str else []
+                except Exception:
+                    keywords = []
+                if not isinstance(keywords, list):
+                    keywords = [keywords]
+
+                # Parse existing distances
+                try:
+                    distances = ast.literal_eval(distance_str) if distance_str else []
+                except Exception:
+                    distances = []
+                if not isinstance(distances, list):
+                    distances = [distances]
+
+                # Only append if the keyword is not already in the list
+                if keyword not in keywords:
+                    keywords.append(keyword)
+                    distances.append(0.99)  # Use 0.99 to indicate exact match
+
+                    cursor.execute('''
+                                   UPDATE file_chunks
+                                   SET keyword  = ?,
+                                       distance = ?
+                                   WHERE chunk_id = ?
+                                   ''', (str(keywords), str(distances), chunk_id))
+
+        conn.commit()
+        conn.close()
+        print(f"[INFO] Exact keyword '{keyword}' added to matching chunks.")
 
 
 if __name__ == "__main__":

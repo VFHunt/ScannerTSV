@@ -570,5 +570,54 @@
         "opleiding",
         "studie",
         "leertijd"
+    ],
+    "visie": [
+        "inzicht",
+        "opvatting",
+        "blik",
+        "idee",
+        "perceptie"
+    ],
+    "constuctie": [
+        "bouw",
+        "structuur",
+        "gebouw",
+        "ontwerp",
+        "samenstelling"
+    ],
+    "Veiligheid": [
+        "Beveiliging",
+        "Bescherming",
+        "Zekerheid",
+        "Geborgenheid",
+        "Waakzaamheid"
+    ],
+    "Verantwoordelijkheid": [
+        "Taak",
+        "verplichting",
+        "plicht",
+        "aansprakelijkheid",
+        "zorgplicht"
+    ],
+    "Veiligheid ": [
+        "Bescherming",
+        "zekerheid",
+        "geborgenheid",
+        "beveiliging",
+        "veiligheidssystemen"
+    ],
+    "Verantwoordelijkheid ": [
+        "Taak",
+        "Plicht",
+        "Verplichting",
+        "Zorg",
+        "Bevoegdheid"
+    ],
+    "Visie": [
+        "Inzicht",
+        "toekomstbeeld",
+        "perceptie",
+        "opinie",
+        "kijk."
     ]
 }

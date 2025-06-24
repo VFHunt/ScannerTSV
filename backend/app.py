@@ -314,8 +314,6 @@ def get_project_date():
         print(f"Error getting project date: {e}")  # Add debug logging
         return jsonify({"error": str(e)}), 500
 
-"""
-/get_keywords becomes:
 
 @app.route("/get_keywords/focus", methods=["GET"])
 def get_focus_keywords_route():
@@ -335,7 +333,7 @@ def get_focus_keywords_route():
     except Exception as e:
         print(f"Error fetching focus keywords: {e}")
         return jsonify({"error": "Internal server error"}), 500
-
+"""
 
 @app.route("/get_keywords/balanced", methods=["GET"])
 def get_balanced_keywords_route():
@@ -380,21 +378,29 @@ def get_broad_keywords_route():
 @app.route("/get_keywords", methods=["GET"])
 def get_keywords():
     project_name = handler.get_project_name()
-    print(f"Getting keywords for project: {project_name}")
+    print(f"Getting keywords and distances for project: {project_name}")
 
     if not project_name:
         return jsonify({"error": "Project name is required"}), 400
 
     try:
-        keywords = db.get_all_retrieved_keywords_by_project(project_name)
-        print(f"Keywords for project '{project_name}': {keywords}")  # Debug logging
-        if not keywords:
+        # Call the new method that returns both lists
+        keywords_list, distances_list = db.get_all_retrieved_keywords_and_distances_by_project(project_name)
+        print(f"Keywords for project '{project_name}': {keywords_list}")  # Debug logging
+        print(f"Distances for project '{project_name}': {distances_list}")  # Debug logging
+
+        if not keywords_list:
             return jsonify({"error": "No keywords found for this project"}), 404
 
-        return jsonify({"project_name": project_name, "keywords": keywords})
+        # Return both lists in the response
+        return jsonify({
+            "project_name": project_name,
+            "keywords": keywords_list,
+            "distances": distances_list
+        })
 
     except Exception as e:
-        print(f"Error fetching keywords: {e}")
+        print(f"Error fetching keywords and distances: {e}")
         return jsonify({"error": "Internal server error"}), 500
 
 @app.route("/status_data", methods=["GET"])
