@@ -7,10 +7,11 @@ const { Title, Paragraph, Text } = Typography;
 const { Option } = Select;
 
 const getColorFromDistance = (distance) => {
-  if (distance >= 0.2 && distance < 0.49) return "#a8e6cf"; // greenish
-  if (distance >= 0.5 && distance < 0.79) return "#ffd3b6"; // orangeish
-  if (distance >= 0.8 && distance <= 0.99) return "#ff8b94"; // reddish
-};
+    if (distance >= 0.4 && distance < 0.5) return "#a8e6cf"; // greenish
+    if (distance >= 0.5 && distance < 0.7) return "#ffd3b6"; // orangeish
+    if (distance >= 0.7 && distance <= 1) return "#ff8b94"; // reddish
+  };
+
 
 // Component for displaying individual document result items
 const DocumentResultItem = ({ item }) => (
@@ -148,6 +149,51 @@ function DocResults() {
                 </Option>
               ))}
             </Select>
+          </div>
+        </Col>
+
+        <Col span={24}>
+          {/* Legend for distance colors */}
+          <div style={{ margin: "16px 0" }}>
+            <span style={{ marginRight: 16, display: "inline-flex", alignItems: "center" }}>
+              <span style={{
+                display: "inline-block",
+                width: 18,
+                height: 18,
+                background: "#a8e6cf",
+                borderRadius: 4,
+                border: "1px solid #ccc",
+                marginRight: 6,
+                verticalAlign: "middle"
+              }} />
+              Breed
+            </span>
+            <span style={{ marginRight: 16, display: "inline-flex", alignItems: "center" }}>
+              <span style={{
+                display: "inline-block",
+                width: 18,
+                height: 18,
+                background: "#ffd3b6",
+                borderRadius: 4,
+                border: "1px solid #ccc",
+                marginRight: 6,
+                verticalAlign: "middle"
+              }} />
+              Gebalanceerd
+            </span>
+            <span style={{ display: "inline-flex", alignItems: "center" }}>
+              <span style={{
+                display: "inline-block",
+                width: 18,
+                height: 18,
+                background: "#ff8b94",
+                borderRadius: 4,
+                border: "1px solid #ccc",
+                marginRight: 6,
+                verticalAlign: "middle"
+              }} />
+              Focus
+            </span>
           </div>
         </Col>
 
