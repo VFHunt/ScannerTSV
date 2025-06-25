@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = "https://scannertsv.onrender.com"; // Adjust based on backend
+const API_BASE_URL = "http://127.0.0.1:5000"; // Adjust based on backend
 
 export const searchKeywords = async (keyword, scope) => {
   const response = await axios.post(`${API_BASE_URL}/search`, { keyword, scope });
@@ -138,7 +138,6 @@ export const setProjectName = async (projectName) => {
   }
 };
 
-
 export const reset_db = async () => {
   try {
     const response = await axios.post(`${API_BASE_URL}/reset_db`);
@@ -176,39 +175,6 @@ export const getProjectDate = async (projectName) => {
   }
 };
 
-/*
-get_keywords gets replaced by:
-export const get_focus_keywords = async () => {
-  try {
-    const response = await axios.get(`${API_BASE_URL}/get_keywords/focus`);
-    return response.data.keywords;
-  } catch (error) {
-    console.error("Error fetching focus keywords:", error);
-    throw error;
-  }
-};
-
-export const get_balanced_keywords = async () => {
-  try {
-    const response = await axios.get(`${API_BASE_URL}/get_keywords/balanced`);
-    return response.data.keywords;
-  } catch (error) {
-    console.error("Error fetching balanced keywords:", error);
-    throw error;
-  }
-};
-
-export const get_broad_keywords = async () => {
-  try {
-    const response = await axios.get(`${API_BASE_URL}/get_keywords/broad`);
-    return response.data.keywords;
-  } catch (error) {
-    console.error("Error fetching broad keywords:", error);
-    throw error;
-  }
-};
-*/
-
 export const get_keywords = async () => { 
   try {
     const response = await axios.get(`${API_BASE_URL}/get_keywords`);
@@ -232,7 +198,6 @@ export const deleteProject = async (projectName) => {
 
   return response.data;
 };
-
 
 export const deleteFile = async (projectName, fileName) => {
   const response = await axios.post(
@@ -258,6 +223,7 @@ export const statusData = async (projectName) => {
   
   return response.data.statuses; // Return the statuses array
 };
+
 export const getProjectStatus = async (projectName) => {
   const response = await axios.get(
     `${API_BASE_URL}/project/status`,
@@ -266,11 +232,9 @@ export const getProjectStatus = async (projectName) => {
       headers: { "Content-Type": "application/json" }
     }
   );
-
   if (response.status !== 200) {
     throw new Error("Failed to fetch project status.");
   }
-
   return {
     uploadDate: response.data.upload_date,
     projectScanned: response.data.project_scanned,

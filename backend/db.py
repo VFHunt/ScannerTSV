@@ -53,26 +53,6 @@ class ChunkDatabase:
             logger.error(f"Error during database initialization: {e}")
             raise
 
-    def print_all_rows(self):
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
-        cursor.execute('SELECT * FROM file_chunks')
-        rows = cursor.fetchall()
-        for row in rows:
-            print(row)
-        conn.close()
-
-    def print_table_schema(self):
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
-        cursor.execute("PRAGMA table_info(file_chunks)")
-        columns = cursor.fetchall()
-        print("Table schema:")
-        for column in columns:
-            print(column)
-        conn.close()
-
-
     def insert_chunks(self, project_name, results):
         logger.info(f"Inserting chunks for project: {project_name}")
         """Insert chunks and embeddings into the database."""
@@ -101,54 +81,63 @@ class ChunkDatabase:
         logger.info(f"Fetching chunks for project: {project_name}, file: {file_name}")
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
+
+        # Now also selecting `distance`
         cursor.execute('''
-            SELECT chunk_text, page_number, keyword
-            FROM file_chunks
-            WHERE project_name = ? AND file_name = ? AND keyword IS NOT NULL AND keyword != ''
-        ''', (project_name, file_name))
+                       SELECT chunk_text, page_number, keyword, distance
+                       FROM file_chunks
+                       WHERE project_name = ?
+                         AND file_name = ?
+                         AND keyword IS NOT NULL
+                         AND keyword != ''
+                       ''', (project_name, file_name))
 
         rows = cursor.fetchall()
         conn.close()
-        # Group keywords by (chunk_text, page_number)
+
+        # Group keywords+distances by (chunk_text, page_number)
         grouped = {}
-        for chunk_text, page_number, keyword in rows:
+
+        for chunk_text, page_number, keyword, distance in rows:
             key = (chunk_text, page_number)
             if key not in grouped:
                 grouped[key] = set()
+
             if keyword:
-                grouped[key].add(keyword)
+                try:
+                    parsed_keywords = ast.literal_eval(keyword)
+                except Exception as e:
+                    logger.warning(f"Failed to parse keyword: {keyword}, error: {e}")
+                    parsed_keywords = [keyword.strip()]
+
+                try:
+                    parsed_distances = ast.literal_eval(distance) if distance else None
+                except Exception as e:
+                    logger.warning(f"Failed to parse distance: {distance}, error: {e}")
+                    parsed_distances = None
+
+                if (isinstance(parsed_keywords, list) and
+                        isinstance(parsed_distances, list) and
+                        len(parsed_keywords) == len(parsed_distances)):
+                    for kw, dist in zip(parsed_keywords, parsed_distances):
+                        grouped[key].add((kw.strip(), float(dist)))
+                else:
+                    dist_val = float(distance) if distance else 1.0
+                    for kw in parsed_keywords:
+                        grouped[key].add((kw.strip(), dist_val))
+
         results = [
             {
-                "text": text,
-                "page": page,
-                "keywords": list(keywords)
+                "text": chunk_text,
+                "page": page_number,
+                "keywords": [[kw, round(dist, 4)] for kw, dist in sorted(keywords)]
             }
-            for (text, page), keywords in grouped.items()
+            for (chunk_text, page_number), keywords in grouped.items()
         ]
-        logger.info(f"Fetched {len(results)} formatted chunks for file: {file_name} in project: {project_name}")
 
+        logger.info(f"Fetched {len(results)} formatted chunks for file: {file_name} in project: {project_name}")
         return results
 
-    def clean_docresults(self, results):
-        cleaned = []
-        for item in results:
-            try:
-                # Safely evaluate the string to a Python list
-                keyword_list = ast.literal_eval(item['keywords'][0])
-                if isinstance(keyword_list, list):
-                    keywords_str = ', '.join(keyword_list)
-                else:
-                    keywords_str = str(keyword_list)
-            except Exception as e:
-                keywords_str = str(item['keywords'])  # fallback to raw if parsing fails
-
-            cleaned.append({
-                'text': item['text'],
-                'page': item['page'],
-                'keywords': keywords_str
-            })
-        #logger.info(f"This is what gets returned to FLASK: {cleaned}")
-        return cleaned
 
     def get_embeddings_by_project(self, project_name: str) -> List[Tuple[str, np.ndarray]]:
         logger.info(f"Fetching embeddings for project: {project_name}")
@@ -191,68 +180,62 @@ class ChunkDatabase:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
-        # Fetch all rows for the project, including scanned flag, filename and keyword
         cursor.execute('''
-            SELECT file_name, keyword, scanned
-            FROM file_chunks
-            WHERE project_name = ?
-        ''', (project_name,))
+                       SELECT file_name, keyword, scanned, distance
+                       FROM file_chunks
+                       WHERE project_name = ?
+                       ''', (project_name,))
 
         rows = cursor.fetchall()
         conn.close()
 
         grouped = {}
 
-        for file_name, keyword, scanned in rows:
+        for file_name, keyword, scanned, distance in rows:
             if file_name not in grouped:
                 grouped[file_name] = set()
 
             if scanned == 0:
-                # If scanned is 0, no keywords, so keep empty set
+                # No keywords
                 continue
             else:
-                # For scanned != 0, only add non-null, non-empty keywords
-                if keyword is not None and keyword.strip() != '':
-                    grouped[file_name].add(keyword.strip())
+                if keyword and keyword.strip() != "":
+                    try:
+                        # Parse keyword string into list
+                        parsed_keywords = ast.literal_eval(keyword)
+                    except Exception as e:
+                        logger.warning(f"Failed to parse keyword: {keyword}, error: {e}")
+                        parsed_keywords = [keyword.strip()]  # fallback
 
-        # Format results: if scanned=0 files should have empty keyword list
+                    try:
+                        # Parse distance, might be list or float string
+                        parsed_distances = ast.literal_eval(distance) if distance else None
+                    except Exception as e:
+                        logger.warning(f"Failed to parse distance: {distance}, error: {e}")
+                        parsed_distances = None
+
+                    if (isinstance(parsed_keywords, list) and
+                            isinstance(parsed_distances, list) and
+                            len(parsed_keywords) == len(parsed_distances)):
+                        for kw, dist in zip(parsed_keywords, parsed_distances):
+                            grouped[file_name].add((kw.strip(), float(dist)))
+                    else:
+                        # Distance is single float or None, assign to all keywords
+                        dist_val = float(distance) if distance else 1.0
+                        for kw in parsed_keywords:
+                            grouped[file_name].add((kw.strip(), dist_val))
+
         results = []
-        for file_name, keywords in grouped.items():
+        for file_name, keyword_set in grouped.items():
+            formatted_keywords = [[kw, round(score, 4)] for kw, score in keyword_set]
             results.append({
                 "Document Name": file_name,
-                "Keywords": list(keywords)  # Will be empty list if scanned=0
+                "Keywords": formatted_keywords
             })
 
         logger.info(f"Fetched {len(results)} results for project: {project_name}")
         return results
-
-    def clean_results(self, results):
-        cleaned_results = []
-
-        for result in results:
-            raw_keywords = result.get('Keywords', [])
-
-            # Flatten all keywords into one list
-            combined_keywords = []
-            for kw_list in raw_keywords:
-                # Convert string representation of list to actual list
-                try:
-                    kws = literal_eval(kw_list)  # Use literal_eval for safety
-                    combined_keywords.extend(kws)
-                except:
-                    continue
-
-            # Deduplicate and sort
-            unique_keywords = sorted(set(combined_keywords))
-
-            cleaned_results.append({
-                'Document Name': result['Document Name'],
-                'Keywords': unique_keywords  # now a clean list
-            })
-
-        return cleaned_results
     
-        
 
     def get_projects(self):
         logger.info(f"Searching for existing projects")
@@ -376,58 +359,6 @@ class ChunkDatabase:
         conn.close()
         embeddings = [(chunk_id, np.frombuffer(embedding_blob, dtype=np.float32)) for chunk_id, embedding_blob in rows]
         return embeddings
-    """
-
-    def get_keywords_by_distance_range(self, project_name, min_distance, max_distance):
-        logger.info(f"Getting keywords for project: {project_name} in distance range {min_distance} to {max_distance}")
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
-        cursor.execute(
-            SELECT DISTINCT keyword
-            FROM file_chunks 
-            WHERE project_name = ?
-              AND keyword IS NOT NULL
-              AND keyword != ''
-              AND distance BETWEEN ? AND ?
-        , (project_name, min_distance, max_distance))
-        rows = cursor.fetchall()
-        conn.close()
-
-        keywords_found = [row[0].strip() for row in rows if row[0] and row[0].strip()]
-        all_words = []
-
-        for item in keywords_found:
-            try:
-                words_list = ast.literal_eval(item)
-                cleaned_words = [word.strip() for word in words_list]
-                all_words.extend(cleaned_words)
-            except Exception as e:
-                logger.warning(f"Skipping keyword parsing due to error: {e}")
-
-        # Remove duplicates while preserving order
-        seen = set()
-        unique_keywords = []
-        for keyword in all_words:
-            if keyword not in seen:
-                seen.add(keyword)
-                unique_keywords.append(keyword)
-
-        return unique_keywords
-    
-    def get_focus_keywords(self, project_name):
-    # Distance 0.75 to 1.0
-        return self.get_keywords_by_distance_range(project_name, 0.75, 1.0)
-
-    def get_balanced_keywords(self, project_name):
-    # Distance 0.5 to 0.75
-        return self.get_keywords_by_distance_range(project_name, 0.5, 0.75)
-
-    def get_broad_keywords(self, project_name):
-    # Distance 0.3 to 0.5
-        return self.get_keywords_by_distance_range(project_name, 0.3, 0.5)
-
-    
-    """
 
     def get_all_retrieved_keywords_and_distances_by_project(self, project_name):
         logger.info(f"Getting separate keyword and distance lists for project: {project_name}")
@@ -467,6 +398,39 @@ class ChunkDatabase:
                         distances_list.append(float(score))
 
         return keywords_list, distances_list
+
+    def get_all_retrieved_keywords_by_project(self, project_name):
+        logger.info(f"Getting keywords for project: {project_name}")
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute("""
+                       SELECT DISTINCT keyword
+                       FROM file_chunks
+                       WHERE project_name = ?
+                         AND keyword IS NOT NULL
+                         AND keyword != ''
+                       """, (project_name,))
+        rows = cursor.fetchall()
+        conn.close()
+        keywords_found = [row[0].strip() for row in rows if row[0] and row[0].strip()]
+
+        all_words = []
+
+        for item in keywords_found:
+            # Safely parse the string to a list object
+            words_list = ast.literal_eval(item)
+            # Clean each word and extend all_words
+            cleaned_words = [word.strip() for word in words_list]
+            all_words.extend(cleaned_words)
+
+        # Remove duplicates while preserving order
+        seen = set()
+        unique_keywords = []
+        for keyword in all_words:
+            if keyword not in seen:
+                seen.add(keyword)
+                unique_keywords.append(keyword)
+        return unique_keywords
 
     def add_exact_keyword_matches_to_chunks(self, keyword: str):
         conn = sqlite3.connect(self.db_path)
@@ -512,5 +476,8 @@ class ChunkDatabase:
 
 if __name__ == "__main__":
     db = ChunkDatabase()  # This triggers init_db()
-    db.print_table_schema()
+    #results = db.get_filename("test")
+    results = db.get_chunks_by_project_and_file("test", "WAVE VSB.pdf")
+    from pprint import pprint
+    pprint(results)
 

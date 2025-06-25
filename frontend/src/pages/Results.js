@@ -104,8 +104,8 @@ function Results() {
     } else {
       const lowercasedSearchTerm = searchTerm.toLowerCase();
       const filtered = searchResults.filter((result) =>
-        result.keywords.some((keyword) =>
-          keyword.toLowerCase().includes(lowercasedSearchTerm)
+        result.keywords.some((word) =>
+          word.toLowerCase().includes(lowercasedSearchTerm)
         )
       );
       // Sort filtered results by the number of keywords
@@ -140,6 +140,31 @@ function Results() {
     });
   };
 
+  const getColorFromDistance = (distance) => {
+    if (distance >= 0.2 && distance < 0.49) return "#a8e6cf"; // greenish
+    if (distance >= 0.5 && distance < 0.79) return "#ffd3b6"; // orangeish
+    if (distance >= 0.8 && distance <= 0.99) return "#ff8b94"; // reddish
+  };
+
+
+  const cleanKeywords = (keywords) => {
+    const flatList = [];
+    keywords.forEach((item) => {
+      const [wordList, distance] = item;
+      if (Array.isArray(wordList)) {
+        wordList.forEach((word) => {
+          flatList.push({ word: word.trim(), distance });
+        });
+      } else if (typeof wordList === "string") {
+        // Fallback in case data is just a single word
+        flatList.push({ word: wordList.trim(), distance: distance || 1.0 });
+      }
+    });
+    return flatList;
+  };
+
+
+
   useEffect(() => {
     const updateProjectName = async () => {
       try {
@@ -165,12 +190,27 @@ function Results() {
       title: "Matchende termen",
       dataIndex: "keywords",
       key: "keywords",
-      render: (keywords) =>
-        keywords?.map((word, index) => (
-          <Tag color="geekblue" key={index}>
-            {word.trim()}
-          </Tag>
-        )),
+      render: (keywords) => {
+        const flatKeywords = cleanKeywords(keywords);
+        return flatKeywords.map(({ word, distance }, index) => {
+          const color = getColorFromDistance(distance);
+          return (
+            <Tag
+              key={index}
+              style={{
+                backgroundColor: color,
+                border: "none",
+                color: "#000", // or "#333" for better readability
+                marginBottom: 4,
+              }}
+            >
+              {word}
+            </Tag>
+          );
+        });
+      },
+
+
       sorter: (a, b) => {
         // Sort by whether keywords are empty or not
         const aHasKeywords = a.keywords && a.keywords.length > 0;

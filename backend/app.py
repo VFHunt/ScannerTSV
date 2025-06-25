@@ -185,10 +185,10 @@ def fetch_results(project_name):
         results = db.get_filename(project_name)  # Fetch filenames and keywords from the database
         # print(f"Fetched results: {results}")  # Log the fetched results
 
-        cleaned = db.clean_results(results)
+        #cleaned = db.clean_results(results)
         # print(f"Cleaned results: {cleaned}")
         
-        return jsonify({"results": cleaned}), 200
+        return jsonify({"results": results}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
@@ -201,10 +201,7 @@ def fetch_doc_results(filename):
             return jsonify({"error": "Missing project name"}), 400
 
         results = db.get_chunks_by_project_and_file(project_name, filename)
-
-        cleaned = db.clean_docresults(results)
-
-        return jsonify({"results": cleaned}), 200
+        return jsonify({"results": results}), 200
 
     except Exception as e:
         print(f"Error in /fetch_docresults: {e}")
@@ -247,8 +244,6 @@ def get_projects():
     except Exception as e:
         print(f"Error in /projects: {e}")
         return jsonify({"error": str(e)}), 500
-
-
 
 @app.route('/reset_db', methods=['POST'])
 def reset_db():
@@ -315,93 +310,26 @@ def get_project_date():
         return jsonify({"error": str(e)}), 500
 
 
-@app.route("/get_keywords/focus", methods=["GET"])
-def get_focus_keywords_route():
-    project_name = handler.get_project_name()
-    print(f"Getting FOCUS keywords for project: {project_name}")
-
-    if not project_name:
-        return jsonify({"error": "Project name is required"}), 400
-
-    try:
-        keywords = db.get_focus_keywords(db.db_path, project_name)
-        if not keywords:
-            return jsonify({"error": "No focus keywords found for this project"}), 404
-
-        return jsonify({"project_name": project_name, "keywords": keywords})
-
-    except Exception as e:
-        print(f"Error fetching focus keywords: {e}")
-        return jsonify({"error": "Internal server error"}), 500
-"""
-
-@app.route("/get_keywords/balanced", methods=["GET"])
-def get_balanced_keywords_route():
-    project_name = handler.get_project_name()
-    print(f"Getting BALANCED keywords for project: {project_name}")
-
-    if not project_name:
-        return jsonify({"error": "Project name is required"}), 400
-
-    try:
-        keywords = db.get_balanced_keywords(db.db_path, project_name)
-        if not keywords:
-            return jsonify({"error": "No balanced keywords found for this project"}), 404
-
-        return jsonify({"project_name": project_name, "keywords": keywords})
-
-    except Exception as e:
-        print(f"Error fetching balanced keywords: {e}")
-        return jsonify({"error": "Internal server error"}), 500
-
-
-@app.route("/get_keywords/broad", methods=["GET"])
-def get_broad_keywords_route():
-    project_name = handler.get_project_name()
-    print(f"Getting BROAD keywords for project: {project_name}")
-
-    if not project_name:
-        return jsonify({"error": "Project name is required"}), 400
-
-    try:
-        keywords = db.get_broad_keywords(db.db_path, project_name)
-        if not keywords:
-            return jsonify({"error": "No broad keywords found for this project"}), 404
-
-        return jsonify({"project_name": project_name, "keywords": keywords})
-
-    except Exception as e:
-        print(f"Error fetching broad keywords: {e}")
-        return jsonify({"error": "Internal server error"}), 500
-
-"""
 @app.route("/get_keywords", methods=["GET"])
 def get_keywords():
     project_name = handler.get_project_name()
-    print(f"Getting keywords and distances for project: {project_name}")
+    print(f"Getting keywords for project: {project_name}")
 
     if not project_name:
         return jsonify({"error": "Project name is required"}), 400
 
     try:
-        # Call the new method that returns both lists
-        keywords_list, distances_list = db.get_all_retrieved_keywords_and_distances_by_project(project_name)
-        print(f"Keywords for project '{project_name}': {keywords_list}")  # Debug logging
-        print(f"Distances for project '{project_name}': {distances_list}")  # Debug logging
-
-        if not keywords_list:
+        keywords = db.get_all_retrieved_keywords_by_project(project_name)
+        print(f"Keywords for project '{project_name}': {keywords}")  # Debug logging
+        if not keywords:
             return jsonify({"error": "No keywords found for this project"}), 404
 
-        # Return both lists in the response
-        return jsonify({
-            "project_name": project_name,
-            "keywords": keywords_list,
-            "distances": distances_list
-        })
+        return jsonify({"project_name": project_name, "keywords": keywords})
 
     except Exception as e:
-        print(f"Error fetching keywords and distances: {e}")
+        print(f"Error fetching keywords: {e}")
         return jsonify({"error": "Internal server error"}), 500
+
 
 @app.route("/status_data", methods=["GET"])
 def status_data():

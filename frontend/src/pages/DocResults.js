@@ -6,6 +6,12 @@ import { fetchDocumentResults } from "../utils/api";
 const { Title, Paragraph, Text } = Typography;
 const { Option } = Select;
 
+const getColorFromDistance = (distance) => {
+  if (distance >= 0.2 && distance < 0.49) return "#a8e6cf"; // greenish
+  if (distance >= 0.5 && distance < 0.79) return "#ffd3b6"; // orangeish
+  if (distance >= 0.8 && distance <= 0.99) return "#ff8b94"; // reddish
+};
+
 // Component for displaying individual document result items
 const DocumentResultItem = ({ item }) => (
   <Card
@@ -32,17 +38,19 @@ const DocumentResultItem = ({ item }) => (
             <Text strong style={{ fontSize: "14px" }}>
               Match:
             </Text>
-            {(item.keywords ? item.keywords.split(",").map(kw => kw.trim()) : []).map((kw, i) => (
+            {(item.keywords || []).map(([ word, distance ], i) => (
               <Tag
-                color="geekblue"
+                color={getColorFromDistance(distance)}
                 key={i}
                 style={{
                   marginBottom: "0.25rem",
                   whiteSpace: "normal",
                   wordBreak: "break-word",
+                  border: "none",
+                  color: "#000",
                 }}
               >
-                {kw}
+                {word}
               </Tag>
             ))}
           </div>
@@ -99,12 +107,15 @@ function DocResults() {
   }, [filename]);
 
   // Extract unique keywords for filtering
-  const allKeywords = [...new Set(content.flatMap(item => item.keywords ? item.keywords.split(",").map(kw => kw.trim()) : []))];
+   const allKeywords = [...new Set(
+    content.flatMap(item => (item.keywords || []).map(([word]) => word))
+  )];
+
 
   // Filter content based on selected keywords
   const filteredContent = selectedKeywords.length > 0
     ? content.filter(item => {
-        const kwList = item.keywords ? item.keywords.split(",").map(kw => kw.trim()) : [];
+        const kwList = (item.keywords || []).map(([word]) => word);
         return kwList.some(kw => selectedKeywords.includes(kw));
       })
     : content;

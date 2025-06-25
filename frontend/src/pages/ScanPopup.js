@@ -30,19 +30,19 @@ const ScanPopup = ({ visible, onCancel, onStartScan, onRefresh }) => {
   const handleSynonymGeneration = async () => {
     try {
       if (keywordsList.length === 0) {
-        setMessage("Geen trefwoorden beschikbaar om synoniemen te genereren.");
+        setMessage("No keywords available to generate synonyms.");
         return;
       }
 
-      setMessage(`Synoniemen genereren voor: ${keywordsList.join(", ")}`);
+      setMessage(`Generating synonyms for: ${keywordsList.join(", ")}`);
       const data = await getSynonyms(keywordsList); // Fetch synonyms for all keywords in the list
       setSynonymsList(data.synonyms || []); // Assuming the API returns an array of synonyms
-      setMessage("Synoniemen succesvol gegenereerd!");
+      setMessage("Synonyms generated successfully!");
     } catch (error) {
       setMessage(
-        `Fout bij het genereren van synoniemen: ${
+        `Error in Synonym Generation: ${
           error.response?.data?.error || error.message
-        }, zorg ervoor dat je één of meer bestanden hebt geüpload.`
+        }, please make sure you uploaded one or more files.`
       );
     }
   };
@@ -77,7 +77,7 @@ const ScanPopup = ({ visible, onCancel, onStartScan, onRefresh }) => {
       onCancel();
       if (onRefresh) await onRefresh(); // Refresh results without full page reload
     } catch (error) {
-      setMessage(`Fout bij het starten van de scan: ${error.message}`);
+      setMessage(`Error starting scan: ${error.message}`);
     }
   };
 
@@ -89,7 +89,7 @@ const ScanPopup = ({ visible, onCancel, onStartScan, onRefresh }) => {
           setKeywordsList(previousKeywords);
           setSynonymsList([]); // Clear synonyms when switching to previous keywords
         } catch (error) {
-          setMessage("Fout bij het ophalen van eerdere trefwoorden");
+          setMessage("Error fetching previous keywords");
         }
       } else {
         // Reset lists when switching to manual mode
@@ -108,15 +108,15 @@ const ScanPopup = ({ visible, onCancel, onStartScan, onRefresh }) => {
 
   return (
     <Modal
-      title="Nieuwe scan"
+      title="Nieuwe Scan"
       open={visible}
       onCancel={onCancel}
       footer={[
         <Button key="cancel" onClick={onCancel}>
-          Annuleren
+          Cancel
         </Button>,
         <Button key="start" type="primary" onClick={handleScan}>
-          Start scan
+          Start Scan
         </Button>,
       ]}
     >
@@ -136,14 +136,14 @@ const ScanPopup = ({ visible, onCancel, onStartScan, onRefresh }) => {
         <div style={{ marginBottom: "1rem" }}>
           <div style={{ marginBottom: "1rem" }}>
             <Input
-              placeholder="Voer een trefwoord in"
+              placeholder="Enter a keyword"
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
               onPressEnter={addKeyword}
               style={{ width: "calc(100% - 88px)", marginRight: "8px" }}
             />
             <Button type="primary" onClick={addKeyword}>
-              Toevoegen
+              Add
             </Button>
           </div>
 
@@ -184,7 +184,7 @@ const ScanPopup = ({ visible, onCancel, onStartScan, onRefresh }) => {
 
           <div style={{ marginBottom: "1rem" }}>
             <Button type="primary" onClick={handleSynonymGeneration}>
-              Extra woorden
+              Extra words
             </Button>
           </div>
 
@@ -245,7 +245,7 @@ const ScanPopup = ({ visible, onCancel, onStartScan, onRefresh }) => {
       <SearchScope scope={searchScope} setScope={setSearchScope} />
 
       <div>
-        <label>Documentselectie:</label>
+        <label>Document Selectie:</label>
         <Radio.Group
           onChange={(e) => setDocumentSelectie(e.target.value)}
           value={documentSelectie}
