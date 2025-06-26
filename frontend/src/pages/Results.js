@@ -119,14 +119,23 @@ function Results() {
   }, [searchTerm, searchResults]);
 
   const handleDeleteFile = async (fileName) => {
-    try {
-      await deleteFile(projectName, fileName);
-      message.success(`Bestand '${fileName}' succesvol verwijderd.`);
-      loadSearchResultsAndStatuses();
-    } catch (error) {
-      console.error("Verwijderen mislukt:", error);
-      message.error("Verwijderen van bestand is mislukt.");
-    }
+    Modal.confirm({
+      title: `Bestand "${fileName}" verwijderen?`,
+      content: "Deze actie kan niet ongedaan worden gemaakt.",
+      okText: "Verwijderen",
+      okType: "danger",
+      cancelText: "Annuleren",
+      onOk: async () => {
+        try {
+          await deleteFile(projectName, fileName);
+          message.success(`Bestand '${fileName}' succesvol verwijderd.`);
+          loadSearchResultsAndStatuses();
+        } catch (error) {
+          console.error("Verwijderen mislukt:", error);
+          message.error("Verwijderen van bestand is mislukt.");
+        }
+      },
+    });
   };
 
   const processResults = (results) => {
@@ -141,26 +150,33 @@ function Results() {
   };
 
   const getColorFromDistance = (distance) => {
-    if (distance >= 0.2 && distance < 0.49) return "#a8e6cf"; // greenish
-    if (distance >= 0.5 && distance < 0.79) return "#ffd3b6"; // orangeish
-    if (distance >= 0.8 && distance <= 0.99) return "#ff8b94"; // reddish
+    if (distance >= 0.4 && distance < 0.5) return "#1E90FF"; // blueish, broad
+    if (distance >= 0.5 && distance < 0.7) return "#ffd3b6"; // orangeish, balenced
+    if (distance >= 0.7 && distance <= 1) return "#ff8b94"; // reddish, specific
   };
 
 
   const cleanKeywords = (keywords) => {
-    const flatList = [];
+    const wordMap = new Map();
     keywords.forEach((item) => {
       const [wordList, distance] = item;
       if (Array.isArray(wordList)) {
         wordList.forEach((word) => {
-          flatList.push({ word: word.trim(), distance });
+          const trimmed = word.trim();
+          // If word is not in map or this distance is higher, set it
+          if (!wordMap.has(trimmed) || distance > wordMap.get(trimmed)) {
+            wordMap.set(trimmed, distance);
+          }
         });
       } else if (typeof wordList === "string") {
-        // Fallback in case data is just a single word
-        flatList.push({ word: wordList.trim(), distance: distance || 1.0 });
+        const trimmed = wordList.trim();
+        if (!wordMap.has(trimmed) || (distance || 1.0) > wordMap.get(trimmed)) {
+          wordMap.set(trimmed, distance || 1.0);
+        }
       }
     });
-    return flatList;
+    // Convert map to array of objects
+    return Array.from(wordMap.entries()).map(([word, distance]) => ({ word, distance }));
   };
 
   useEffect(() => {
@@ -279,6 +295,49 @@ function Results() {
 
   return (
     <div style={{ padding: "2rem" }}>
+      {/* Legend for distance colors */}
+      <div style={{ margin: "16px 0" }}>
+        <span style={{ marginRight: 16, display: "inline-flex", alignItems: "center" }}>
+          <span style={{
+            display: "inline-block",
+            width: 18,
+            height: 18,
+            background: "#a8e6cf",
+            borderRadius: 4,
+            border: "1px solid #ccc",
+            marginRight: 6,
+            verticalAlign: "middle"
+          }} />
+          Breed
+        </span>
+        <span style={{ marginRight: 16, display: "inline-flex", alignItems: "center" }}>
+          <span style={{
+            display: "inline-block",
+            width: 18,
+            height: 18,
+            background: "#ffd3b6",
+            borderRadius: 4,
+            border: "1px solid #ccc",
+            marginRight: 6,
+            verticalAlign: "middle"
+          }} />
+          Gebalanceerd
+        </span>
+        <span style={{ display: "inline-flex", alignItems: "center" }}>
+          <span style={{
+            display: "inline-block",
+            width: 18,
+            height: 18,
+            background: "#ff8b94",
+            borderRadius: 4,
+            border: "1px solid #ccc",
+            marginRight: 6,
+            verticalAlign: "middle"
+          }} />
+          Focus
+        </span>
+      </div>
+
       <Row gutter={[16, 16]} align="middle">
         <Col flex="auto">
           <Input

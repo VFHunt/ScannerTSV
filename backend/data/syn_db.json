@@ -620,39 +620,46 @@
         "opinie",
         "kijk."
     ],
-    "veiligheidsbewustzijn ": [
-        "Veiligheidsbesef",
-        "risicobewustzijn",
-        "waakzaamheid",
-        "beveiligingszin",
-        "veiligheidszin"
+    "opgeleid": [
+        "geschoold",
+        "getraind",
+        "bekwaam",
+        "onderricht",
+        "ontwikkeld"
     ],
-    "veiligheidsklimaat ": [
-        "Veiligheidscultuur",
-        "risicobewustzijn",
-        "veiligheidssfeer",
-        "veiligheidsgedrag",
-        "beschermingsomgeving"
-    ],
-    "Bewustzijn ": [
-        "Besef",
-        "Gevoel",
-        "Herinnering",
-        "Perceptie",
-        "Zintuig."
-    ],
-    "Gezondheid ": [
+    "gezondheit": [
         "Welzijn",
-        "welzijnstoestand",
-        "fysiek",
-        "voorspoed",
+        "welzijnszorg",
+        "welbevinden",
+        "fitheid",
         "vitaliteit"
     ],
-    "safety": [
-        "Veiligheid",
-        "zekerheid",
-        "geborgenheid",
-        "bescherming",
-        "beveiliging"
+    "onderaannemer": [
+        "subcontractor",
+        "nevenaannemer",
+        "hulpaannemer",
+        "medeaannemer",
+        "deelopdrachtnemer"
+    ],
+    "uitvoeringsplan": [
+        "implementatieschema",
+        "realisatieplan",
+        "werkplan",
+        "actieplan",
+        "projectplan"
+    ],
+    "oplevering": [
+        "Afronding",
+        "voltooiing",
+        "afwerking",
+        "aflevering",
+        "eindoplevering"
+    ],
+    "bouwvergunning": [
+        "bouwtoestemming",
+        "bouwmachtiging",
+        "bouwlicentie",
+        "bouwtoelating",
+        "constructievergunning"
     ]
 }
