@@ -436,9 +436,9 @@ class ChunkDatabase:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
         cursor.execute("""
-                       SELECT chunk_id, chunk_text, keyword, distance 
+                       SELECT chunk_id, chunk_text, keyword, distance
                        FROM file_chunks
-                       WHERE project_name = ? 
+                       WHERE project_name = ?
                        """, (project_name,))
         rows = cursor.fetchall()
 
@@ -461,22 +461,26 @@ class ChunkDatabase:
                 if not isinstance(distances, list):
                     distances = [distances]
 
-                # Only append if the keyword is not already in the list
-                if keyword not in keywords:
+                # Check if keyword exists in list
+                if keyword in keywords:
+                    idx = keywords.index(keyword)
+                    if distances[idx] < 0.99:
+                        # Promote to exact match by updating distance
+                        distances[idx] = 0.99
+                else:
+                    # Add new exact match
                     keywords.append(keyword)
-                    distances.append(0.99)  # Use 0.99 to indicate exact match
+                    distances.append(0.99)
 
-                    cursor.execute('''
-                                   UPDATE file_chunks
-                                   SET keyword  = ?,
-                                       distance = ?
-                                   WHERE chunk_id = ?
-                                   ''', (str(keywords), str(distances), chunk_id))
-
+                cursor.execute('''
+                               UPDATE file_chunks
+                               SET keyword  = ?,
+                                   distance = ?
+                               WHERE chunk_id = ?
+                               ''', (str(keywords), str(distances), chunk_id))
         conn.commit()
         conn.close()
         print(f"[INFO] Exact keyword '{keyword}' added to matching chunks.")
-
 
 if __name__ == "__main__":
     db = ChunkDatabase()  # This triggers init_db()

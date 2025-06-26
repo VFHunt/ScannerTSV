@@ -661,5 +661,12 @@
         "bouwlicentie",
         "bouwtoelating",
         "constructievergunning"
+    ],
+    "safety": [
+        "Veiligheid",
+        "geborgenheid",
+        "beveiliging",
+        "zekerheid",
+        "bescherming"
     ]
 }
