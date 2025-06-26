@@ -459,17 +459,23 @@ class ChunkDatabase:
                 if not isinstance(distances, list):
                     distances = [distances]
 
-                # Only append if the keyword is not already in the list
-                if keyword not in keywords:
+                # Check if keyword exists in list
+                if keyword in keywords:
+                    idx = keywords.index(keyword)
+                    if distances[idx] < 0.99:
+                        # Promote to exact match by updating distance
+                        distances[idx] = 0.99
+                else:
+                    # Add new exact match
                     keywords.append(keyword)
-                    distances.append(0.99)  # Use 0.99 to indicate exact match
+                    distances.append(0.99)
 
-                    cursor.execute('''
-                                   UPDATE file_chunks
-                                   SET keyword  = ?,
-                                       distance = ?
-                                   WHERE chunk_id = ?
-                                   ''', (str(keywords), str(distances), chunk_id))
+                cursor.execute('''
+                               UPDATE file_chunks
+                               SET keyword  = ?,
+                                   distance = ?
+                               WHERE chunk_id = ?
+                               ''', (str(keywords), str(distances), chunk_id))
 
         conn.commit()
         conn.close()
@@ -479,7 +485,7 @@ class ChunkDatabase:
 if __name__ == "__main__":
     db = ChunkDatabase()  # This triggers init_db()
     #results = db.get_filename("test")
-    results = db.get_chunks_by_project_and_file("test", "WAVE VSB.pdf")
+    results = db.add_exact_keyword_matches_to_chunks("veiligheid", "test")
     from pprint import pprint
     pprint(results)
 
