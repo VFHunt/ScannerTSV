@@ -98,7 +98,8 @@ def search():
 
     f = FaissIndex(emb, temperature=temp)  # Initialize the FAISS index
     f.f_search(keywords, db)  # Search for keywords in the FAISS index and save them in the database
-
+    for query in keywords:
+        db.add_exact_keyword_matches_to_chunks(query, handler.get_project_name())
     #print("[DEBUG] Manually calling add_keyword_and_distance()...")
     #db.add_keyword_and_distance("2b5813b4-0079-40b3-aea3-3c886eb2469e", "machine", 0.123)
     db.mark_project_chunks_scanned(handler.get_project_name())
@@ -119,7 +120,8 @@ def search_unscanned():
 
     f = FaissIndex(emb, temperature=temp)  # Initialize the FAISS index
     f.f_search(keywords, db)  # Search for keywords in the FAISS index and save them in the database
-
+    for query in keywords:
+        db.add_exact_keyword_matches_to_chunks(query, handler.get_project_name())
     #print("[DEBUG] Manually calling add_keyword_and_distance()...")
     #db.add_keyword_and_distance("2b5813b4-0079-40b3-aea3-3c886eb2469e", "machine", 0.123)
     db.mark_project_chunks_scanned(handler.get_project_name())

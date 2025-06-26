@@ -619,5 +619,40 @@
         "perceptie",
         "opinie",
         "kijk."
+    ],
+    "veiligheidsbewustzijn ": [
+        "Veiligheidsbesef",
+        "risicobewustzijn",
+        "waakzaamheid",
+        "beveiligingszin",
+        "veiligheidszin"
+    ],
+    "veiligheidsklimaat ": [
+        "Veiligheidscultuur",
+        "risicobewustzijn",
+        "veiligheidssfeer",
+        "veiligheidsgedrag",
+        "beschermingsomgeving"
+    ],
+    "Bewustzijn ": [
+        "Besef",
+        "Gevoel",
+        "Herinnering",
+        "Perceptie",
+        "Zintuig."
+    ],
+    "Gezondheid ": [
+        "Welzijn",
+        "welzijnstoestand",
+        "fysiek",
+        "voorspoed",
+        "vitaliteit"
+    ],
+    "safety": [
+        "Veiligheid",
+        "zekerheid",
+        "geborgenheid",
+        "bescherming",
+        "beveiliging"
     ]
 }

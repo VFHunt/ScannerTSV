@@ -432,10 +432,14 @@ class ChunkDatabase:
                 unique_keywords.append(keyword)
         return unique_keywords
 
-    def add_exact_keyword_matches_to_chunks(self, keyword: str):
+    def add_exact_keyword_matches_to_chunks(self, keyword: str, project_name: str):
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
-        cursor.execute("SELECT chunk_id, chunk_text, keyword, distance FROM file_chunks")
+        cursor.execute("""
+                       SELECT chunk_id, chunk_text, keyword, distance 
+                       FROM file_chunks
+                       WHERE project_name = ? 
+                       """, (project_name,))
         rows = cursor.fetchall()
 
         for chunk_id, text, keyword_str, distance_str in rows:
