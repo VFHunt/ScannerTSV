@@ -1,8 +1,8 @@
 import React from "react";
-import { Layout, Button } from "antd";
-import { Outlet, useNavigate, useLocation } from "react-router-dom";
-import { ArrowLeftOutlined } from "@ant-design/icons";
+import { Layout } from "antd";
+import { Outlet, useLocation } from "react-router-dom";
 import Sidebar from "./Sidebar";
+import BackButton from "../components/BackButton";
 
 const { Sider, Content } = Layout;
 
@@ -16,17 +16,7 @@ const RouteContent = ({ children }) => {
 };
 
 function MainLayout() {
-  const navigate = useNavigate();
   const location = useLocation();
-
-  const handleBack = () => {
-    if (location.key) { // If there's history
-      navigate(-1);
-    } else {
-      navigate('/');
-    }
-  };
-
   const showBackButton = location.pathname !== "/" && location.pathname !== "/login"; // Hide on home and login pages
 
   return (
@@ -50,18 +40,7 @@ function MainLayout() {
             backgroundColor: 'transparent'
           }}
         >          <RouteContent>
-            {showBackButton && (
-              <Button
-                icon={<ArrowLeftOutlined />}
-                onClick={handleBack}
-                style={{
-                  margin: '20px 0 0 40px',
-                  borderRadius: '8px',
-                }}
-              >
-                Go Back
-              </Button>
-            )}
+            {showBackButton && <BackButton />}
             <div
               style={{
                 margin: "40px",

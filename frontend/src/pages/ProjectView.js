@@ -42,20 +42,29 @@ function ProjectView() {
 
   // Handle reset functionality
   const handleReset = async () => {
-    try {
-      await reset_db();  // Call backend to reset
-      setSearchTerm("");
+    Modal.confirm({
+      title: 'Weet je het zeker?',
+      content: 'Dit verwijdert alle projecten. Deze actie kan niet ongedaan worden gemaakt.',
+      okText: 'Ja, verwijderen',
+      okType: 'danger',
+      cancelText: 'Annuleren',
+      onOk: async () => {
+        try {
+          await reset_db();  // Call backend to reset
+          setSearchTerm("");
 
-      // Re-fetch projects after reset
-      const data = await get_projects();
-      setProjects(data || []);
-      setFilteredProjects(data || []);
+          // Re-fetch projects after reset
+          const data = await get_projects();
+          setProjects(data || []);
+          setFilteredProjects(data || []);
 
-      message.success("Projects reset successfully.");
-    } catch (error) {
-      console.error("Failed to reset projects:", error);
-      message.error("Failed to reset projects.");
-    }
+          message.success("Projecten zijn succesvol gereset.");
+        } catch (error) {
+          console.error("Failed to reset projects:", error);
+          message.error("Failed to reset projects.");
+        }
+      },
+    });
   };
 
   // Handle creating a new project
@@ -70,21 +79,21 @@ function ProjectView() {
 
   const handleDeleteProject = async (projectName) => {
     Modal.confirm({
-      title: `Delete project "${projectName}"?`,
-      content: "This action cannot be undone.",
-      okText: "Delete",
+      title: `Project "${projectName}" verwijderen?`,
+      content: "Deze actie kan niet ongedaan worden gemaakt.",
+      okText: "Verwijderen",
       okType: "danger",
-      cancelText: "Cancel",
+      cancelText: "Annuleren",
       onOk: async () => {
         try {
           await deleteProject(projectName);
-          message.success(`Project '${projectName}' deleted successfully.`);
-          // Refresh the projects list after deletion
+          message.success(`Project '${projectName}' is succesvol verwijderd.`);
+          // Vernieuw de projectlijst na verwijderen
           const data = await get_projects();
           setProjects(data || []);
           setFilteredProjects(data || []);
         } catch (error) {
-          message.error("Failed to delete the project.");
+          message.error("Verwijderen van het project is mislukt.");
           console.error(error);
         }
       },
@@ -224,8 +233,8 @@ function ProjectView() {
           visible={isModalVisible}
           onOk={handleModalOk}
           onCancel={handleModalCancel}
-          okText="Create"
-          cancelText="Cancel"
+          okText="Creëren"
+          cancelText="Annuleren"
         >
           <Form>
             <Form.Item label="Projectnaam" required>
@@ -237,7 +246,7 @@ function ProjectView() {
                     handleModalOk(); // Trigger modal submission on Enter key press
                   }
                 }}
-                placeholder="Enter project name"
+                placeholder="Voer projectnaam in"
                 autoFocus // Automatically focus the input field when the modal opens
               />
             </Form.Item>

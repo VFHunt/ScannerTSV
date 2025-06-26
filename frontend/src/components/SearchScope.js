@@ -7,17 +7,17 @@ const SearchScope = ({ scope, setScope }) => {
       style={{
         marginBottom: "1rem",
         display: "flex",
-        alignItems: "center", // Vertically align items
+        alignItems: "center",
       }}
     >
       <label
         className="label"
         style={{
           marginRight: "10px",
-          fontWeight: "bold", // Optional: Make the label bold
+          fontWeight: "bold",
         }}
       >
-        Search Scope:
+        Zoekbereik:
       </label>
       <div style={{ display: "flex", gap: "20px" }}>
         <div>
@@ -30,7 +30,7 @@ const SearchScope = ({ scope, setScope }) => {
             onChange={(e) => setScope(e.target.value)}
           />
           <label htmlFor="focused" style={{ marginLeft: "5px" }}>
-            Focused
+            Focus
           </label>
         </div>
 
@@ -44,7 +44,7 @@ const SearchScope = ({ scope, setScope }) => {
             onChange={(e) => setScope(e.target.value)}
           />
           <label htmlFor="balanced" style={{ marginLeft: "5px" }}>
-            Balanced
+            Gebalanceerd
           </label>
         </div>
 
@@ -58,7 +58,7 @@ const SearchScope = ({ scope, setScope }) => {
             onChange={(e) => setScope(e.target.value)}
           />
           <label htmlFor="broad" style={{ marginLeft: "5px" }}>
-            Broad
+            Breed
           </label>
         </div>
       </div>

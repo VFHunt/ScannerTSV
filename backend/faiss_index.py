@@ -110,9 +110,4 @@ class FaissIndex:
         # Print the resulting dictionary
         for chunk_id, data in chunk_query_dict.items():
             db.add_keyword_and_distance(str(chunk_id), str(data["queries"]), str(data["distances"]))
-
-        # Add exact keyword matches for each query (once)
-        for query in queries:
-            db.add_exact_keyword_matches_to_chunks(query)
-
         return distances, indices

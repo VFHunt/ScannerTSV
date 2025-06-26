@@ -39,6 +39,19 @@ class FileHandler:
             self.results = {}
             self.project_name = None
             self.initialized = True  # Mark as initialized
+            self.last_focus = {}  # Track the last focused file per project
+
+    # Set last focus for a project
+    def set_last_focus(self, project_name: str, focus_value):
+        if not project_name:
+            logger.warning("Project name is empty. Cannot set last focus.")
+            return
+        self.last_focus[project_name] = focus_value
+        logger.info(f"Set last focus for project '{project_name}' to '{focus_value}'.")
+
+    # Get last focus for a project
+    def get_last_focus(self, project_name: str):
+        return self.last_focus.get(project_name, None)
 
     def initialize(self, files):
         """

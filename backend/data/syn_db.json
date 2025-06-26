@@ -570,5 +570,103 @@
         "opleiding",
         "studie",
         "leertijd"
+    ],
+    "visie": [
+        "inzicht",
+        "opvatting",
+        "blik",
+        "idee",
+        "perceptie"
+    ],
+    "constuctie": [
+        "bouw",
+        "structuur",
+        "gebouw",
+        "ontwerp",
+        "samenstelling"
+    ],
+    "Veiligheid": [
+        "Beveiliging",
+        "Bescherming",
+        "Zekerheid",
+        "Geborgenheid",
+        "Waakzaamheid"
+    ],
+    "Verantwoordelijkheid": [
+        "Taak",
+        "verplichting",
+        "plicht",
+        "aansprakelijkheid",
+        "zorgplicht"
+    ],
+    "Veiligheid ": [
+        "Bescherming",
+        "zekerheid",
+        "geborgenheid",
+        "beveiliging",
+        "veiligheidssystemen"
+    ],
+    "Verantwoordelijkheid ": [
+        "Taak",
+        "Plicht",
+        "Verplichting",
+        "Zorg",
+        "Bevoegdheid"
+    ],
+    "Visie": [
+        "Inzicht",
+        "toekomstbeeld",
+        "perceptie",
+        "opinie",
+        "kijk."
+    ],
+    "opgeleid": [
+        "geschoold",
+        "getraind",
+        "bekwaam",
+        "onderricht",
+        "ontwikkeld"
+    ],
+    "gezondheit": [
+        "Welzijn",
+        "welzijnszorg",
+        "welbevinden",
+        "fitheid",
+        "vitaliteit"
+    ],
+    "onderaannemer": [
+        "subcontractor",
+        "nevenaannemer",
+        "hulpaannemer",
+        "medeaannemer",
+        "deelopdrachtnemer"
+    ],
+    "uitvoeringsplan": [
+        "implementatieschema",
+        "realisatieplan",
+        "werkplan",
+        "actieplan",
+        "projectplan"
+    ],
+    "oplevering": [
+        "Afronding",
+        "voltooiing",
+        "afwerking",
+        "aflevering",
+        "eindoplevering"
+    ],
+    "bouwvergunning": [
+        "bouwtoestemming",
+        "bouwmachtiging",
+        "bouwlicentie",
+        "bouwtoelating",
+        "constructievergunning"
+    ],
+    "education": [
+        "Onderwijs",
+        "scholing",
+        "opleiding",
+        "studie",
+        "leertijd"
     ]
 }

@@ -98,7 +98,8 @@ def search():
 
     f = FaissIndex(emb, temperature=temp)  # Initialize the FAISS index
     f.f_search(keywords, db)  # Search for keywords in the FAISS index and save them in the database
-
+    for query in keywords:
+        db.add_exact_keyword_matches_to_chunks(query, handler.get_project_name())
     #print("[DEBUG] Manually calling add_keyword_and_distance()...")
     #db.add_keyword_and_distance("2b5813b4-0079-40b3-aea3-3c886eb2469e", "machine", 0.123)
     db.mark_project_chunks_scanned(handler.get_project_name())
@@ -119,7 +120,8 @@ def search_unscanned():
 
     f = FaissIndex(emb, temperature=temp)  # Initialize the FAISS index
     f.f_search(keywords, db)  # Search for keywords in the FAISS index and save them in the database
-
+    for query in keywords:
+        db.add_exact_keyword_matches_to_chunks(query, handler.get_project_name())
     #print("[DEBUG] Manually calling add_keyword_and_distance()...")
     #db.add_keyword_and_distance("2b5813b4-0079-40b3-aea3-3c886eb2469e", "machine", 0.123)
     db.mark_project_chunks_scanned(handler.get_project_name())
@@ -185,10 +187,10 @@ def fetch_results(project_name):
         results = db.get_filename(project_name)  # Fetch filenames and keywords from the database
         # print(f"Fetched results: {results}")  # Log the fetched results
 
-        cleaned = db.clean_results(results)
+        #cleaned = db.clean_results(results)
         # print(f"Cleaned results: {cleaned}")
         
-        return jsonify({"results": cleaned}), 200
+        return jsonify({"results": results}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
@@ -201,10 +203,7 @@ def fetch_doc_results(filename):
             return jsonify({"error": "Missing project name"}), 400
 
         results = db.get_chunks_by_project_and_file(project_name, filename)
-
-        cleaned = db.clean_docresults(results)
-
-        return jsonify({"results": cleaned}), 200
+        return jsonify({"results": results}), 200
 
     except Exception as e:
         print(f"Error in /fetch_docresults: {e}")
@@ -247,8 +246,6 @@ def get_projects():
     except Exception as e:
         print(f"Error in /projects: {e}")
         return jsonify({"error": str(e)}), 500
-
-
 
 @app.route('/reset_db', methods=['POST'])
 def reset_db():
@@ -364,3 +361,6 @@ def login():
     else:
         return jsonify({"success": False, "message": "Invalid credentials"}), 401
 
+if __name__ == "__main__":
+    # Run the Flask app
+    app.run(debug=True)

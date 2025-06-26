@@ -6,6 +6,13 @@ import { fetchDocumentResults } from "../utils/api";
 const { Title, Paragraph, Text } = Typography;
 const { Option } = Select;
 
+const getColorFromDistance = (distance) => {
+    if (distance >= 0.4 && distance < 0.5) return "#a8e6cf"; // greenish
+    if (distance >= 0.5 && distance < 0.7) return "#ffd3b6"; // orangeish
+    if (distance >= 0.7 && distance <= 1) return "#ff8b94"; // reddish
+  };
+
+
 // Component for displaying individual document result items
 const DocumentResultItem = ({ item }) => (
   <Card
@@ -20,7 +27,7 @@ const DocumentResultItem = ({ item }) => (
     <Row gutter={[16, 16]}>
       <Col span={18}>
         {/* Semantic Chunk */}
-        <Paragraph ellipsis={{ rows: 4, expandable: true, symbol: "more" }} style={{ fontSize: "15px" }}>
+        <Paragraph ellipsis={{ rows: 4, expandable: true, symbol: "meer" }} style={{ fontSize: "15px" }}>
           {item.text}
         </Paragraph>
       </Col>
@@ -32,42 +39,44 @@ const DocumentResultItem = ({ item }) => (
             <Text strong style={{ fontSize: "14px" }}>
               Match:
             </Text>
-            {(item.keywords ? item.keywords.split(",").map(kw => kw.trim()) : []).map((kw, i) => (
+            {(item.keywords || []).map(([ word, distance ], i) => (
               <Tag
-                color="geekblue"
+                color={getColorFromDistance(distance)}
                 key={i}
                 style={{
                   marginBottom: "0.25rem",
                   whiteSpace: "normal",
                   wordBreak: "break-word",
+                  border: "none",
+                  color: "#000",
                 }}
               >
-                {kw}
+                {word}
               </Tag>
             ))}
           </div>
-          <Tooltip title="Page number" placement="top" mouseEnterDelay={0.2}>
-          <Tag
-            color="gold"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: "0 0.6rem",
-              height: "22px",
-              fontSize: "12px",
-              fontWeight: 500,
-              borderRadius: "1px",
-              lineHeight: 1,
-              whiteSpace: "nowrap",
-              cursor: "default",
-            }}
-            role="contentinfo"
-            aria-label={`Page ${item.page}`}
-          >
-            Page {item.page}
-          </Tag>
-        </Tooltip>
+          <Tooltip title="Paginanummer" placement="top" mouseEnterDelay={0.2}>
+            <Tag
+              color="gold"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "0 0.6rem",
+                height: "22px",
+                fontSize: "12px",
+                fontWeight: 500,
+                borderRadius: "1px",
+                lineHeight: 1,
+                whiteSpace: "nowrap",
+                cursor: "default",
+              }}
+              role="contentinfo"
+              aria-label={`Pagina ${item.page}`}
+            >
+              Pagina {item.page}
+            </Tag>
+          </Tooltip>
         </div>
       </Col>
     </Row>
@@ -88,7 +97,7 @@ function DocResults() {
       const data = await fetchDocumentResults(encodedFilename);
       setContent(data.results || []);
     } catch (error) {
-      console.error("Error fetching document results:", error);
+      console.error("Fout bij het ophalen van documentresultaten:", error);
     } finally {
       setLoading(false);
     }
@@ -99,12 +108,15 @@ function DocResults() {
   }, [filename]);
 
   // Extract unique keywords for filtering
-  const allKeywords = [...new Set(content.flatMap(item => item.keywords ? item.keywords.split(",").map(kw => kw.trim()) : []))];
+   const allKeywords = [...new Set(
+    content.flatMap(item => (item.keywords || []).map(([word]) => word))
+  )];
+
 
   // Filter content based on selected keywords
   const filteredContent = selectedKeywords.length > 0
     ? content.filter(item => {
-        const kwList = item.keywords ? item.keywords.split(",").map(kw => kw.trim()) : [];
+        const kwList = (item.keywords || []).map(([word]) => word);
         return kwList.some(kw => selectedKeywords.includes(kw));
       })
     : content;
@@ -114,21 +126,21 @@ function DocResults() {
       <Row gutter={[16, 16]}>
         <Col span={24}>
           <Title level={2} style={{ marginBottom: "1rem" }}>
-            Semantic Search Results
+            Semantische zoekresultaten
           </Title>
           <Paragraph>
-            Viewing results for: <Text code>{filename}</Text>
+            Resultaten voor: <Text code>{filename}</Text>
           </Paragraph>
         </Col>
 
         <Col span={24}>
           <div style={{ marginBottom: "1rem" }}>
-            <Text strong>Filter by Keywords:</Text>
+            <Text strong>Filter op trefwoorden:</Text>
             <Select
               mode="multiple"
               allowClear
               style={{ width: "100%" }}
-              placeholder="Select keywords to filter"
+              placeholder="Selecteer trefwoorden om te filteren"
               onChange={setSelectedKeywords}
             >
               {allKeywords.map((keyword, index) => (
@@ -137,6 +149,51 @@ function DocResults() {
                 </Option>
               ))}
             </Select>
+          </div>
+        </Col>
+
+        <Col span={24}>
+          {/* Legend for distance colors */}
+          <div style={{ margin: "16px 0" }}>
+            <span style={{ marginRight: 16, display: "inline-flex", alignItems: "center" }}>
+              <span style={{
+                display: "inline-block",
+                width: 18,
+                height: 18,
+                background: "#a8e6cf",
+                borderRadius: 4,
+                border: "1px solid #ccc",
+                marginRight: 6,
+                verticalAlign: "middle"
+              }} />
+              Breed
+            </span>
+            <span style={{ marginRight: 16, display: "inline-flex", alignItems: "center" }}>
+              <span style={{
+                display: "inline-block",
+                width: 18,
+                height: 18,
+                background: "#ffd3b6",
+                borderRadius: 4,
+                border: "1px solid #ccc",
+                marginRight: 6,
+                verticalAlign: "middle"
+              }} />
+              Gebalanceerd
+            </span>
+            <span style={{ display: "inline-flex", alignItems: "center" }}>
+              <span style={{
+                display: "inline-block",
+                width: 18,
+                height: 18,
+                background: "#ff8b94",
+                borderRadius: 4,
+                border: "1px solid #ccc",
+                marginRight: 6,
+                verticalAlign: "middle"
+              }} />
+              Focus
+            </span>
           </div>
         </Col>
 

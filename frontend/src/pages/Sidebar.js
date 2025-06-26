@@ -18,10 +18,10 @@ function Sidebar() {
 
       {/* Settings Section */}
       <div className="settingsSection">
-        <button className="settingsButton">Settings</button>
+        <button className="settingsButton">Instellingen</button>
         <div className="settingsSubMenu">
-          <button className="subMenuButton">User Management</button>
-          <button className="subMenuButton">Cost Management</button>
+          <button className="subMenuButton"> Gebruikersbeheer </button>
+          <button className="subMenuButton"> Kostenbeheer </button>
         </div>
       </div>
     </div>

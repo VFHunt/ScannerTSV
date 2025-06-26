@@ -138,7 +138,6 @@ export const setProjectName = async (projectName) => {
   }
 };
 
-
 export const reset_db = async () => {
   try {
     const response = await axios.post(`${API_BASE_URL}/reset_db`);
@@ -176,7 +175,6 @@ export const getProjectDate = async (projectName) => {
   }
 };
 
-// Add this new function to api.js: remember to get the name of the project with the handler
 export const get_keywords = async () => { 
   try {
     const response = await axios.get(`${API_BASE_URL}/get_keywords`);
@@ -200,7 +198,6 @@ export const deleteProject = async (projectName) => {
 
   return response.data;
 };
-
 
 export const deleteFile = async (projectName, fileName) => {
   const response = await axios.post(
@@ -226,6 +223,7 @@ export const statusData = async (projectName) => {
   
   return response.data.statuses; // Return the statuses array
 };
+
 export const getProjectStatus = async (projectName) => {
   const response = await axios.get(
     `${API_BASE_URL}/project/status`,
@@ -234,11 +232,9 @@ export const getProjectStatus = async (projectName) => {
       headers: { "Content-Type": "application/json" }
     }
   );
-
   if (response.status !== 200) {
     throw new Error("Failed to fetch project status.");
   }
-
   return {
     uploadDate: response.data.upload_date,
     projectScanned: response.data.project_scanned,
@@ -262,8 +258,15 @@ export const loginUser = async (username, password) => {
   }
 };
 
-
-
-
-
-
+export const getFocus = async (projectName) => {
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/get_focus`,
+      { params: { project_name: projectName } }
+    );
+    return response.data.focus;
+  } catch (error) {
+    console.error("Error fetching focus:", error);
+    throw new Error("Failed to fetch focus.");
+  }
+};
