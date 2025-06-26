@@ -360,7 +360,8 @@ def login():
         return jsonify({"success": True, "message": "Login successful"})
     else:
         return jsonify({"success": False, "message": "Invalid credentials"}), 401
-
+"""
 if __name__ == "__main__":
     # Run the Flask app
     app.run(debug=True)
+"""
