@@ -163,8 +163,6 @@ function Results() {
     return flatList;
   };
 
-
-
   useEffect(() => {
     const updateProjectName = async () => {
       try {
