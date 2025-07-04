@@ -482,6 +482,24 @@ class ChunkDatabase:
         conn.close()
         print(f"[INFO] Exact keyword '{keyword}' added to matching chunks.")
 
+
+    def get_files_with_keywords(self, keywords, project_name):
+        if not keywords:
+            raise ValueError("No retrieved keywords found for this project.") # in case no keywrods were found
+
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute(f"""
+            SELECT DISTINCT file_name
+            FROM file_chunks
+            WHERE project_name = ?
+            AND ({' OR '.join(['LOWER(chunk_text) LIKE LOWER(?)' for _ in keywords])})
+        """, [project_name] + [f"%{kw}%" for kw in keywords])
+        rows = cursor.fetchall()
+        conn.close()
+
+        return [row[0] for row in rows]
+
 if __name__ == "__main__":
     db = ChunkDatabase()  # This triggers init_db()
     #results = db.get_filename("test")

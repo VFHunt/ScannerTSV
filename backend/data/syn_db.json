@@ -668,5 +668,12 @@
         "beveiliging",
         "zekerheid",
         "bescherming"
+    ],
+    "construction": [
+        "Bouw",
+        "constructie",
+        "constructiewerk",
+        "bouwwerkzaamheden",
+        "opbouw"
     ]
 }
