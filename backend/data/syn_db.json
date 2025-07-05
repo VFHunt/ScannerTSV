@@ -662,11 +662,18 @@
         "bouwtoelating",
         "constructievergunning"
     ],
-    "education": [
-        "Onderwijs",
-        "scholing",
-        "opleiding",
-        "studie",
-        "leertijd"
+    "safety": [
+        "Veiligheid",
+        "geborgenheid",
+        "beveiliging",
+        "zekerheid",
+        "bescherming"
+    ],
+    "construction": [
+        "Bouw",
+        "constructie",
+        "constructiewerk",
+        "bouwwerkzaamheden",
+        "opbouw"
     ]
 }

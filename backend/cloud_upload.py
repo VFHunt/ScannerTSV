@@ -7,6 +7,7 @@ import zipfile
 import io
 import tempfile
 from backend_filepro import FileHandler  # Assuming FileHandler is defined in backend_filepro.py
+from db import ChunkDatabase
 
 # Load environment variables from .env file
 load_dotenv()
@@ -77,23 +78,38 @@ def download_multiple_route():
     try:
         data = request.get_json()
         files = data.get('files', [])  # List of blob names
+        project_name = data.get("project_name")
+
+        db = ChunkDatabase()
+        keywords = db.get_all_retrieved_keywords_by_project(project_name)
+        files = db.get_files_with_keywords(keywords, project_name)
+
         if not files:
             return jsonify({"error": "No files provided"}), 400
 
         # Create in-memory ZIP archive
+        from werkzeug.utils import secure_filename
+
+        ...
+
+        # Create in-memory ZIP archive
         memory_file = io.BytesIO()
         with zipfile.ZipFile(memory_file, 'w') as zf:
-            for blob_name in files:
+            for file_name in files:
+                blob_name = secure_filename(file_name)  # sanitize to match blob name
                 blob_client = blob_service_client.get_blob_client(container=container_name, blob=blob_name)
                 blob_data = blob_client.download_blob().readall()
-                zf.writestr(blob_name, blob_data)
+                zf.writestr(file_name, blob_data)  # keep original name inside the ZIP
         memory_file.seek(0)
 
         return send_file(
             memory_file,
-            download_name='files.zip',  # ✅ correct param
+            download_name='files.zip',
             as_attachment=True,
             mimetype='application/zip'
         )
+    except ValueError as ve:
+        return jsonify({"error": str(ve)}), 400  # Custom error from DB function
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500

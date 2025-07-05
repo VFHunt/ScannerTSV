@@ -233,7 +233,7 @@ class ChunkDatabase:
 
         logger.info(f"Fetched {len(results)} results for project: {project_name}")
         return results
-
+    
 
     def get_projects(self):
         logger.info(f"Searching for existing projects")
@@ -434,9 +434,9 @@ class ChunkDatabase:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
         cursor.execute("""
-                       SELECT chunk_id, chunk_text, keyword, distance 
+                       SELECT chunk_id, chunk_text, keyword, distance
                        FROM file_chunks
-                       WHERE project_name = ? 
+                       WHERE project_name = ?
                        """, (project_name,))
         rows = cursor.fetchall()
 
@@ -476,16 +476,32 @@ class ChunkDatabase:
                                    distance = ?
                                WHERE chunk_id = ?
                                ''', (str(keywords), str(distances), chunk_id))
-
         conn.commit()
         conn.close()
         print(f"[INFO] Exact keyword '{keyword}' added to matching chunks.")
 
 
+    def get_files_with_keywords(self, keywords, project_name):
+        if not keywords:
+            raise ValueError("No retrieved keywords found for this project.") # in case no keywrods were found
+
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute(f"""
+            SELECT DISTINCT file_name
+            FROM file_chunks
+            WHERE project_name = ?
+            AND ({' OR '.join(['LOWER(chunk_text) LIKE LOWER(?)' for _ in keywords])})
+        """, [project_name] + [f"%{kw}%" for kw in keywords])
+        rows = cursor.fetchall()
+        conn.close()
+
+        return [row[0] for row in rows]
+
 if __name__ == "__main__":
     db = ChunkDatabase()  # This triggers init_db()
     #results = db.get_filename("test")
-    results = db.add_exact_keyword_matches_to_chunks("veiligheid", "test")
+    results = db.get_chunks_by_project_and_file("test", "WAVE VSB.pdf")
     from pprint import pprint
     pprint(results)
 
